@@ -48,9 +48,18 @@ Tier 2 (pattern runs - the tool owns the run):
     Workers are separate processes with no shared transcript. A worker
     that asks a genuine blocking question emits a question event with
     the run id; other workers continue.
-  fusion red-blue | ach   Adversarial challenge and the ACH matrix
-    (later releases). Callers invoke a pattern with parameters;
-    pattern definitions are tool-side config.
+  fusion red-blue --task <t> --burden <b> [--harness] [--timeout]
+    Adversarial pattern: a claimant files atomic claims (named executable
+    checks go in falsifier/evidence backticks); an opponent must challenge
+    with objection claims - free-form critique is rejected at the schema;
+    an umpire resolves each objection (running named checks, reporting
+    observed evidence; accept=sustained, revise=overruled); a judge
+    blind to worker identity scores the surviving record against the
+    burden. Budgets are symmetric across roles. The decision names each
+    surviving claim, each rejected claim with its ruling, and unresolved
+    objections as residual risks.
+  fusion ach   ACH matrix (later release). Callers invoke a pattern with
+    parameters; pattern definitions are tool-side config.
   What a pattern run guarantees: the registration (run.json) is frozen
     before generation; workers are separate hcn processes with no shared
     transcript; every worker output is schema-validated at the boundary;

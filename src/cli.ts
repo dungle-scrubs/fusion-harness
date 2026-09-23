@@ -17,6 +17,7 @@ import {
   juryFuse,
   juryWorkerPrompt,
 } from "./jury";
+import { claimantPrompt, redblueFuse, redblueWorkers } from "./redblue";
 import { SKILL_TEXT } from "./skill";
 import { type AggregateMethod, aggregate, normalizeClaims, scoreForecasts } from "./tier1";
 
@@ -370,6 +371,106 @@ program
       workers: string;
     }) => {
       await runJury(options);
+    },
+  );
+
+async function runRedBlue(options: {
+  burden: string;
+  harness: string;
+  json: boolean;
+  model?: string;
+  task: string;
+  timeout: string;
+}): Promise<void> {
+  const timeout = Number(options.timeout);
+  if (options.task.trim().length === 0 || options.burden.trim().length === 0) {
+    stdout.write("error: --task and --burden must be non-empty\n");
+    process.exitCode = 2;
+    return;
+  }
+  if (!(timeout > 0)) {
+    stdout.write("error: --timeout must be positive seconds\n");
+    process.exitCode = 2;
+    return;
+  }
+  const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
+  const patternOptions = {
+    burden: options.burden,
+    harness: options.harness,
+    ...(options.model !== undefined ? { model: options.model } : {}),
+    task: options.task,
+    timeoutSec: timeout,
+  };
+  const registration = {
+    pattern: "red-blue",
+    registeredAt: new Date().toISOString(),
+    runId,
+    rubric: options.burden,
+    stoppingRule: "claimant files claims; opponent files objections; umpire rules; judge scores",
+    task: options.task,
+    workers: [
+      {
+        harness: options.harness,
+        ...(options.model !== undefined ? { model: options.model } : {}),
+        prompt: claimantPrompt(options.task),
+        timeoutSec: timeout,
+        workerId: "w-red",
+      },
+    ],
+  };
+  const report = executeRun(registration, {
+    fuse: redblueFuse,
+    repoRoot: process.cwd(),
+    stages: {
+      challenge: (input) => redblueWorkers(patternOptions, input, "challenge"),
+      verify: (input) => redblueWorkers(patternOptions, input, "verify"),
+    },
+  });
+  const done = report.events[report.events.length - 1];
+  const cause = done?.kind === "done" ? String(done.payload["cause"] ?? "failed") : "failed";
+  const decision = JSON.parse(readFileSync(`${report.runDir}/decision.json`, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  if (options.json) {
+    stdout.write(`${JSON.stringify(decision)}\n`);
+  } else {
+    stdout.write(`run      ${runId} (${report.runDir})\n`);
+    stdout.write(`ruling   ${String(decision["decision"] ?? "(none)")}\n`);
+    stdout.write(`verdict  ${String(decision["judgeVerdict"] ?? "(none)")}\n`);
+    stdout.write(`claims   surviving ${JSON.stringify(decision["survivingClaims"])}\n`);
+    for (const rejected of decision["rejectedClaims"] as { claimId: string; reason: string }[]) {
+      stdout.write(`rejected ${rejected.claimId}: ${rejected.reason}\n`);
+    }
+  }
+  process.exitCode = cause === "clean" ? 0 : 1;
+}
+
+program
+  .command("red-blue")
+  .description(
+    "Red-Blue-Umpire pattern run: a claimant files atomic claims, an opponent " +
+      "challenges with objection claims, an umpire resolves source facts (running " +
+      "named executable checks), and a judge blind to worker identity scores the " +
+      "surviving record against the burden. Writes .fusion/runs/<runId>/. " +
+      "Exits 0 clean, 1 run failure, 2 invalid invocation.",
+  )
+  .requiredOption("--task <t>", "the question the claimant must answer with claims")
+  .requiredOption("--burden <b>", "the standard the surviving record must meet")
+  .option("--harness <h>", "harness for every role (hcn name)", "pi")
+  .option("--model <m>", "model id passed to every role")
+  .option("--timeout <sec>", "per-role wall-clock budget in seconds (symmetric)", "300")
+  .option("--json", "print the decision record as one JSON line")
+  .action(
+    async (options: {
+      burden: string;
+      harness: string;
+      json: boolean;
+      model?: string;
+      task: string;
+      timeout: string;
+    }) => {
+      await runRedBlue(options);
     },
   );
 
