@@ -4,10 +4,19 @@
  * deterministic, JSON in/out. Exit contract follows hcn: 0 clean,
  * 1 failure, 2 refusal (fusion rejected the invocation).
  */
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";
 import { Command } from "commander";
 import { type ClaimVerdict, validateClaim } from "./claim";
+import { executeRun } from "./engine";
+import {
+  JURY_DEFAULT_WORKERS,
+  JURY_MIN_WORKERS,
+  type JuryDecision,
+  juryFuse,
+  juryWorkerPrompt,
+} from "./jury";
 import { SKILL_TEXT } from "./skill";
 import { type AggregateMethod, aggregate, normalizeClaims, scoreForecasts } from "./tier1";
 
@@ -161,6 +170,16 @@ function parseOutcomeArray(text: string): { confidence: number; outcome: boolean
 
 const program = new Command();
 program
+  .exitOverride((error) => {
+    if (
+      error.code === "commander.help" ||
+      error.code === "commander.helpDisplayed" ||
+      error.code === "commander.version"
+    ) {
+      return;
+    }
+    process.exit(2);
+  })
   .name("fusion")
   .description("A composable fusion layer over agent harnesses.")
   .version(VERSION);
@@ -257,6 +276,102 @@ program
   .action(async (file: string | undefined) => {
     await runJsonCommand(file, parseOutcomeArray, (outcomes) => scoreForecasts(outcomes));
   });
+
+async function runJury(options: {
+  harness: string;
+  json: boolean;
+  model?: string;
+  task: string;
+  timeout: string;
+  workers: string;
+}): Promise<void> {
+  const workers = Number(options.workers);
+  const timeout = Number(options.timeout);
+  if (options.task.trim().length === 0) {
+    stdout.write("error: --task must be non-empty\n");
+    process.exitCode = 2;
+    return;
+  }
+  if (!Number.isInteger(workers) || workers < JURY_MIN_WORKERS) {
+    stdout.write(`error: --workers must be an integer >= ${JURY_MIN_WORKERS}\n`);
+    process.exitCode = 2;
+    return;
+  }
+  if (!(timeout > 0)) {
+    stdout.write("error: --timeout must be positive seconds\n");
+    process.exitCode = 2;
+    return;
+  }
+  const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
+  const registration = {
+    pattern: "jury",
+    registeredAt: new Date().toISOString(),
+    runId,
+    stoppingRule: "every worker submits one answer claim or times out",
+    task: options.task,
+    workers: Array.from({ length: workers }, (_, index) => ({
+      harness: options.harness,
+      ...(options.model !== undefined ? { model: options.model } : {}),
+      prompt: juryWorkerPrompt(options.task),
+      timeoutSec: timeout,
+      workerId: `w${index + 1}`,
+    })),
+  };
+  const report = executeRun(registration, {
+    fuse: juryFuse,
+    repoRoot: process.cwd(),
+  });
+  const done = report.events[report.events.length - 1];
+  const cause = done?.kind === "done" ? String(done.payload["cause"] ?? "failed") : "failed";
+  const decisionPath = `${report.runDir}/decision.json`;
+  if (options.json) {
+    const decision = JSON.parse(readFileSync(decisionPath, "utf8")) as Record<string, unknown>;
+    stdout.write(`${JSON.stringify(decision)}\n`);
+  } else {
+    const decision = JSON.parse(readFileSync(decisionPath, "utf8")) as JuryDecision["decision"] & {
+      failures?: { class: string; workerId: string }[];
+    };
+    stdout.write(`run      ${runId} (${report.runDir})\n`);
+    stdout.write(`decision ${decision.decision ?? "(none)"}\n`);
+    const indep = decision.independence;
+    stdout.write(
+      `votes    ${indep.acceptedAnswers} answers, ${indep.groups} groups, duplicate rate ${indep.duplicateRate.toFixed(2)}\n`,
+    );
+    if ((decision.failures?.length ?? 0) > 0) {
+      stdout.write(`failures ${JSON.stringify(decision.failures)}\n`);
+    }
+    for (const risk of decision.residualRisks) {
+      stdout.write(`risk     ${risk.claimId} (conf ${risk.confidence}): ${risk.falsifier}\n`);
+    }
+  }
+  process.exitCode = cause === "clean" ? 0 : 1;
+}
+
+program
+  .command("jury")
+  .description(
+    "Sealed Jury pattern run: N sealed workers answer the task as claims; equivalent answers " +
+      "are normalized; plurality fusion decides mechanically. Writes .fusion/runs/<runId>/. " +
+      "Exits 0 clean, 1 run failure, 2 invalid invocation.",
+  )
+  .requiredOption("--task <t>", "the question every sealed juror answers")
+  .option("--workers <n>", "number of sealed workers", String(JURY_DEFAULT_WORKERS))
+  .option("--harness <h>", "harness for every worker (hcn name)", "pi")
+  .option("--model <m>", "model id passed to every worker")
+  .option("--timeout <sec>", "per-worker wall-clock budget in seconds", "180")
+  .option("--json", "print the decision record as one JSON line")
+  .action(
+    async (options: {
+      harness: string;
+      json: boolean;
+      model?: string;
+      task: string;
+      timeout: string;
+      workers: string;
+    }) => {
+      await runJury(options);
+    },
+  );
 
 program
   .command("skill")
