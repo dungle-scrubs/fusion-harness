@@ -1,4 +1,5 @@
-import type { AcceptedClaim, FusedOutput } from "./engine";
+import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
+import type { PatternDefinition, PatternOptions } from "./pattern";
 import { canonicalize } from "./tier1";
 
 export const JURY_MIN_WORKERS = 2;
@@ -150,3 +151,84 @@ export function juryFuse(accepted: readonly AcceptedClaim[]): JuryDecision {
     },
   };
 }
+
+function positiveInt(value: string, min: number, name: string): number | string {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < min) {
+    return `--${name} must be an integer >= ${min}`;
+  }
+  return n;
+}
+
+export const juryDefinition: PatternDefinition = {
+  build(options: PatternOptions) {
+    const task = String(options["task"] ?? "");
+    if (task.trim().length === 0) {
+      return { error: "--task must be non-empty" };
+    }
+    const workers = positiveInt(String(options["workers"] ?? ""), JURY_MIN_WORKERS, "workers");
+    if (typeof workers === "string") {
+      return { error: workers };
+    }
+    const timeout = Number(options["timeout"] ?? "");
+    if (!(timeout > 0)) {
+      return { error: "--timeout must be positive seconds" };
+    }
+    const harness = String(options["harness"] ?? "pi");
+    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    return {
+      fuse: juryFuse,
+      stoppingRule: "every worker submits one answer claim or times out",
+      task,
+      workers: Array.from({ length: workers }, (_, index) => ({
+        harness,
+        ...(model !== undefined ? { model } : {}),
+        prompt: juryWorkerPrompt(task),
+        timeoutSec: timeout,
+        workerId: `w${index + 1}`,
+      })),
+    };
+  },
+  command: "jury",
+  description:
+    "Sealed Jury pattern run: N sealed workers answer the task as claims; equivalent answers " +
+    "are normalized; plurality fusion decides mechanically. Writes .fusion/runs/<runId>/. " +
+    "Exits 0 clean, 1 run failure, 2 invalid invocation.",
+  options: [
+    {
+      default: String(JURY_DEFAULT_WORKERS),
+      description: "number of sealed workers",
+      name: "workers",
+    },
+    { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
+    { description: "model id passed to every worker", name: "model" },
+    { default: "180", description: "per-worker wall-clock budget in seconds", name: "timeout" },
+    { description: "the question every sealed juror answers", name: "task", required: true },
+  ],
+  summarize(decision, report: RunReport): readonly string[] {
+    const lines = [
+      `run      ${report.runId} (${report.runDir})`,
+      `decision ${String(decision["decision"] ?? "(none)")}`,
+    ];
+    const independence = decision["independence"] as
+      | { acceptedAnswers: number; duplicateRate: number; groups: number }
+      | undefined;
+    if (independence !== undefined) {
+      lines.push(
+        `votes    ${independence.acceptedAnswers} answers, ${independence.groups} groups, duplicate rate ${independence.duplicateRate.toFixed(2)}`,
+      );
+    }
+    const failures = decision["failures"] as { class: string; workerId: string }[] | undefined;
+    if ((failures?.length ?? 0) > 0) {
+      lines.push(`failures ${JSON.stringify(failures)}`);
+    }
+    for (const risk of (decision["residualRisks"] ?? []) as {
+      claimId: string;
+      confidence: number;
+      falsifier: string;
+    }[]) {
+      lines.push(`risk     ${risk.claimId} (conf ${risk.confidence}): ${risk.falsifier}`);
+    }
+    return lines;
+  },
+};

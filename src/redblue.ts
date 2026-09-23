@@ -1,4 +1,5 @@
-import type { AcceptedClaim, FusedOutput, StageInput } from "./engine";
+import type { AcceptedClaim, FusedOutput, RunReport, StageInput } from "./engine";
+import type { PatternDefinition, PatternOptions } from "./pattern";
 import type { WorkerConfig } from "./run";
 
 export interface RedBlueOptions {
@@ -208,3 +209,82 @@ export function redblueFuse(accepted: readonly AcceptedClaim[]): FusedOutput {
     },
   };
 }
+
+export const redblueDefinition: PatternDefinition = {
+  build(options: PatternOptions) {
+    const task = String(options["task"] ?? "");
+    const burden = String(options["burden"] ?? "");
+    if (task.trim().length === 0 || burden.trim().length === 0) {
+      return { error: "--task and --burden must be non-empty" };
+    }
+    const timeout = Number(options["timeout"] ?? "");
+    if (!(timeout > 0)) {
+      return { error: "--timeout must be positive seconds" };
+    }
+    const harness = String(options["harness"] ?? "pi");
+    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const patternOptions: RedBlueOptions = {
+      burden,
+      harness,
+      ...(model !== undefined ? { model } : {}),
+      task,
+      timeoutSec: timeout,
+    };
+    return {
+      fuse: redblueFuse,
+      rubric: burden,
+      stages: {
+        challenge: (input) => redblueWorkers(patternOptions, input, "challenge"),
+        verify: (input) => redblueWorkers(patternOptions, input, "verify"),
+      },
+      stoppingRule: "claimant files claims; opponent files objections; umpire rules; judge scores",
+      task,
+      workers: [
+        {
+          harness,
+          ...(model !== undefined ? { model } : {}),
+          prompt: claimantPrompt(task),
+          timeoutSec: timeout,
+          workerId: "w-red",
+        },
+      ],
+    };
+  },
+  command: "red-blue",
+  description:
+    "Red-Blue-Umpire pattern run: a claimant files atomic claims, an opponent " +
+    "challenges with objection claims, an umpire resolves source facts (running " +
+    "named executable checks), and a judge blind to worker identity scores the " +
+    "surviving record against the burden. Writes .fusion/runs/<runId>/. " +
+    "Exits 0 clean, 1 run failure, 2 invalid invocation.",
+  options: [
+    { description: "the standard the surviving record must meet", name: "burden", required: true },
+    { default: "pi", description: "harness for every role (hcn name)", name: "harness" },
+    { description: "model id passed to every role", name: "model" },
+    {
+      default: "300",
+      description: "per-role wall-clock budget in seconds (symmetric)",
+      name: "timeout",
+    },
+    {
+      description: "the question the claimant must answer with claims",
+      name: "task",
+      required: true,
+    },
+  ],
+  summarize(decision, report: RunReport): readonly string[] {
+    const lines = [
+      `run      ${report.runId} (${report.runDir})`,
+      `ruling   ${String(decision["decision"] ?? "(none)")}`,
+      `verdict  ${String(decision["judgeVerdict"] ?? "(none)")}`,
+      `claims   surviving ${JSON.stringify(decision["survivingClaims"])}`,
+    ];
+    for (const rejected of (decision["rejectedClaims"] ?? []) as {
+      claimId: string;
+      reason: string;
+    }[]) {
+      lines.push(`rejected ${rejected.claimId}: ${rejected.reason}`);
+    }
+    return lines;
+  },
+};

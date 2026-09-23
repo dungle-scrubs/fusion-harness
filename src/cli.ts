@@ -8,17 +8,12 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";
 import { Command } from "commander";
-import { ACH_DEFAULT_WORKERS, ACH_MIN_WORKERS, achFuse, achWorkerPrompt } from "./ach";
+import { achDefinition } from "./ach";
 import { type ClaimVerdict, validateClaim } from "./claim";
 import { executeRun } from "./engine";
-import {
-  JURY_DEFAULT_WORKERS,
-  JURY_MIN_WORKERS,
-  type JuryDecision,
-  juryFuse,
-  juryWorkerPrompt,
-} from "./jury";
-import { claimantPrompt, redblueFuse, redblueWorkers } from "./redblue";
+import { juryDefinition } from "./jury";
+import { type PatternDefinition, type PatternOptions, toRegistration } from "./pattern";
+import { redblueDefinition } from "./redblue";
 import { SKILL_TEXT } from "./skill";
 import { type AggregateMethod, aggregate, normalizeClaims, scoreForecasts } from "./tier1";
 
@@ -279,289 +274,50 @@ program
     await runJsonCommand(file, parseOutcomeArray, (outcomes) => scoreForecasts(outcomes));
   });
 
-async function runJury(options: {
-  harness: string;
-  json: boolean;
-  model?: string;
-  task: string;
-  timeout: string;
-  workers: string;
-}): Promise<void> {
-  const workers = Number(options.workers);
-  const timeout = Number(options.timeout);
-  if (options.task.trim().length === 0) {
-    stdout.write("error: --task must be non-empty\n");
-    process.exitCode = 2;
-    return;
-  }
-  if (!Number.isInteger(workers) || workers < JURY_MIN_WORKERS) {
-    stdout.write(`error: --workers must be an integer >= ${JURY_MIN_WORKERS}\n`);
-    process.exitCode = 2;
-    return;
-  }
-  if (!(timeout > 0)) {
-    stdout.write("error: --timeout must be positive seconds\n");
-    process.exitCode = 2;
-    return;
-  }
-  const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
-  const registration = {
-    pattern: "jury",
-    registeredAt: new Date().toISOString(),
-    runId,
-    stoppingRule: "every worker submits one answer claim or times out",
-    task: options.task,
-    workers: Array.from({ length: workers }, (_, index) => ({
-      harness: options.harness,
-      ...(options.model !== undefined ? { model: options.model } : {}),
-      prompt: juryWorkerPrompt(options.task),
-      timeoutSec: timeout,
-      workerId: `w${index + 1}`,
-    })),
-  };
-  const report = executeRun(registration, {
-    fuse: juryFuse,
-    repoRoot: process.cwd(),
-  });
-  const done = report.events[report.events.length - 1];
-  const cause = done?.kind === "done" ? String(done.payload["cause"] ?? "failed") : "failed";
-  const decisionPath = `${report.runDir}/decision.json`;
-  if (options.json) {
-    const decision = JSON.parse(readFileSync(decisionPath, "utf8")) as Record<string, unknown>;
-    stdout.write(`${JSON.stringify(decision)}\n`);
-  } else {
-    const decision = JSON.parse(readFileSync(decisionPath, "utf8")) as JuryDecision["decision"] & {
-      failures?: { class: string; workerId: string }[];
-    };
-    stdout.write(`run      ${runId} (${report.runDir})\n`);
-    stdout.write(`decision ${decision.decision ?? "(none)"}\n`);
-    const indep = decision.independence;
-    stdout.write(
-      `votes    ${indep.acceptedAnswers} answers, ${indep.groups} groups, duplicate rate ${indep.duplicateRate.toFixed(2)}\n`,
-    );
-    if ((decision.failures?.length ?? 0) > 0) {
-      stdout.write(`failures ${JSON.stringify(decision.failures)}\n`);
-    }
-    for (const risk of decision.residualRisks) {
-      stdout.write(`risk     ${risk.claimId} (conf ${risk.confidence}): ${risk.falsifier}\n`);
+const PATTERNS: readonly PatternDefinition[] = [juryDefinition, redblueDefinition, achDefinition];
+
+for (const definition of PATTERNS) {
+  const command = program
+    .command(definition.command)
+    .description(definition.description)
+    .option("--json", "print the decision record as one JSON line");
+  for (const spec of definition.options) {
+    const flag = `--${spec.name} <${spec.name}>`;
+    if (spec.required === true) {
+      command.requiredOption(flag, spec.description);
+    } else if (spec.default !== undefined) {
+      command.option(flag, spec.description, spec.default);
+    } else {
+      command.option(flag, spec.description);
     }
   }
-  process.exitCode = cause === "clean" ? 0 : 1;
-}
-
-program
-  .command("jury")
-  .description(
-    "Sealed Jury pattern run: N sealed workers answer the task as claims; equivalent answers " +
-      "are normalized; plurality fusion decides mechanically. Writes .fusion/runs/<runId>/. " +
-      "Exits 0 clean, 1 run failure, 2 invalid invocation.",
-  )
-  .requiredOption("--task <t>", "the question every sealed juror answers")
-  .option("--workers <n>", "number of sealed workers", String(JURY_DEFAULT_WORKERS))
-  .option("--harness <h>", "harness for every worker (hcn name)", "pi")
-  .option("--model <m>", "model id passed to every worker")
-  .option("--timeout <sec>", "per-worker wall-clock budget in seconds", "180")
-  .option("--json", "print the decision record as one JSON line")
-  .action(
-    async (options: {
-      harness: string;
-      json: boolean;
-      model?: string;
-      task: string;
-      timeout: string;
-      workers: string;
-    }) => {
-      await runJury(options);
-    },
-  );
-
-async function runRedBlue(options: {
-  burden: string;
-  harness: string;
-  json: boolean;
-  model?: string;
-  task: string;
-  timeout: string;
-}): Promise<void> {
-  const timeout = Number(options.timeout);
-  if (options.task.trim().length === 0 || options.burden.trim().length === 0) {
-    stdout.write("error: --task and --burden must be non-empty\n");
-    process.exitCode = 2;
-    return;
-  }
-  if (!(timeout > 0)) {
-    stdout.write("error: --timeout must be positive seconds\n");
-    process.exitCode = 2;
-    return;
-  }
-  const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
-  const patternOptions = {
-    burden: options.burden,
-    harness: options.harness,
-    ...(options.model !== undefined ? { model: options.model } : {}),
-    task: options.task,
-    timeoutSec: timeout,
-  };
-  const registration = {
-    pattern: "red-blue",
-    registeredAt: new Date().toISOString(),
-    runId,
-    rubric: options.burden,
-    stoppingRule: "claimant files claims; opponent files objections; umpire rules; judge scores",
-    task: options.task,
-    workers: [
-      {
-        harness: options.harness,
-        ...(options.model !== undefined ? { model: options.model } : {}),
-        prompt: claimantPrompt(options.task),
-        timeoutSec: timeout,
-        workerId: "w-red",
-      },
-    ],
-  };
-  const report = executeRun(registration, {
-    fuse: redblueFuse,
-    repoRoot: process.cwd(),
-    stages: {
-      challenge: (input) => redblueWorkers(patternOptions, input, "challenge"),
-      verify: (input) => redblueWorkers(patternOptions, input, "verify"),
-    },
-  });
-  const done = report.events[report.events.length - 1];
-  const cause = done?.kind === "done" ? String(done.payload["cause"] ?? "failed") : "failed";
-  const decision = JSON.parse(readFileSync(`${report.runDir}/decision.json`, "utf8")) as Record<
-    string,
-    unknown
-  >;
-  if (options.json) {
-    stdout.write(`${JSON.stringify(decision)}\n`);
-  } else {
-    stdout.write(`run      ${runId} (${report.runDir})\n`);
-    stdout.write(`ruling   ${String(decision["decision"] ?? "(none)")}\n`);
-    stdout.write(`verdict  ${String(decision["judgeVerdict"] ?? "(none)")}\n`);
-    stdout.write(`claims   surviving ${JSON.stringify(decision["survivingClaims"])}\n`);
-    for (const rejected of decision["rejectedClaims"] as { claimId: string; reason: string }[]) {
-      stdout.write(`rejected ${rejected.claimId}: ${rejected.reason}\n`);
+  command.action(async (options: PatternOptions) => {
+    const build = definition.build(options);
+    if ("error" in build) {
+      stdout.write(`error: ${build.error}\n`);
+      process.exitCode = 2;
+      return;
     }
-  }
-  process.exitCode = cause === "clean" ? 0 : 1;
-}
-
-program
-  .command("red-blue")
-  .description(
-    "Red-Blue-Umpire pattern run: a claimant files atomic claims, an opponent " +
-      "challenges with objection claims, an umpire resolves source facts (running " +
-      "named executable checks), and a judge blind to worker identity scores the " +
-      "surviving record against the burden. Writes .fusion/runs/<runId>/. " +
-      "Exits 0 clean, 1 run failure, 2 invalid invocation.",
-  )
-  .requiredOption("--task <t>", "the question the claimant must answer with claims")
-  .requiredOption("--burden <b>", "the standard the surviving record must meet")
-  .option("--harness <h>", "harness for every role (hcn name)", "pi")
-  .option("--model <m>", "model id passed to every role")
-  .option("--timeout <sec>", "per-role wall-clock budget in seconds (symmetric)", "300")
-  .option("--json", "print the decision record as one JSON line")
-  .action(
-    async (options: {
-      burden: string;
-      harness: string;
-      json: boolean;
-      model?: string;
-      task: string;
-      timeout: string;
-    }) => {
-      await runRedBlue(options);
-    },
-  );
-
-async function runAch(options: {
-  harness: string;
-  json: boolean;
-  model?: string;
-  task: string;
-  timeout: string;
-  workers: string;
-}): Promise<void> {
-  const workers = Number(options.workers);
-  const timeout = Number(options.timeout);
-  if (options.task.trim().length === 0) {
-    stdout.write("error: --task must be non-empty\n");
-    process.exitCode = 2;
-    return;
-  }
-  if (!Number.isInteger(workers) || workers < ACH_MIN_WORKERS) {
-    stdout.write(`error: --workers must be an integer >= ${ACH_MIN_WORKERS}\n`);
-    process.exitCode = 2;
-    return;
-  }
-  if (!(timeout > 0)) {
-    stdout.write("error: --timeout must be positive seconds\n");
-    process.exitCode = 2;
-    return;
-  }
-  const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
-  const report = executeRun(
-    {
-      pattern: "ach",
-      registeredAt: new Date().toISOString(),
+    const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
+    const registration = toRegistration(build, definition.command, {
+      now: () => new Date().toISOString(),
       runId,
-      stoppingRule: "every worker submits hypotheses and evidence or times out",
-      task: options.task,
-      workers: Array.from({ length: workers }, (_, index) => ({
-        harness: options.harness,
-        ...(options.model !== undefined ? { model: options.model } : {}),
-        prompt: achWorkerPrompt(options.task),
-        timeoutSec: timeout,
-        workerId: `w${index + 1}`,
-      })),
-    },
-    { fuse: achFuse, repoRoot: process.cwd() },
-  );
-  const done = report.events[report.events.length - 1];
-  const cause = done?.kind === "done" ? String(done.payload["cause"] ?? "failed") : "failed";
-  const decision = JSON.parse(readFileSync(`${report.runDir}/decision.json`, "utf8")) as Record<
-    string,
-    unknown
-  >;
-  if (options.json) {
-    stdout.write(`${JSON.stringify(decision)}\n`);
-  } else {
-    stdout.write(`run          ${runId} (${report.runDir})\n`);
-    stdout.write(`hypotheses   ${JSON.stringify(decision["hypotheses"])}\n`);
-    stdout.write(`least-disconfirmed ${String(decision["leastDisconfirmed"] ?? "(none)")}\n`);
-    stdout.write(`diagnostic   ${JSON.stringify(decision["diagnosticEvidence"])}\n`);
-    stdout.write(`consist-all  ${JSON.stringify(decision["consistentWithAll"])}\n`);
-  }
-  process.exitCode = cause === "clean" ? 0 : 1;
+    });
+    const report = executeRun(registration, {
+      ...(build.stages !== undefined ? { stages: build.stages } : {}),
+      fuse: build.fuse,
+      repoRoot: process.cwd(),
+    });
+    if (options["json"] === true) {
+      stdout.write(`${JSON.stringify(report.decision)}\n`);
+    } else {
+      for (const line of definition.summarize(report.decision, report)) {
+        stdout.write(`${line}\n`);
+      }
+    }
+    process.exitCode = report.cause === "clean" ? 0 : 1;
+  });
 }
-
-program
-  .command("ach")
-  .description(
-    "ACH Matrix pattern run: sealed analysts submit hypotheses and diagnostic evidence " +
-      "as linked claims; the tool builds the hypotheses-x-evidence matrix mechanically and " +
-      "reports which evidence discriminates and which is consistent with everything. " +
-      "Writes .fusion/runs/<runId>/. Exits 0 clean, 1 run failure, 2 invalid invocation.",
-  )
-  .requiredOption("--task <t>", "the question the analysts hypothesize about")
-  .option("--workers <n>", "number of sealed analysts", String(ACH_DEFAULT_WORKERS))
-  .option("--harness <h>", "harness for every worker (hcn name)", "pi")
-  .option("--model <m>", "model id passed to every worker")
-  .option("--timeout <sec>", "per-worker wall-clock budget in seconds", "300")
-  .option("--json", "print the decision record as one JSON line")
-  .action(
-    async (options: {
-      harness: string;
-      json: boolean;
-      model?: string;
-      task: string;
-      timeout: string;
-      workers: string;
-    }) => {
-      await runAch(options);
-    },
-  );
 
 program
   .command("skill")
