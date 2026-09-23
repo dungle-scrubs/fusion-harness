@@ -41,6 +41,16 @@ Tier 2 (pattern runs - the tool owns the run; coming in later tickets):
   fusion jury | red-blue | ach   Sealed parallel generation, adversarial
     challenge, and blind adjudication. Callers invoke a pattern with
     parameters; pattern definitions are tool-side config.
+  What a pattern run guarantees: the registration (run.json) is frozen
+    before generation; workers are separate hcn processes with no shared
+    transcript; every worker output is schema-validated at the boundary;
+    provenance (run/worker/harness/model/session) is stamped by the tool:
+    the session id comes from the hcn identity event, harness and model
+    from the tool's launch record. Workers cannot set any provenance
+    field; a failed worker does not fail the run while survivors remain
+    and is named in the decision record; every run
+    writes .fusion/runs/<runId>/ (run.json, events.ndjson, decision.json)
+    replayable from the event stream.
 
 Claim schema (one flat schema for all patterns):
   Required: claim_id (C-number, e.g. C1), kind
