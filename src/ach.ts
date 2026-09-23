@@ -1,4 +1,5 @@
-import type { AcceptedClaim, FusedOutput } from "./engine";
+import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
+import type { PatternDefinition, PatternOptions } from "./pattern";
 
 export const ACH_MIN_WORKERS = 2;
 export const ACH_DEFAULT_WORKERS = 3;
@@ -188,3 +189,60 @@ export function achFuse(accepted: readonly AcceptedClaim[]): AchDecision {
     },
   };
 }
+
+export const achDefinition: PatternDefinition = {
+  build(options: PatternOptions) {
+    const task = String(options["task"] ?? "");
+    if (task.trim().length === 0) {
+      return { error: "--task must be non-empty" };
+    }
+    const workers = Number(options["workers"] ?? "");
+    if (!Number.isInteger(workers) || workers < ACH_MIN_WORKERS) {
+      return { error: `--workers must be an integer >= ${ACH_MIN_WORKERS}` };
+    }
+    const timeout = Number(options["timeout"] ?? "");
+    if (!(timeout > 0)) {
+      return { error: "--timeout must be positive seconds" };
+    }
+    const harness = String(options["harness"] ?? "pi");
+    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    return {
+      fuse: achFuse,
+      stoppingRule: "every worker submits hypotheses and evidence or times out",
+      task,
+      workers: Array.from({ length: workers }, (_, index) => ({
+        harness,
+        ...(model !== undefined ? { model } : {}),
+        prompt: achWorkerPrompt(task),
+        timeoutSec: timeout,
+        workerId: `w${index + 1}`,
+      })),
+    };
+  },
+  command: "ach",
+  description:
+    "ACH Matrix pattern run: sealed analysts submit hypotheses and diagnostic evidence " +
+    "as linked claims; the tool builds the hypotheses-x-evidence matrix mechanically and " +
+    "reports which evidence discriminates and which is consistent with everything. " +
+    "Writes .fusion/runs/<runId>/. Exits 0 clean, 1 run failure, 2 invalid invocation.",
+  options: [
+    {
+      default: String(ACH_DEFAULT_WORKERS),
+      description: "number of sealed analysts",
+      name: "workers",
+    },
+    { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
+    { description: "model id passed to every worker", name: "model" },
+    { default: "300", description: "per-worker wall-clock budget in seconds", name: "timeout" },
+    { description: "the question the analysts hypothesize about", name: "task", required: true },
+  ],
+  summarize(decision, report: RunReport): readonly string[] {
+    return [
+      `run          ${report.runId} (${report.runDir})`,
+      `hypotheses   ${JSON.stringify(decision["hypotheses"])}`,
+      `least-disconfirmed ${String(decision["leastDisconfirmed"] ?? "(none)")}`,
+      `diagnostic   ${JSON.stringify(decision["diagnosticEvidence"])}`,
+      `consist-all  ${JSON.stringify(decision["consistentWithAll"])}`,
+    ];
+  },
+};

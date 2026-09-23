@@ -203,6 +203,8 @@ export interface EngineOptions {
 }
 
 export interface RunReport {
+  readonly cause: "clean" | "failed";
+  readonly decision: Record<string, unknown>;
   readonly events: readonly FusionEvent[];
   readonly runDir: string;
   readonly runId: string;
@@ -374,15 +376,22 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
   enter("GENERATING");
   runWorkers(reg.workers, "generate");
 
-  const finalize = (cause: "clean" | "failed", decision: Record<string, unknown>): void => {
-    writeFileSync(join(runDir, "decision.json"), `${JSON.stringify(decision, null, 2)}\n`);
-    emit(makeEvent(reg.runId, "decision", decision, now()));
-    if (cause === "failed") {
+  let cause: "clean" | "failed" = "failed";
+  let decision: Record<string, unknown> = {};
+  const finalize = (
+    finalCause: "clean" | "failed",
+    finalDecision: Record<string, unknown>,
+  ): void => {
+    cause = finalCause;
+    decision = finalDecision;
+    writeFileSync(join(runDir, "decision.json"), `${JSON.stringify(finalDecision, null, 2)}\n`);
+    emit(makeEvent(reg.runId, "decision", finalDecision, now()));
+    if (finalCause === "failed") {
       enter("FAILED");
     } else {
       enter("DONE");
     }
-    emit(makeEvent(reg.runId, "done", { cause, failures, survivors }, now()));
+    emit(makeEvent(reg.runId, "done", { cause: finalCause, failures, survivors }, now()));
   };
 
   if (survivors === 0) {
@@ -397,7 +406,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
       runId: reg.runId,
       survivors,
     });
-    return { events, runDir, runId: reg.runId };
+    return { cause, decision, events, runDir, runId: reg.runId };
   }
 
   const fuse: FuseFn =
@@ -427,5 +436,5 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
     failures,
     survivors,
   });
-  return { events, runDir, runId: reg.runId };
+  return { cause, decision, events, runDir, runId: reg.runId };
 }
