@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { stdin, stdout } from "node:process";
 import { Command } from "commander";
+import { ACH_DEFAULT_WORKERS, ACH_MIN_WORKERS, achFuse, achWorkerPrompt } from "./ach";
 import { type ClaimVerdict, validateClaim } from "./claim";
 import { executeRun } from "./engine";
 import {
@@ -471,6 +472,94 @@ program
       timeout: string;
     }) => {
       await runRedBlue(options);
+    },
+  );
+
+async function runAch(options: {
+  harness: string;
+  json: boolean;
+  model?: string;
+  task: string;
+  timeout: string;
+  workers: string;
+}): Promise<void> {
+  const workers = Number(options.workers);
+  const timeout = Number(options.timeout);
+  if (options.task.trim().length === 0) {
+    stdout.write("error: --task must be non-empty\n");
+    process.exitCode = 2;
+    return;
+  }
+  if (!Number.isInteger(workers) || workers < ACH_MIN_WORKERS) {
+    stdout.write(`error: --workers must be an integer >= ${ACH_MIN_WORKERS}\n`);
+    process.exitCode = 2;
+    return;
+  }
+  if (!(timeout > 0)) {
+    stdout.write("error: --timeout must be positive seconds\n");
+    process.exitCode = 2;
+    return;
+  }
+  const runId = `r${randomUUID().replace(/-/g, "").slice(0, 8)}`;
+  const report = executeRun(
+    {
+      pattern: "ach",
+      registeredAt: new Date().toISOString(),
+      runId,
+      stoppingRule: "every worker submits hypotheses and evidence or times out",
+      task: options.task,
+      workers: Array.from({ length: workers }, (_, index) => ({
+        harness: options.harness,
+        ...(options.model !== undefined ? { model: options.model } : {}),
+        prompt: achWorkerPrompt(options.task),
+        timeoutSec: timeout,
+        workerId: `w${index + 1}`,
+      })),
+    },
+    { fuse: achFuse, repoRoot: process.cwd() },
+  );
+  const done = report.events[report.events.length - 1];
+  const cause = done?.kind === "done" ? String(done.payload["cause"] ?? "failed") : "failed";
+  const decision = JSON.parse(readFileSync(`${report.runDir}/decision.json`, "utf8")) as Record<
+    string,
+    unknown
+  >;
+  if (options.json) {
+    stdout.write(`${JSON.stringify(decision)}\n`);
+  } else {
+    stdout.write(`run          ${runId} (${report.runDir})\n`);
+    stdout.write(`hypotheses   ${JSON.stringify(decision["hypotheses"])}\n`);
+    stdout.write(`least-disconfirmed ${String(decision["leastDisconfirmed"] ?? "(none)")}\n`);
+    stdout.write(`diagnostic   ${JSON.stringify(decision["diagnosticEvidence"])}\n`);
+    stdout.write(`consist-all  ${JSON.stringify(decision["consistentWithAll"])}\n`);
+  }
+  process.exitCode = cause === "clean" ? 0 : 1;
+}
+
+program
+  .command("ach")
+  .description(
+    "ACH Matrix pattern run: sealed analysts submit hypotheses and diagnostic evidence " +
+      "as linked claims; the tool builds the hypotheses-x-evidence matrix mechanically and " +
+      "reports which evidence discriminates and which is consistent with everything. " +
+      "Writes .fusion/runs/<runId>/. Exits 0 clean, 1 run failure, 2 invalid invocation.",
+  )
+  .requiredOption("--task <t>", "the question the analysts hypothesize about")
+  .option("--workers <n>", "number of sealed analysts", String(ACH_DEFAULT_WORKERS))
+  .option("--harness <h>", "harness for every worker (hcn name)", "pi")
+  .option("--model <m>", "model id passed to every worker")
+  .option("--timeout <sec>", "per-worker wall-clock budget in seconds", "300")
+  .option("--json", "print the decision record as one JSON line")
+  .action(
+    async (options: {
+      harness: string;
+      json: boolean;
+      model?: string;
+      task: string;
+      timeout: string;
+      workers: string;
+    }) => {
+      await runAch(options);
     },
   );
 

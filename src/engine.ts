@@ -245,6 +245,34 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
   const accepted: AcceptedClaim[] = [];
   let survivors = 0;
 
+  const localIdsOf = (raws: readonly unknown[]): Set<string> =>
+    new Set(
+      raws
+        .filter((r): r is Record<string, unknown> => typeof r === "object" && r !== null)
+        .map((r) => (typeof r["claim_id"] === "string" ? r["claim_id"] : null))
+        .filter((id): id is string => id !== null),
+    );
+
+  const remapOne = (
+    raw: unknown,
+    workerId: string,
+    localIds: ReadonlySet<string>,
+  ): Record<string, unknown> => {
+    const claim = { ...(raw as Record<string, unknown>) };
+    const localId = typeof claim["claim_id"] === "string" ? claim["claim_id"] : null;
+    if (localId !== null && !localId.includes(":")) {
+      claim["claim_id"] = `${workerId}:${localId}`;
+    }
+    if (Array.isArray(claim["dependencies"])) {
+      claim["dependencies"] = claim["dependencies"].map((dep: unknown) =>
+        typeof dep === "string" && !dep.includes(":") && localIds.has(dep)
+          ? `${workerId}:${dep}`
+          : dep,
+      );
+    }
+    return claim;
+  };
+
   const runWorkers = (workers: readonly WorkerConfig[], claimStage: WorkerStage): void => {
     for (const worker of workers) {
       const result = spawn({
@@ -285,6 +313,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
         continue;
       }
       survivors += 1;
+      const localIds = localIdsOf(result.rawClaims);
       for (const raw of result.rawClaims) {
         const verdict = validateClaim(raw);
         if (!verdict.valid) {
@@ -303,6 +332,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
           );
           continue;
         }
+        const stampedLocal = remapOne(raw, worker.workerId, localIds);
         const provenance: StampedProvenance = stampProvenance({
           harness: result.identity.harness,
           model: result.identity.requestedModel,
@@ -311,7 +341,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
           stampedAt: now(),
           workerId: worker.workerId,
         });
-        const stamped = { ...(raw as Record<string, unknown>), provenance };
+        const stamped = { ...stampedLocal, provenance };
         emit(
           makeEvent(
             reg.runId,
