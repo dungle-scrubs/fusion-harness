@@ -2,7 +2,7 @@
 number: 01
 title: "fusion: a composable fusion layer over agent harnesses"
 type: feature
-status: Draft
+status: Accepted
 author: "kevin"
 date: 2026-09-23
 ---
@@ -88,7 +88,7 @@ The schema (prototype-confirmed, ticket #5; schema.json sha256 prefix `a3615329f
 
 NDJSON, hcn-compatible where meanings match. Every event carries the run id. Every stream carries `schemaVersion` from day one.
 
-- Reused from hcn, same shapes: `identity`, `message`, `error`, `failure`, `done`. The exit contract carries over: 0 clean, 1 failure, 2 refusal (fusion's own usage errors).
+- Reused from hcn, same shapes: `identity`, `message`, `question`, `error`, `failure`, `done` - the exit contract carries over: 0 clean, 1 failure, 2 refusal (fusion's own usage errors). A `question` event carries the run id; it is how a sealed worker escalates a genuine decision block to the caller. The tool holds the sealed state; the caller answers through a fusion resume path, and the worker's turn continues with that answer.
 - Fusion-specific: `worker` (sealed agent spawned, with hcn identity provenance), `claim` (schema-validated claim entered the run), `stage` (pattern stage transition: generate, normalize, challenge, verify, decide), `fusion` (mechanical result - aggregate/score output; deterministic by construction), `decision` (decision record + minority report + rejected options).
 
 ### Run state on disk
@@ -119,6 +119,10 @@ VERIFYING  -> DECIDING   (on: checks resolved or none named)
 NORMALIZING -> DECIDING  (jury, ach: no challenge stage)
 DECIDING   -> DONE       (on: decision.json written, done event emitted)
 any        -> FAILED     (on: failure event; run directory retains partial events)
+GENERATING -> AWAITING-INPUT (on: question event from any worker; other workers continue)
+CHALLENGING -> AWAITING-INPUT (on: question event)
+AWAITING-INPUT -> prior stage (on: caller answers via resume)
+AWAITING-INPUT -> FAILED     (on: caller aborts or question timeout)
 ```
 
 Invalid transitions MUST be rejected: stages run in the listed order, once each. A FAILED run MUST retain its partial `events.ndjson` and a `failure` record in `run.json`.
@@ -166,11 +170,11 @@ Go/no-go after phase 4: the baseline pattern must show the pool has usable diver
 
 ## Open Questions
 
-The decision map (issue #1) closed all eight tickets; this RFC renders those decisions. The independent trail review (2026-09-23) surfaced items below that need the human's confirm or reject before this RFC moves Draft -> Accepted. Each is in force as written until then; each is reversible.
+None open. The independent trail review (2026-09-23) raised three groups; the human resolved all of them the same day:
 
-1. **Justfile rule (assumption A1, machine-made).** "A justfile MAY parameterize a pattern invocation; a justfile MUST NOT reimplement a pattern's stages." Assumed while answering a side question during the run; never confirmed. Confirm or relax.
-2. **Question escalation in the stream (review F10).** hcn gives sealed workers a typed `question` event and an `awaiting-input` resume path. The fusion event contract reuses identity/message/error/failure/done but has no `question` home, and the state machine has no awaiting-input state. Proposed: carry `question` through with the run id, and add AWAITING-INPUT to the state machine with a caller-decided resume. Decide explicitly either way.
-3. **Normative additions without a map decision (review F11).** Confirm or amend each: (a) state machine rejects out-of-order stage transitions, once each; FAILED runs retain partial events; (b) error taxonomy E001-E004 incl. "decision record MUST name failed workers" and one reroute on provider-unavailable; (c) unknown claim fields are rejected, not ignored; (d) pattern runs MUST accept a worker config routing to pi's lmstudio providers for secret material, and the skill text MUST carry that warning.
+1. **Justfile rule (assumption A1)** - confirmed as written: a justfile MAY parameterize a pattern invocation; a justfile MUST NOT reimplement a pattern's stages.
+2. **Question escalation** - confirmed: carry hcn's `question` event through the fusion stream with the run id; AWAITING-INPUT added to the state machine; the caller answers through a fusion resume path while the tool holds the sealed state.
+3. **Normative additions** - confirmed as written: state-machine strictness (out-of-order transitions rejected, stages once each, FAILED retains partial events); E001-E004 taxonomy incl. naming failed workers in the decision record and one reroute on provider-unavailable; unknown claim fields rejected, not ignored; pattern runs MUST accept an lmstudio worker config for secret material and the skill text MUST carry the privacy warning.
 
 npm publication remains a future product decision, outside this RFC's scope.
 
