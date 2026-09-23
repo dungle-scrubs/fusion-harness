@@ -1,0 +1,3 @@
+{"claim_id":"C9","kind":"answer","claim":"missing falsifier should fail","status":"documented","confidence":0.9}
+{"claim_id":"C10","kind":"answer","claim":"confidence out of range should fail","status":"documented","confidence":1.5,"falsifier":"x"}
+{"claim_id":"C11","kind":"answer","claim":"agent trying to stamp its own provenance should fail","status":"documented","confidence":0.9,"falsifier":"x","provenance":{"runId":"r1","workerId":"w1","harness":"pi","model":"gpt-5.2","sessionId":"fake","stampedAt":"2026-09-23T00:00:00Z"}}
