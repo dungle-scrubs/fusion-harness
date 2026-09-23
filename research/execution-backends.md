@@ -45,3 +45,10 @@ Ticket: dungle-scrubs/fusion-harness#3 (wayfinder research). Question: what can 
 
 - Token/cost metering normalized across harnesses: not documented in the hcn skill read for this pass. If v0 needs budgets per sealed worker, this needs a spike against `hcn run --json` token events.
 - Whether hcn's `--isolation tool-free` mode (fresh Claude turns only) matters for fusion patterns: **documented** as existing but Claude-only; probably irrelevant when seals come from process separation.
+
+## Addendum 2026-09-23: token-metering spike (open question from this ticket)
+
+- Live run observed: `hcn run pi --json "Reply with exactly one word: ok"` from /tmp, exit 0, cause `clean`. Event kinds present: `identity` (x2, announce + attestation), `message`, `token`, `done`. **Observed** - capture at `.scratch-spike-pi-run.ndjson` on this branch.
+- **No per-run token-usage or cost event exists in hcn's normalized stream.** `token` events are text deltas; `done` carries exitCode/cause only; `compaction.tokens` covers compaction only. **Documented** (references/reference.md event schema) and **observed** (the live run).
+- Implication for the fusion CLI: per-worker token budgets cannot be enforced from the stream today. v0 budget story should use hcn's opt-in `--timeout` and maxSteps equivalents; normalized token metering would be an hcn feature request (upstream: dungle-scrubs/harness-cli-normalizer). Feeds tickets #4 (v0 subset) and #7 (streaming).
+- Bonus finding: the `identity` event carries per-run provenance - `sessionId`, harness, **model** (e.g. `zai/glm-5.2`), version, date, plus `capabilities` (escalation support, compaction reporting). This is the provenance stamp source for the claim schema (ticket #5) - the fusion CLI gets model/config provenance without inventing it. **Observed** in the same capture.
