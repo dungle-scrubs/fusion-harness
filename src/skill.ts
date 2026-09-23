@@ -37,10 +37,20 @@ Composition recipes:
   normalize | aggregate  Canonicalize sealed answers, then take the
     mechanical vote/median. No model in the loop.
 
-Tier 2 (pattern runs - the tool owns the run; coming in later tickets):
-  fusion jury | red-blue | ach   Sealed parallel generation, adversarial
-    challenge, and blind adjudication. Callers invoke a pattern with
-    parameters; pattern definitions are tool-side config.
+Tier 2 (pattern runs - the tool owns the run):
+  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>]
+    Sealed parallel generation: every worker answers the task as one
+    claim (kind=answer), unseen by the others; equivalent answers are
+    normalized; plurality fusion decides mechanically. The decision
+    record carries the winning answer, minority report, rejected
+    options, residual risks, and an independence signal (answers,
+    groups, duplicate rate) - read it before trusting consensus.
+    Workers are separate processes with no shared transcript. A worker
+    that asks a genuine blocking question emits a question event with
+    the run id; other workers continue.
+  fusion red-blue | ach   Adversarial challenge and the ACH matrix
+    (later releases). Callers invoke a pattern with parameters;
+    pattern definitions are tool-side config.
   What a pattern run guarantees: the registration (run.json) is frozen
     before generation; workers are separate hcn processes with no shared
     transcript; every worker output is schema-validated at the boundary;

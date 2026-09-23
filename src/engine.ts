@@ -152,10 +152,24 @@ function tryParse(text: string): unknown {
   }
 }
 
+export interface FusedOutput {
+  readonly fusion: Record<string, unknown>;
+  readonly decision: Record<string, unknown>;
+}
+
+export interface AcceptedClaim {
+  readonly claim: Record<string, unknown>;
+  readonly workerId: string;
+}
+
+export type FuseFn = (accepted: readonly AcceptedClaim[]) => FusedOutput;
+
 export interface EngineOptions {
   readonly repoRoot: string;
   readonly spawn?: SpawnFn;
   readonly now?: () => string;
+  /** Pattern stage: mechanical fusion of accepted claims (tier 1 only). */
+  readonly fuse?: FuseFn;
 }
 
 export interface RunReport {
@@ -198,6 +212,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
   enter("SPAWNING");
 
   const failures: { class: string; workerId: string }[] = [];
+  const accepted: AcceptedClaim[] = [];
   let survivors = 0;
   enter("GENERATING");
   for (const worker of reg.workers) {
@@ -267,6 +282,10 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
           now(),
         ),
       );
+      accepted.push({
+        claim: { ...(raw as Record<string, unknown>), provenance },
+        workerId: worker.workerId,
+      });
     }
     if (result.question !== null) {
       emit(
@@ -301,13 +320,23 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
     return { events, runDir, runId: reg.runId };
   }
 
+  const fuse: FuseFn =
+    options.fuse ??
+    (() => ({
+      decision: {
+        note: "decision stub: pattern stages (jury/red-blue/ach) fuse accepted claims in tickets #13-15",
+      },
+      fusion: {},
+    }));
+
   enter("NORMALIZING");
+  const fused = fuse(accepted);
+  emit(makeEvent(reg.runId, "fusion", fused.fusion, now()));
   enter("DECIDING");
   finalize("clean", {
+    ...fused.decision,
     cause: "clean",
     failures,
-    note: "decision stub: pattern stages (jury/red-blue/ach) fuse accepted claims in tickets #13-15",
-    runId: reg.runId,
     survivors,
   });
   return { events, runDir, runId: reg.runId };
