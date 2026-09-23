@@ -20,6 +20,7 @@ function answer(
       status: "documented",
       ...extra,
     },
+    stage: "generate",
     workerId,
   };
 }
@@ -82,6 +83,7 @@ describe("juryFuse", () => {
           kind: "objection",
           status: "documented",
         },
+        stage: "generate",
         workerId: "w2",
       },
     ]);

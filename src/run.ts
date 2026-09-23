@@ -5,7 +5,7 @@
 
 export const SCHEMA_VERSION = "fusion/v0";
 export const RUN_ID_PATTERN = /^r[0-9a-f]{8}$/;
-export const WORKER_ID_PATTERN = /^w[0-9]+$/;
+export const WORKER_ID_PATTERN = /^w[a-z0-9-]+$/;
 
 export const RUN_STAGES = [
   "REGISTERED",
@@ -157,7 +157,7 @@ export function checkRegistration(reg: RunRegistration): void {
   const seen = new Set<string>();
   for (const worker of reg.workers) {
     if (!WORKER_ID_PATTERN.test(worker.workerId)) {
-      throw new Error(`workerId must match w[0-9]+, got "${worker.workerId}"`);
+      throw new Error(`workerId must match w[a-z0-9-]+, got "${worker.workerId}"`);
     }
     if (seen.has(worker.workerId)) {
       throw new Error(`duplicate workerId "${worker.workerId}"`);

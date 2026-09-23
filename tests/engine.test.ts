@@ -117,6 +117,16 @@ describe("extractJsonObjects", () => {
   it("returns nothing for prose without objects", () => {
     expect(extractJsonObjects("just some words, no claims")).toEqual([]);
   });
+
+  it("extracts one object per line from multi-claim replies", () => {
+    const found = extractJsonObjects(
+      'here you go:\n{"claim_id": "C1", "kind": "answer"}\n{"claim_id": "C2", "kind": "evidence"}\n',
+    );
+    expect(found).toEqual([
+      { claim_id: "C1", kind: "answer" },
+      { claim_id: "C2", kind: "evidence" },
+    ]);
+  });
 });
 
 describe("executeRun with a fake spawner", () => {

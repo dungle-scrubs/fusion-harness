@@ -23,6 +23,7 @@ import {
   type RunStage,
   type StampedProvenance,
   stampProvenance,
+  type WorkerConfig,
 } from "./run";
 
 export interface HcnIdentity {
@@ -125,17 +126,31 @@ export function spawnHcnWorker(config: {
  */
 export function extractJsonObjects(text: string): unknown[] {
   const found: unknown[] = [];
+  const seen = new Set<string>();
+  const add = (parsed: unknown): void => {
+    const key = JSON.stringify(parsed);
+    if (!seen.has(key)) {
+      seen.add(key);
+      found.push(parsed);
+    }
+  };
   const fenced = text.matchAll(/```(?:json)?\s*([\s\S]*?)```/g);
   for (const match of fenced) {
     const parsed = tryParse(match[1] ?? "");
     if (parsed !== undefined) {
-      found.push(parsed);
+      add(parsed);
     }
   }
-  const remainder = text.replace(/```(?:json)?\s*[\s\S]*?```/g, " ");
+  const remainder = text.replace(/```(?:json)?\s*[\s\S]*?```/g, "\n");
+  for (const line of remainder.split("\n")) {
+    const parsed = tryParse(line.trim());
+    if (parsed !== undefined) {
+      add(parsed);
+    }
+  }
   const direct = tryParse(remainder.trim());
   if (direct !== undefined) {
-    found.push(direct);
+    add(direct);
   }
   return found;
 }
@@ -159,10 +174,23 @@ export interface FusedOutput {
 
 export interface AcceptedClaim {
   readonly claim: Record<string, unknown>;
+  readonly stage: WorkerStage;
   readonly workerId: string;
 }
 
+export type WorkerStage = "challenge" | "generate" | "verify";
+
 export type FuseFn = (accepted: readonly AcceptedClaim[]) => FusedOutput;
+
+/** Later-stage workers see prior claims without provenance (blind). */
+export interface StageInput {
+  readonly anonymizedClaims: readonly Record<string, unknown>[];
+}
+
+export interface StageBuilders {
+  readonly challenge?: (input: StageInput) => readonly WorkerConfig[];
+  readonly verify?: (input: StageInput) => readonly WorkerConfig[];
+}
 
 export interface EngineOptions {
   readonly repoRoot: string;
@@ -170,6 +198,8 @@ export interface EngineOptions {
   readonly now?: () => string;
   /** Pattern stage: mechanical fusion of accepted claims (tier 1 only). */
   readonly fuse?: FuseFn;
+  /** Sequential role stages after generation; prompts build from anonymized claims. */
+  readonly stages?: StageBuilders;
 }
 
 export interface RunReport {
@@ -214,85 +244,105 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
   const failures: { class: string; workerId: string }[] = [];
   const accepted: AcceptedClaim[] = [];
   let survivors = 0;
-  enter("GENERATING");
-  for (const worker of reg.workers) {
-    const result = spawn({
-      harness: worker.harness,
-      model: worker.model,
-      prompt: worker.prompt,
-      timeoutSec: worker.timeoutSec,
-    });
-    emit(
-      makeEvent(
-        reg.runId,
-        "worker",
-        {
-          exitCode: result.exitCode,
-          harness: worker.harness,
-          model: worker.model ?? "harness-default",
-          sessionId: result.identity?.sessionId ?? null,
-          workerId: worker.workerId,
-        },
-        now(),
-      ),
-    );
-    if (result.exitCode !== 0 || result.identity === null) {
+
+  const runWorkers = (workers: readonly WorkerConfig[], claimStage: WorkerStage): void => {
+    for (const worker of workers) {
+      const result = spawn({
+        harness: worker.harness,
+        model: worker.model,
+        prompt: worker.prompt,
+        timeoutSec: worker.timeoutSec,
+      });
       emit(
         makeEvent(
           reg.runId,
-          "failure",
+          "worker",
           {
-            class: result.failureClass ?? "spawn-failed",
             exitCode: result.exitCode,
+            harness: worker.harness,
+            model: worker.model ?? "harness-default",
+            sessionId: result.identity?.sessionId ?? null,
+            stage: claimStage,
             workerId: worker.workerId,
           },
           now(),
         ),
       );
-      failures.push({ class: result.failureClass ?? "spawn-failed", workerId: worker.workerId });
-      continue;
-    }
-    survivors += 1;
-    for (const raw of result.rawClaims) {
-      const verdict = validateClaim(raw);
-      if (!verdict.valid) {
+      if (result.exitCode !== 0 || result.identity === null) {
+        emit(
+          makeEvent(
+            reg.runId,
+            "failure",
+            {
+              class: result.failureClass ?? "spawn-failed",
+              exitCode: result.exitCode,
+              workerId: worker.workerId,
+            },
+            now(),
+          ),
+        );
+        failures.push({ class: result.failureClass ?? "spawn-failed", workerId: worker.workerId });
+        continue;
+      }
+      survivors += 1;
+      for (const raw of result.rawClaims) {
+        const verdict = validateClaim(raw);
+        if (!verdict.valid) {
+          emit(
+            makeEvent(
+              reg.runId,
+              "claim",
+              {
+                errors: verdict.errors,
+                rejected: true,
+                stage: claimStage,
+                workerId: worker.workerId,
+              },
+              now(),
+            ),
+          );
+          continue;
+        }
+        const provenance: StampedProvenance = stampProvenance({
+          harness: result.identity.harness,
+          model: result.identity.requestedModel,
+          runId: reg.runId,
+          sessionId: result.identity.sessionId,
+          stampedAt: now(),
+          workerId: worker.workerId,
+        });
+        const stamped = { ...(raw as Record<string, unknown>), provenance };
         emit(
           makeEvent(
             reg.runId,
             "claim",
-            { errors: verdict.errors, rejected: true, workerId: worker.workerId },
+            { claim: stamped, stage: claimStage, workerId: worker.workerId },
             now(),
           ),
         );
-        continue;
+        accepted.push({ claim: stamped, stage: claimStage, workerId: worker.workerId });
       }
-      const provenance: StampedProvenance = stampProvenance({
-        harness: result.identity.harness,
-        model: result.identity.requestedModel,
-        runId: reg.runId,
-        sessionId: result.identity.sessionId,
-        stampedAt: now(),
-        workerId: worker.workerId,
-      });
-      emit(
-        makeEvent(
-          reg.runId,
-          "claim",
-          { claim: { ...(raw as Record<string, unknown>), provenance }, workerId: worker.workerId },
-          now(),
-        ),
-      );
-      accepted.push({
-        claim: { ...(raw as Record<string, unknown>), provenance },
-        workerId: worker.workerId,
-      });
+      if (result.question !== null) {
+        emit(
+          makeEvent(
+            reg.runId,
+            "question",
+            { ...result.question, workerId: worker.workerId },
+            now(),
+          ),
+        );
+      }
     }
-    if (result.question !== null) {
-      emit(
-        makeEvent(reg.runId, "question", { ...result.question, workerId: worker.workerId }, now()),
-      );
-    }
-  }
+  };
+
+  const anonymized = (): readonly Record<string, unknown>[] =>
+    accepted.map((entry) => {
+      const { provenance: _provenance, ...rest } = entry.claim;
+      return rest;
+    });
+
+  enter("GENERATING");
+  runWorkers(reg.workers, "generate");
 
   const finalize = (cause: "clean" | "failed", decision: Record<string, unknown>): void => {
     writeFileSync(join(runDir, "decision.json"), `${JSON.stringify(decision, null, 2)}\n`);
@@ -330,6 +380,14 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
     }));
 
   enter("NORMALIZING");
+  if (options.stages?.challenge !== undefined) {
+    enter("CHALLENGING");
+    runWorkers(options.stages.challenge({ anonymizedClaims: anonymized() }), "challenge");
+  }
+  if (options.stages?.verify !== undefined) {
+    enter("VERIFYING");
+    runWorkers(options.stages.verify({ anonymizedClaims: anonymized() }), "verify");
+  }
   const fused = fuse(accepted);
   emit(makeEvent(reg.runId, "fusion", fused.fusion, now()));
   enter("DECIDING");
