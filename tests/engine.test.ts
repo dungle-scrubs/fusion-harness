@@ -273,6 +273,39 @@ describe("executeRun with a fake spawner", () => {
     expect(question?.payload).toMatchObject({ question: "which?", workerId: "w1" });
   });
 
+  it("remaps agent-local ids to run-scoped ids at the boundary", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
+    const report = executeRun(
+      {
+        pattern: "echo",
+        registeredAt: "2026-09-24T00:00:00.000Z",
+        runId: "r2a3b4c5d",
+        stoppingRule: "x",
+        task: "remap check",
+        workers: [
+          { harness: "pi", prompt: "p1", timeoutSec: 5, workerId: "w1" },
+          { harness: "pi", prompt: "p2", timeoutSec: 5, workerId: "w2" },
+        ],
+      },
+      {
+        now: () => "2026-09-24T00:00:00.000Z",
+        repoRoot: root,
+        spawn: () =>
+          workerResult({
+            rawClaims: [{ ...validClaim("C1"), dependencies: ["C1"] }, validClaim("C2")],
+          }),
+      },
+    );
+    const claimEvents = report.events.filter((e) => e.kind === "claim");
+    expect(claimEvents).toHaveLength(4);
+    const ids = claimEvents.map((e) => (e.payload["claim"] as Record<string, unknown>)["claim_id"]);
+    expect(ids).toEqual(["w1:C1", "w1:C2", "w2:C1", "w2:C2"]);
+    const first = claimEvents[0]?.payload["claim"] as Record<string, unknown>;
+    expect(first["dependencies"]).toEqual(["w1:C1"]);
+    const third = claimEvents[2]?.payload["claim"] as Record<string, unknown>;
+    expect(third["dependencies"]).toEqual(["w2:C1"]);
+  });
+
   it("rejects bad registrations before spawning", () => {
     const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
     let spawned = 0;

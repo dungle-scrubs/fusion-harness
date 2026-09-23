@@ -58,8 +58,16 @@ Tier 2 (pattern runs - the tool owns the run):
     burden. Budgets are symmetric across roles. The decision names each
     surviving claim, each rejected claim with its ruling, and unresolved
     objections as residual risks.
-  fusion ach   ACH matrix (later release). Callers invoke a pattern with
-    parameters; pattern definitions are tool-side config.
+  fusion ach --task <t> [--workers N] [--harness] [--timeout]
+    Analysis of Competing Hypotheses: sealed analysts submit hypotheses
+    and evidence as linked claims (evidence links hypotheses via
+    dependencies + novelty: confirms = consistent, contradicts =
+    inconsistent; hypotheses cite their evidence back). The tool builds
+    the hypotheses-x-evidence matrix mechanically, marks evidence that
+    discriminates between hypotheses vs evidence consistent with all of
+    them, and reports the least-disconfirmed hypothesis with its
+    falsifier as the sensitivity check. Hypotheses without evidence
+    links are rejected at the pattern stage.
   What a pattern run guarantees: the registration (run.json) is frozen
     before generation; workers are separate hcn processes with no shared
     transcript; every worker output is schema-validated at the boundary;
