@@ -19,6 +19,23 @@ Tier 1 (model-free, deterministic, pipe freely - JSON in, JSON out):
     against the claim schema. Per-claim accept/reject verdicts with the
     validator's errors. Exit 0 when every claim is valid, 1 otherwise.
     --json: emit machine-readable verdict objects, one per line.
+  fusion normalize [file]  Group claims by exact match on canonicalized
+    text (Unicode NFC, whitespace, casing, number formats). Reads a JSON
+    array of {claim_id, claim} from FILE or stdin; prints groups with
+    member claim_ids. Near-misses stay separate: no semantic dedup here.
+  fusion aggregate [file]  Fuse sealed votes mechanically - plurality,
+    median, or confidence-weighted mean. Reads {method, votes:
+    [{value, confidence}]} from FILE or stdin. Bit-for-bit reproducible.
+  fusion score [file]  Proper scoring rules (Brier, log) over resolved
+    outcomes. Reads [{confidence, outcome}] from FILE or stdin. Lower
+    is better for both. Score seed questions with known answers to
+    calibrate before trusting confidences.
+
+Composition recipes:
+  validate | normalize  Check claims, then group equivalent answers to
+    see the duplicate rate before voting.
+  normalize | aggregate  Canonicalize sealed answers, then take the
+    mechanical vote/median. No model in the loop.
 
 Tier 2 (pattern runs - the tool owns the run; coming in later tickets):
   fusion jury | red-blue | ach   Sealed parallel generation, adversarial

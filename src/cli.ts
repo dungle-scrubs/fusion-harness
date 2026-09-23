@@ -9,6 +9,7 @@ import { stdin, stdout } from "node:process";
 import { Command } from "commander";
 import { type ClaimVerdict, validateClaim } from "./claim";
 import { SKILL_TEXT } from "./skill";
+import { type AggregateMethod, aggregate, normalizeClaims, scoreForecasts } from "./tier1";
 
 const VERSION = "0.1.0";
 
@@ -89,6 +90,75 @@ async function runValidate(file: string | undefined, options: { json: boolean })
   process.exitCode = failures === 0 ? 0 : 1;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseClaimArray(text: string): { claim: string; claim_id: string }[] {
+  const parsed: unknown = JSON.parse(text) as unknown;
+  if (!Array.isArray(parsed)) {
+    throw new Error("normalize expects a JSON array of {claim_id, claim} objects");
+  }
+  return parsed.map((entry: unknown, index: number) => {
+    if (
+      !isRecord(entry) ||
+      typeof entry["claim_id"] !== "string" ||
+      typeof entry["claim"] !== "string"
+    ) {
+      throw new Error(`normalize entry ${index} must have string claim_id and claim`);
+    }
+    return { claim: entry["claim"], claim_id: entry["claim_id"] };
+  });
+}
+
+const AGGREGATE_METHODS: readonly AggregateMethod[] = ["median", "plurality", "weighted"];
+
+function parseAggregateInput(text: string): {
+  method: AggregateMethod;
+  votes: { confidence: number; value: string }[];
+} {
+  const parsed: unknown = JSON.parse(text) as unknown;
+  if (!isRecord(parsed)) {
+    throw new Error("aggregate expects a JSON object {method, votes}");
+  }
+  const method: unknown = parsed["method"];
+  if (typeof method !== "string" || !AGGREGATE_METHODS.includes(method as AggregateMethod)) {
+    throw new Error("aggregate method must be one of median|plurality|weighted");
+  }
+  const votes: unknown = parsed["votes"];
+  if (!Array.isArray(votes)) {
+    throw new Error("aggregate expects votes to be an array of {value, confidence}");
+  }
+  const typed = votes.map((entry: unknown, index: number) => {
+    if (
+      !isRecord(entry) ||
+      typeof entry["value"] !== "string" ||
+      typeof entry["confidence"] !== "number"
+    ) {
+      throw new Error(`aggregate vote ${index} must have string value and numeric confidence`);
+    }
+    return { confidence: entry["confidence"], value: entry["value"] };
+  });
+  return { method: method as AggregateMethod, votes: typed };
+}
+
+function parseOutcomeArray(text: string): { confidence: number; outcome: boolean }[] {
+  const parsed: unknown = JSON.parse(text) as unknown;
+  if (!Array.isArray(parsed)) {
+    throw new Error("score expects a JSON array of {confidence, outcome} objects");
+  }
+  return parsed.map((entry: unknown, index: number) => {
+    if (
+      !isRecord(entry) ||
+      typeof entry["confidence"] !== "number" ||
+      typeof entry["outcome"] !== "boolean"
+    ) {
+      throw new Error(`score outcome ${index} must have numeric confidence and boolean outcome`);
+    }
+    return { confidence: entry["confidence"], outcome: entry["outcome"] };
+  });
+}
+
 const program = new Command();
 program
   .name("fusion")
@@ -104,6 +174,88 @@ program
   .option("--json", "emit machine-readable verdict objects, one per line")
   .action(async (file: string | undefined, options: { json: boolean }) => {
     await runValidate(file, options);
+  });
+
+function readInput(file: string | undefined): Promise<string> {
+  if (file !== undefined) {
+    return Promise.resolve(readFileSync(file, "utf8"));
+  }
+  return readStdin();
+}
+
+function emitJson(value: unknown): void {
+  stdout.write(`${JSON.stringify(value)}\n`);
+}
+
+async function runJsonCommand<TInput>(
+  file: string | undefined,
+  parse: (text: string) => TInput,
+  execute: (input: TInput) => unknown,
+): Promise<void> {
+  let text: string;
+  try {
+    text = await readInput(file);
+  } catch (error) {
+    stdout.write(
+      `error: cannot read input: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+    process.exitCode = 2;
+    return;
+  }
+  let input: TInput;
+  try {
+    input = parse(text);
+  } catch (error) {
+    stdout.write(`error: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 2;
+    return;
+  }
+  try {
+    emitJson(execute(input));
+  } catch (error) {
+    stdout.write(`error: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  }
+}
+
+program
+  .command("normalize")
+  .description(
+    "Group claims by exact match on canonicalized text (NFC, whitespace, casing, number formats). " +
+      "Reads a JSON array of {claim_id, claim} objects from FILE or stdin; prints groups. " +
+      "Exits 0 on success, 2 on unreadable or malformed input.",
+  )
+  .argument("[file]", "JSON file of claims; reads stdin when omitted")
+  .action(async (file: string | undefined) => {
+    await runJsonCommand(file, parseClaimArray, (claims) => ({
+      groups: normalizeClaims(claims),
+    }));
+  });
+
+program
+  .command("aggregate")
+  .description(
+    "Fuse sealed votes mechanically: plurality, median, or confidence-weighted mean. " +
+      "Reads a JSON object {method, votes: [{value, confidence}]} from FILE or stdin. " +
+      "Exits 0 on success, 1 on unfusable input, 2 on unreadable or malformed input.",
+  )
+  .argument("[file]", "JSON file with method and votes; reads stdin when omitted")
+  .action(async (file: string | undefined) => {
+    await runJsonCommand(file, parseAggregateInput, ({ method, votes }) =>
+      aggregate(method, votes),
+    );
+  });
+
+program
+  .command("score")
+  .description(
+    "Proper scoring rules (Brier, log) over resolved outcomes. " +
+      "Reads a JSON array of {confidence, outcome} objects from FILE or stdin. " +
+      "Exits 0 on success, 1 on unscorable input, 2 on unreadable or malformed input.",
+  )
+  .argument("[file]", "JSON file of resolved outcomes; reads stdin when omitted")
+  .action(async (file: string | undefined) => {
+    await runJsonCommand(file, parseOutcomeArray, (outcomes) => scoreForecasts(outcomes));
   });
 
 program
