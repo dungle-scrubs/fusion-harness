@@ -1,0 +1,1686 @@
+<!doctype html><html lang="en"><head><meta name="lucid-theme" content="adaptive"><meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1"><meta charset="utf-8"><title>Fusion harnesses: mechanisms, decisions, evidence</title><style>
+:root{color-scheme:light dark;--page:#f5f6f8;--surface:#fff;--ink:#202631;--muted:#535e6d;--line:#cbd2dd;--blue:#315aba;--bluewash:#eaf0ff;--orange:#9d430d;--orangewash:#fff0e3;--soft:#ebedf2;--edge:#748196}
+@media(prefers-color-scheme:dark){:root{--page:#15181e;--surface:#1c212a;--ink:#edf0f7;--muted:#b3bdcd;--line:#424b59;--blue:#a8c2ff;--bluewash:#242f49;--orange:#ffc18f;--orangewash:#3d2e25;--soft:#272d38;--edge:#94a1b7}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--page);color:var(--ink)}body{margin:0;font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--page);color:var(--ink)}main{max-width:1360px;margin:auto;padding:0 clamp(18px,4vw,56px) 64px;container-type:inline-size}a{color:var(--blue);text-underline-offset:3px;cursor:pointer}button,select,summary{cursor:pointer}button,select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);padding:9px 13px;border-radius:4px}button:hover,select:hover{border-color:var(--blue)}:focus-visible{outline:3px solid var(--blue);outline-offset:4px}::selection{background:var(--blue);color:var(--surface)}[hidden]{display:none!important}h1,h2,h3,h4,p,figure{margin:0}h1{font-size:clamp(32px,4.4vw,58px);line-height:1.06;letter-spacing:-.035em;max-width:820px;text-wrap:balance}h2{font-size:clamp(25px,3vw,35px);line-height:1.15;letter-spacing:-.025em}h3{font-size:20px;line-height:1.25}h4{font-size:17px}p{max-width:76ch}p+p{margin-top:12px}ul,ol{padding-left:23px}li+li{margin-top:7px}strong{font-weight:650}small,.small{font-size:13px;color:var(--muted)}header{padding:36px 0 24px;display:grid;gap:18px}.meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:13px}.meta span+span{border-left:1px solid var(--line);padding-left:12px}.lede{font-size:19px;max-width:820px;color:var(--muted)}.nav{display:flex;gap:6px 20px;flex-wrap:wrap;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.nav a{font-size:14px;text-decoration:none}.chapter{padding-top:54px;scroll-margin-top:20px}.chapter-head{display:grid;gap:12px;margin-bottom:24px}.chapter-head p{color:var(--muted)}.section-label{font-size:13px;color:var(--blue);font-weight:650}.board{background:var(--surface);padding:clamp(16px,3vw,30px);border:1px solid var(--line)}.board>p{margin-top:12px}.wide-diagram{display:none}.wide-diagram svg{width:100%;height:auto;display:block}.node rect{fill:var(--surface);stroke:var(--line);stroke-width:1.5}.node text{fill:var(--ink);font:16px system-ui,sans-serif}.node.blue rect{fill:var(--bluewash);stroke:var(--blue)}.node.orange rect{fill:var(--orangewash);stroke:var(--orange)}.edge{fill:none;stroke:var(--edge);stroke-width:1.6}.loop{stroke:var(--orange);stroke-dasharray:5 4}svg>text{fill:var(--muted);font:13px system-ui,sans-serif}svg .phase-label{fill:var(--muted);font:16px system-ui,sans-serif}.node~.edge{vector-effect:non-scaling-stroke}.mobile-flow{display:grid;gap:10px;list-style:none;padding:0;margin:0}.mobile-flow li{padding:12px;background:var(--soft);margin:0}.mobile-flow strong{display:block;color:var(--blue)}.mobile-flow li:last-child strong{color:var(--orange)}.diagram-key{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-bottom:16px}.key::before{content:'';display:inline-block;width:10px;height:10px;background:var(--blue);margin-right:7px}.key.decision::before{background:var(--orange)}.diagram-note{font-size:14px;color:var(--muted);max-width:none}.control-grid{display:grid;gap:0;margin-top:24px}.control{padding:17px 0;border-top:1px solid var(--line)}.control h3{font-size:16px;margin-bottom:6px}.control p{font-size:14px;color:var(--muted)}.control .n{color:var(--blue);font-size:12px}.router{display:grid;gap:22px}.router-choice{display:grid;gap:10px}.router-choice select{width:100%}.route-outcome{background:var(--bluewash);padding:24px;min-width:0}.route-outcome h3{font-size:24px;margin:8px 0 18px}.route-outcome dl{margin:0;display:grid;gap:16px}.route-outcome dt{font-size:13px;color:var(--muted)}.route-outcome dd{margin:3px 0 0}.pattern-grid{display:grid;gap:0 30px}.pattern{min-width:0;border-top:1px solid var(--line);padding:26px 0;scroll-margin-top:20px}.pattern-title{display:flex;gap:14px;align-items:start}.pattern-title p{font-size:14px;color:var(--muted);margin-top:7px}.number{font-size:13px;color:var(--blue);padding-top:3px}.mini{margin:18px 0;background:var(--surface);padding:8px 0}.mini svg{display:block;width:100%;max-width:480px;margin:auto;height:auto}.pattern>p{font-size:14px}.pattern-facts{font-size:14px;margin:12px 0 0;display:grid;gap:9px}.pattern-facts>div{display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px}.pattern-facts dt{color:var(--muted)}.pattern-facts dd{margin:0}.pattern .use{font-size:15px;margin-bottom:12px}.use strong{color:var(--blue);margin-right:7px}.detail-link{font-size:13px;display:inline-block;margin-top:14px}.table-wrap{overflow:auto;border:1px solid var(--line);background:var(--surface);max-width:100%;margin-top:20px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:13px 15px;border-bottom:1px solid var(--line);vertical-align:top}thead th{background:var(--soft);font-weight:600}td:first-child{min-width:170px;font-weight:550}td[data-score]{text-align:center;font-variant-numeric:tabular-nums;min-width:82px}td[data-score="5"]{background:var(--bluewash);color:var(--blue);font-weight:700}td[data-score="1"]{background:var(--orangewash);color:var(--orange)}.compare-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:18px}.callout{padding:18px 0;border-top:2px solid var(--orange);margin-top:22px}.callout p{max-width:95ch}.stages{display:grid;gap:16px;margin-top:24px}.stage{background:var(--surface);border-top:3px solid var(--blue);padding:19px}.stage:last-child{border-top-color:var(--orange)}.stage h3{margin-bottom:15px}.stage ol{padding:0;list-style:none;display:grid;gap:14px}.stage li{margin:0}.stage b{display:block;font-size:15px}.stage span{font-size:13px;color:var(--muted)}.stop-row{display:grid;gap:18px;margin-top:20px}.stop{padding:16px;background:var(--soft)}.stop h4{margin-bottom:6px}.stop p{font-size:14px}.build-order{list-style:none;counter-reset:build;padding:0;display:grid;gap:0;margin-top:22px}.build-order li{counter-increment:build;border-top:1px solid var(--line);padding:18px 0;margin:0;display:grid;grid-template-columns:35px 1fr;gap:10px}.build-order li:before{content:counter(build,decimal-leading-zero);color:var(--blue)}.build-order strong{display:block}.build-order span{color:var(--muted);font-size:14px}.evaluation{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:22px}.evaluation article{padding:22px;background:var(--surface)}.evaluation h3{margin-bottom:10px}.evaluation p{font-size:14px}.metric{font-size:22px;font-weight:650;line-height:1.2;margin:20px 0!important}.research-part{border-top:1px solid var(--line)}.research-part:last-child{border-bottom:1px solid var(--line)}summary{padding:18px 3px;font-weight:600;list-style-position:outside;margin-left:18px}summary:hover{color:var(--blue)}.research-body{padding:12px 0 30px;max-width:100%;overflow-wrap:anywhere}.research-body section{scroll-margin-top:24px}.research-body h2{font-size:26px;margin:26px 0 18px}.research-body h3{margin:25px 0 14px}.research-body h4{margin:22px 0 12px}.research-body p{margin:12px 0;max-width:85ch}.research-body table{display:block;overflow:auto;max-width:100%;margin:18px 0}.research-body pre{max-width:100%;overflow:auto;background:var(--soft);padding:20px;font-size:13px;line-height:1.6}.research-body .provenance{color:var(--muted);font-size:13px}.research-body .pipeline{padding:20px 20px 20px 40px;background:var(--soft)}.research-body .pipeline strong{display:block}.reference-actions{display:flex;gap:12px;margin:18px 0}.footnotes{font-size:14px}.footnotes ol{padding-left:25px}.footnotes li{padding-bottom:12px}footer{margin-top:40px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}code{overflow-wrap:anywhere}pre code{overflow-wrap:normal}button[aria-pressed="true"]{background:var(--bluewash);border-color:var(--blue)}.route-table{margin-top:20px}.route-table summary{font-size:14px}.mini text{font-size:15px}
+@container(min-width:620px){.router{grid-template-columns:1fr 1.2fr}.control-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:0 25px}.pattern-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stages,.evaluation{grid-template-columns:repeat(2,minmax(0,1fr))}.stop-row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container(min-width:980px){.wide-diagram{display:block}.mobile-flow{display:none}.control-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:20px}.stages{grid-template-columns:repeat(4,minmax(0,1fr))}.evaluation{grid-template-columns:repeat(3,minmax(0,1fr))}.chapter-head{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end}.chapter-head .section-label{grid-column:1/-1}.build-order{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:30px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@media print{details>*{display:block!important}.research-part{break-inside:avoid}.nav,.reference-actions,.compare-controls{display:none}body{font-size:12px}}
+</style></head><body><main>
+<header><div class="meta"><span>Fusion harnesses</span><span>Research and proposed architectures</span><span>Visual guide + complete report</span></div><h1>How independent agents become a coordinated system</h1><p class="lede">Choose how information is separated, challenged, checked, and combined. More conversation alone does not establish better decisions.</p></header>
+<nav class="nav" aria-label="Document sections"><a href="#control-model">01 Control model</a><a href="#route-choice">02 Choose a route</a><a href="#pattern-atlas">03 Pattern atlas</a><a href="#comparison">04 Compare</a><a href="#composition">05 Compose</a><a href="#evaluation">06 Evaluate</a><a href="#research">Complete research & sources</a></nav>
+<section class="chapter" id="control-model"><div class="chapter-head"><div class="section-label">01 / Control model</div><h2>Keep generation, challenge, and decision separate.</h2><p>Two recipes from the composition proposal. Selection checks candidates separately. Synthesis creates a new candidate and checks the combined result.</p></div><figure class="board"><div class="compare-controls" style="margin:0 0 24px"><span>Workflow</span><button type="button" data-compose="selection-flow" aria-pressed="true">Select an existing candidate</button><button type="button" data-compose="synthesis-flow" aria-pressed="false">Synthesize, then verify</button></div><div class="diagram-key"><span class="key">Independent candidates</span><span class="key decision">Decision authority</span><span>Lines show permitted handoffs</span></div><div id="selection-flow"><div class="wide-diagram"><svg viewBox="0 0 1080 300" role="img" aria-label="Three isolated candidates each pass through a separate critic and verification gate. Only passing candidates reach selection."><title>Three isolated candidates each pass through a separate critic and verification gate. Only passing candidates reach selection.</title><defs><marker id="flow-arrow-13" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><text x="60" y="25" class="phase-label">01 · Generate independently</text><text x="390" y="25" class="phase-label">02 · Challenge each candidate</text><text x="710" y="25" class="phase-label">03 · Verify and select</text><g class="node blue"><rect x="30" y="57" width="185" height="36" rx="3"/><text x="122.5" y="80" text-anchor="middle">Candidate 1</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M215 75 H320"/><g class="node "><rect x="320" y="57" width="170" height="36" rx="3"/><text x="405" y="80" text-anchor="middle">Critic 1</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M490 75 H582"/><g class="node "><rect x="582" y="57" width="158" height="36" rx="3"/><text x="661" y="80" text-anchor="middle">Tests 1</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M740 75 H795 V150 H855"/><g class="node blue"><rect x="30" y="132" width="185" height="36" rx="3"/><text x="122.5" y="155" text-anchor="middle">Candidate 2</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M215 150 H320"/><g class="node "><rect x="320" y="132" width="170" height="36" rx="3"/><text x="405" y="155" text-anchor="middle">Critic 2</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M490 150 H582"/><g class="node "><rect x="582" y="132" width="158" height="36" rx="3"/><text x="661" y="155" text-anchor="middle">Tests 2</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M740 150 H795 V150 H855"/><g class="node blue"><rect x="30" y="207" width="185" height="36" rx="3"/><text x="122.5" y="230" text-anchor="middle">Candidate 3</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M215 225 H320"/><g class="node "><rect x="320" y="207" width="170" height="36" rx="3"/><text x="405" y="230" text-anchor="middle">Critic 3</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M490 225 H582"/><g class="node "><rect x="582" y="207" width="158" height="36" rx="3"/><text x="661" y="230" text-anchor="middle">Tests 3</text></g><path marker-end="url(#flow-arrow-13)" class="edge " d="M740 225 H795 V150 H855"/><g class="node orange"><rect x="855" y="132" width="195" height="36" rx="3"/><text x="952.5" y="155" text-anchor="middle">Choose eligible</text></g><text x="952" y="191" text-anchor="middle">Existing candidate only</text><text x="112" y="275" text-anchor="middle">No cross-reading</text><text x="409" y="275" text-anchor="middle">No producer transcript</text><text x="665" y="275" text-anchor="middle">Failure blocks eligibility</text></svg></div><ol class="mobile-flow"><li><strong>1. Generate sealed</strong>Three isolated candidates. No cross-reading.</li><li><strong>2. Challenge separately</strong>Each critic receives one candidate, not its producer's transcript.</li><li><strong>3. Verify exact candidates</strong>Run required tests and investigate objections. Failed or unresolved material checks block eligibility.</li><li><strong>4. Choose and record</strong>Select only from passing candidates. Keep rejected candidates and their evidence.</li></ol></div><div id="synthesis-flow" hidden><div class="wide-diagram"><svg viewBox="0 0 1080 300" role="img" aria-label="Independent candidates merge into a new candidate, which receives fresh criticism and verification before acceptance."><title>Independent candidates merge into a new candidate, which receives fresh criticism and verification before acceptance.</title><defs><marker id="flow-arrow-14" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="20" y="57" width="160" height="36" rx="3"/><text x="100" y="80" text-anchor="middle">Candidate 1</text></g><path marker-end="url(#flow-arrow-14)" class="edge " d="M180 75 H220 V150 H270"/><g class="node blue"><rect x="20" y="132" width="160" height="36" rx="3"/><text x="100" y="155" text-anchor="middle">Candidate 2</text></g><path marker-end="url(#flow-arrow-14)" class="edge " d="M180 150 H220 V150 H270"/><g class="node blue"><rect x="20" y="207" width="160" height="36" rx="3"/><text x="100" y="230" text-anchor="middle">Candidate 3</text></g><path marker-end="url(#flow-arrow-14)" class="edge " d="M180 225 H220 V150 H270"/><g class="node "><rect x="270" y="132" width="150" height="36" rx="3"/><text x="345" y="155" text-anchor="middle">Synthesize</text></g><path marker-end="url(#flow-arrow-14)" class="edge " d="M420 150 H465"/><g class="node "><rect x="465" y="132" width="150" height="36" rx="3"/><text x="540" y="155" text-anchor="middle">Challenge</text></g><path marker-end="url(#flow-arrow-14)" class="edge " d="M615 150 H660"/><g class="node "><rect x="660" y="132" width="150" height="36" rx="3"/><text x="735" y="155" text-anchor="middle">Verify</text></g><path marker-end="url(#flow-arrow-14)" class="edge " d="M810 150 H875"/><g class="node orange"><rect x="875" y="132" width="170" height="36" rx="3"/><text x="960" y="155" text-anchor="middle">Accept</text></g><text x="100" y="30" text-anchor="middle">Generate independently</text><text x="345" y="200" text-anchor="middle">New artifact</text><text x="640" y="95" text-anchor="middle">Fresh checks on the combined artifact</text><text x="960" y="200" text-anchor="middle">Passing result only</text><text x="540" y="272" text-anchor="middle">Checks on the ingredients do not establish that the synthesis works.</text></svg></div><ol class="mobile-flow"><li><strong>1. Generate sealed</strong>Independent candidates against the same task.</li><li><strong>2. Synthesize</strong>Combine useful contributions into a new immutable candidate.</li><li><strong>3. Challenge and verify again</strong>Review the new candidate and test its exact bytes. Ingredient checks do not transfer.</li><li><strong>4. Accept or block</strong>Only a passing combined result reaches acceptance.</li></ol></div><figcaption class="diagram-note">Proposed composition, not an implemented runtime. A change to a candidate requires new verification. Selection does not authorize applying, merging, or deploying it. <a href="#composition-example">Read the preserved TypeScript example and runtime obligations ↗</a></figcaption></figure>
+<div class="control-grid"><article class="control"><span class="n">CONTROL 1</span><h3>Information</h3><p><strong>Who sees what?</strong></p><p>Sealed contexts, shared evidence, or controlled disclosure.</p></article><article class="control"><span class="n">CONTROL 2</span><h3>Work</h3><p><strong>Who solves which part?</strong></p><p>Redundant candidates, specialist tasks, or conditional critics.</p></article><article class="control"><span class="n">CONTROL 3</span><h3>Communication</h3><p><strong>When may they exchange?</strong></p><p>Rounds, cross-examination, blackboards, or reporting lanes.</p></article><article class="control"><span class="n">CONTROL 4</span><h3>Evidence</h3><p><strong>What counts as support?</strong></p><p>Claims, tests, assumptions, uncertainty, and falsifiers.</p></article><article class="control"><span class="n">CONTROL 5</span><h3>Authority</h3><p><strong>Who decides and stops?</strong></p><p>Aggregation, judgment, veto, escalation, and execution rights.</p></article></div><a class="detail-link" href="#design-space-map">Evidence and definitions for the design space ↗</a></section>
+<section class="chapter" id="route-choice"><div class="chapter-head"><div class="section-label">02 / Choose a route</div><h2>Start with the task’s coordination problem.</h2><p>The report proposes these routes. They are decision hypotheses to test, not an empirically validated recommendation engine.</p></div><div class="router"><div class="router-choice"><label for="task-route"><strong>What kind of task are you handling?</strong></label><select id="task-route"><option value="0">bounded + verifiable</option><option value="1">ambiguous diagnosis</option><option value="2">adversarial plan</option><option value="3">large + decomposable</option><option value="4">open-ended coherent artifact</option><option value="5">repeated resolvable uncertainty</option><option value="6">standards/API</option><option value="7">urgent incident</option><option value="8">value conflict / legitimacy</option></select><p class="small">Selection changes only the explanation shown here. No agents or tools run.</p><p>Check verifiability, decomposition, adversarial exposure, stakes, time pressure, and who has standing to decide.</p></div><div class="route-outcome" aria-live="polite"><div class="route-panel" id="route-0" ><p class="small">Primary mechanism</p><h3>Sealed Jury</h3><dl><div><dt>Task condition</dt><dd>bounded + verifiable</dd></div><div><dt>Optional overlay / boundary</dt><dd>Registered Replication for high stakes</dd></div></dl></div><div class="route-panel" id="route-1" hidden><p class="small">Primary mechanism</p><h3>ACH Matrix</h3><dl><div><dt>Task condition</dt><dd>ambiguous diagnosis</dd></div><div><dt>Optional overlay / boundary</dt><dd>Red–Blue falsifier</dd></div></dl></div><div class="route-panel" id="route-2" hidden><p class="small">Primary mechanism</p><h3>Red–Blue–Umpire</h3><dl><div><dt>Task condition</dt><dd>adversarial plan</dd></div><div><dt>Optional overlay / boundary</dt><dd>War-game branches + Failure-First</dd></div></dl></div><div class="route-panel" id="route-3" hidden><p class="small">Primary mechanism</p><h3>Mission Control Cells</h3><dl><div><dt>Task condition</dt><dd>large + decomposable</dd></div><div><dt>Optional overlay / boundary</dt><dd>Andon Blackboard</dd></div></dl></div><div class="route-panel" id="route-4" hidden><p class="small">Primary mechanism</p><h3>Charrette-style parallel sketches</h3><dl><div><dt>Task condition</dt><dd>open-ended coherent artifact</dd></div><div><dt>Optional overlay / boundary</dt><dd>Stepladder synthesis + red review</dd></div></dl></div><div class="route-panel" id="route-5" hidden><p class="small">Primary mechanism</p><h3>Forecast Market or calibrated pool</h3><dl><div><dt>Task condition</dt><dd>repeated resolvable uncertainty</dd></div><div><dt>Optional overlay / boundary</dt><dd>Delphi rationale rounds</dd></div></dl></div><div class="route-panel" id="route-6" hidden><p class="small">Primary mechanism</p><h3>Rough Consensus, Running Tests</h3><dl><div><dt>Task condition</dt><dd>standards/API</dd></div><div><dt>Optional overlay / boundary</dt><dd>Sealed initial proposals</dd></div></dl></div><div class="route-panel" id="route-7" hidden><p class="small">Primary mechanism</p><h3>Incident Command / Mission Control</h3><dl><div><dt>Task condition</dt><dd>urgent incident</dd></div><div><dt>Optional overlay / boundary</dt><dd>safety veto + fixed operational periods</dd></div></dl></div><div class="route-panel" id="route-8" hidden><p class="small">Primary mechanism</p><h3>real human deliberative process</h3><dl><div><dt>Task condition</dt><dd>value conflict / legitimacy</dd></div><div><dt>Optional overlay / boundary</dt><dd>agents may brief evidence, not replace stakeholders</dd></div></dl></div></div></div><details class="route-table"><summary>See all nine routing rules together</summary><div class="table-wrap" tabindex="0" aria-label="All routing rules"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>Task signature</th>
+<th>Primary mechanism</th>
+<th>Optional overlay</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bounded + verifiable</td>
+<td>Sealed Jury</td>
+<td>Registered Replication for high stakes</td>
+</tr>
+<tr>
+<td>ambiguous diagnosis</td>
+<td>ACH Matrix</td>
+<td>Red–Blue falsifier</td>
+</tr>
+<tr>
+<td>adversarial plan</td>
+<td>Red–Blue–Umpire</td>
+<td>War-game branches + Failure-First</td>
+</tr>
+<tr>
+<td>large + decomposable</td>
+<td>Mission Control Cells</td>
+<td>Andon Blackboard</td>
+</tr>
+<tr>
+<td>open-ended coherent artifact</td>
+<td>Charrette-style parallel sketches</td>
+<td>Stepladder synthesis + red review</td>
+</tr>
+<tr>
+<td>repeated resolvable uncertainty</td>
+<td>Forecast Market or calibrated pool</td>
+<td>Delphi rationale rounds</td>
+</tr>
+<tr>
+<td>standards/API</td>
+<td>Rough Consensus, Running Tests</td>
+<td>Sealed initial proposals</td>
+</tr>
+<tr>
+<td>urgent incident</td>
+<td>Incident Command / Mission Control</td>
+<td>safety veto + fixed operational periods</td>
+</tr>
+<tr>
+<td>value conflict / legitimacy</td>
+<td>real human deliberative process</td>
+<td>agents may brief evidence, not replace stakeholders</td>
+</tr>
+</tbody>
+</table></div></details></section>
+<section class="chapter" id="pattern-atlas"><div class="chapter-head"><div class="section-label">03 / Pattern atlas</div><h2>Twelve patterns. Different information flows.</h2><p>Diagrams show protocol structure, not measured performance. Solid lines connect stages; dashed lines show feedback or control. ACH symbols are illustrative: + supports, − conflicts, ? unknown.</p></div><div class="pattern-grid"><article class="pattern" id="visual-pattern-1"><div class="pattern-title"><span class="number">01</span><div><h3>Sealed Jury</h3><p>Independent proposals converge</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Independent proposals converge"><title>Independent proposals converge</title><defs><marker id="flow-arrow-1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="8" y="12" width="85" height="36" rx="3"/><text x="50.5" y="35" text-anchor="middle">Agent 1</text></g><path marker-end="url(#flow-arrow-1)" class="edge " d="M93 30 H128 V80 H155"/><g class="node blue"><rect x="8" y="62" width="85" height="36" rx="3"/><text x="50.5" y="85" text-anchor="middle">Agent 2</text></g><path marker-end="url(#flow-arrow-1)" class="edge " d="M93 80 H128 V80 H155"/><g class="node blue"><rect x="8" y="112" width="85" height="36" rx="3"/><text x="50.5" y="135" text-anchor="middle">Agent 3</text></g><path marker-end="url(#flow-arrow-1)" class="edge " d="M93 130 H128 V80 H155"/><g class="node "><rect x="155" y="62" width="100" height="36" rx="3"/><text x="205" y="85" text-anchor="middle">Normalize</text></g><path marker-end="url(#flow-arrow-1)" class="edge " d="M255 80 H285"/><g class="node orange"><rect x="285" y="62" width="105" height="36" rx="3"/><text x="337.5" y="85" text-anchor="middle">Aggregate</text></g></svg></div><p class="use"><strong>Fits</strong> Bounded reasoning</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> estimate effective rather than nominal voter count. </dd></div><div><dt>Stop</dt><dd> stable aggregate plus no unresolved high-confidence minority evidence.</dd></div></dl><a class="detail-link" href="#pattern-1---sealed-jury">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-2"><div class="pattern-title"><span class="number">02</span><div><h3>Delphi Ladder</h3><p>Anonymous rounds revise estimates</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Anonymous rounds revise estimates"><title>Anonymous rounds revise estimates</title><defs><marker id="flow-arrow-2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="10" y="48" width="105" height="36" rx="3"/><text x="62.5" y="71" text-anchor="middle">Sealed R1</text></g><path marker-end="url(#flow-arrow-2)" class="edge " d="M115 66 H145"/><g class="node "><rect x="145" y="48" width="112" height="36" rx="3"/><text x="201" y="71" text-anchor="middle">Anonymize</text></g><path marker-end="url(#flow-arrow-2)" class="edge " d="M257 66 H285"/><g class="node orange"><rect x="285" y="48" width="105" height="36" rx="3"/><text x="337.5" y="71" text-anchor="middle">Revise R2</text></g><path marker-end="url(#flow-arrow-2)" class="edge loop" d="M338 84 V122 H200 V84"/><text x="240" y="147" text-anchor="middle">Continue only for new evidence</text></svg></div><p class="use"><strong>Fits</strong> Forecasts and estimates</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> never show model identities or a single authoritative “consensus.” </dd></div><div><dt>Stop</dt><dd> two stable rounds, target interval width, or budget.</dd></div></dl><a class="detail-link" href="#pattern-2---delphi-ladder">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-3"><div class="pattern-title"><span class="number">03</span><div><h3>ACH Evidence Matrix</h3><p>Evidence tests competing hypotheses</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Evidence tests competing hypotheses"><title>Evidence tests competing hypotheses</title><defs><marker id="flow-arrow-3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><text x="207" y="23">H1</text><text x="267" y="23">H2</text><text x="327" y="23">H3</text><text x="8" y="57">Evidence A</text><g class="node blue"><rect x="188" y="32" width="49" height="36" rx="3"/><text x="212.5" y="55" text-anchor="middle">+</text></g><g class="node "><rect x="248" y="32" width="49" height="36" rx="3"/><text x="272.5" y="55" text-anchor="middle">−</text></g><g class="node "><rect x="308" y="32" width="49" height="36" rx="3"/><text x="332.5" y="55" text-anchor="middle">?</text></g><text x="8" y="97">Evidence B</text><g class="node "><rect x="188" y="72" width="49" height="36" rx="3"/><text x="212.5" y="95" text-anchor="middle">−</text></g><g class="node blue"><rect x="248" y="72" width="49" height="36" rx="3"/><text x="272.5" y="95" text-anchor="middle">+</text></g><g class="node "><rect x="308" y="72" width="49" height="36" rx="3"/><text x="332.5" y="95" text-anchor="middle">?</text></g><text x="8" y="137">Evidence C</text><g class="node "><rect x="188" y="112" width="49" height="36" rx="3"/><text x="212.5" y="135" text-anchor="middle">?</text></g><g class="node "><rect x="248" y="112" width="49" height="36" rx="3"/><text x="272.5" y="135" text-anchor="middle">−</text></g><g class="node blue"><rect x="308" y="112" width="49" height="36" rx="3"/><text x="332.5" y="135" text-anchor="middle">+</text></g></svg></div><p class="use"><strong>Fits</strong> Ambiguous diagnosis</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> require missing hypotheses and deception/common-cause checks. </dd></div><div><dt>Stop</dt><dd> ranking stable under reasonable evidence-weight perturbations.</dd></div></dl><a class="detail-link" href="#pattern-3---ach-evidence-matrix">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-4"><div class="pattern-title"><span class="number">04</span><div><h3>Red–Blue–Umpire</h3><p>Proposal, challenge, judgment</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Proposal, challenge, judgment"><title>Proposal, challenge, judgment</title><defs><marker id="flow-arrow-4" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="10" y="48" width="105" height="36" rx="3"/><text x="62.5" y="71" text-anchor="middle">Blue</text></g><path marker-end="url(#flow-arrow-4)" class="edge " d="M115 66 H145"/><g class="node "><rect x="145" y="48" width="105" height="36" rx="3"/><text x="197.5" y="71" text-anchor="middle">Red</text></g><path marker-end="url(#flow-arrow-4)" class="edge " d="M250 66 H280"/><g class="node orange"><rect x="280" y="48" width="110" height="36" rx="3"/><text x="335" y="71" text-anchor="middle">Umpire</text></g><path marker-end="url(#flow-arrow-4)" class="edge loop" d="M335 84 V123 H62 V84"/><text x="205" y="147" text-anchor="middle">Mitigate, then verify again</text></svg></div><p class="use"><strong>Fits</strong> Adversarial plans</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> symmetrical budgets and external tests. </dd></div><div><dt>Stop</dt><dd> no unresolved risk above threshold or human escalation.</dd></div></dl><a class="detail-link" href="#pattern-4---redblueumpire">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-5"><div class="pattern-title"><span class="number">05</span><div><h3>Registered Replication Lab</h3><p>A result faces independent replication</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="A result faces independent replication"><title>A result faces independent replication</title><defs><marker id="flow-arrow-5" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node "><rect x="5" y="15" width="118" height="36" rx="3"/><text x="64" y="38" text-anchor="middle">Register</text></g><path marker-end="url(#flow-arrow-5)" class="edge " d="M123 33 H155"/><g class="node blue"><rect x="155" y="15" width="110" height="36" rx="3"/><text x="210" y="38" text-anchor="middle">Produce</text></g><path marker-end="url(#flow-arrow-5)" class="edge " d="M210 51 V106 H155"/><g class="node blue"><rect x="5" y="88" width="150" height="36" rx="3"/><text x="80" y="111" text-anchor="middle">Replicate</text></g><path marker-end="url(#flow-arrow-5)" class="edge " d="M155 106 H278"/><g class="node orange"><rect x="278" y="88" width="117" height="36" rx="3"/><text x="336.5" y="111" text-anchor="middle">Compare</text></g></svg></div><p class="use"><strong>Fits</strong> Verifiable high-stakes work</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> immutable plan hash and environment capture. </dd></div><div><dt>Stop</dt><dd> successful independent replication or explicit nonreplication.</dd></div></dl><a class="detail-link" href="#pattern-5---registered-replication-lab">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-6"><div class="pattern-title"><span class="number">06</span><div><h3>Mission Control Cells</h3><p>Specialists join at integration</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Specialists join at integration"><title>Specialists join at integration</title><defs><marker id="flow-arrow-6" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node orange"><rect x="10" y="63" width="100" height="36" rx="3"/><text x="60" y="86" text-anchor="middle">Director</text></g><path marker-end="url(#flow-arrow-6)" class="edge " d="M110 81 H130 V28 H148"/><g class="node blue"><rect x="148" y="10" width="102" height="36" rx="3"/><text x="199" y="33" text-anchor="middle">Cell 1</text></g><path marker-end="url(#flow-arrow-6)" class="edge " d="M250 28 H275 V81 H290"/><path marker-end="url(#flow-arrow-6)" class="edge " d="M110 81 H130 V81 H148"/><g class="node blue"><rect x="148" y="63" width="102" height="36" rx="3"/><text x="199" y="86" text-anchor="middle">Cell 2</text></g><path marker-end="url(#flow-arrow-6)" class="edge " d="M250 81 H275 V81 H290"/><path marker-end="url(#flow-arrow-6)" class="edge " d="M110 81 H130 V134 H148"/><g class="node blue"><rect x="148" y="116" width="102" height="36" rx="3"/><text x="199" y="139" text-anchor="middle">Cell 3</text></g><path marker-end="url(#flow-arrow-6)" class="edge " d="M250 134 H275 V81 H290"/><g class="node orange"><rect x="290" y="63" width="105" height="36" rx="3"/><text x="342.5" y="86" text-anchor="middle">Integrate</text></g></svg></div><p class="use"><strong>Fits</strong> Decomposable work</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> one owner per interface and span-of-control limit. </dd></div><div><dt>Stop</dt><dd> all critical consoles go or accepted risk is human-signed.</dd></div></dl><a class="detail-link" href="#pattern-6---mission-control-cells">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-7"><div class="pattern-title"><span class="number">07</span><div><h3>Rough Consensus, Running Tests</h3><p>Objections meet working implementations</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Objections meet working implementations"><title>Objections meet working implementations</title><defs><marker id="flow-arrow-7" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="5" y="27" width="119" height="36" rx="3"/><text x="64.5" y="50" text-anchor="middle">Proposal</text></g><path marker-end="url(#flow-arrow-7)" class="edge " d="M124 45 H152"/><g class="node "><rect x="152" y="27" width="104" height="36" rx="3"/><text x="204" y="50" text-anchor="middle">Build/test</text></g><path marker-end="url(#flow-arrow-7)" class="edge " d="M256 45 H283"/><g class="node orange"><rect x="283" y="27" width="112" height="36" rx="3"/><text x="339" y="50" text-anchor="middle">Decide</text></g><g class="node "><rect x="130" y="105" width="141" height="36" rx="3"/><text x="200.5" y="128" text-anchor="middle">Objections</text></g><path marker-end="url(#flow-arrow-7)" class="edge loop" d="M200 105 V82 H335 V63"/></svg></div><p class="use"><strong>Fits</strong> Standards and APIs</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> chair cannot be proposal author. </dd></div><div><dt>Stop</dt><dd> all material objections addressed, not necessarily agreed with.</dd></div></dl><a class="detail-link" href="#pattern-7---rough-consensus-running-tests">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-8"><div class="pattern-title"><span class="number">08</span><div><h3>Calibrated Forecast Market</h3><p>Forecasts are scored on resolution</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Forecasts are scored on resolution"><title>Forecasts are scored on resolution</title><defs><marker id="flow-arrow-8" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="5" y="20" width="105" height="36" rx="3"/><text x="57.5" y="43" text-anchor="middle">Forecasts</text></g><path marker-end="url(#flow-arrow-8)" class="edge " d="M110 38 H147"/><g class="node "><rect x="147" y="20" width="106" height="36" rx="3"/><text x="200" y="43" text-anchor="middle">Pool</text></g><path marker-end="url(#flow-arrow-8)" class="edge " d="M253 38 H285"/><g class="node orange"><rect x="285" y="20" width="110" height="36" rx="3"/><text x="340" y="43" text-anchor="middle">Resolve</text></g><path marker-end="url(#flow-arrow-8)" class="edge " d="M340 56 V116 H220"/><g class="node "><rect x="75" y="98" width="145" height="36" rx="3"/><text x="147.5" y="121" text-anchor="middle">Calibration</text></g><path marker-end="url(#flow-arrow-8)" class="edge loop" d="M75 116 H57 V56"/></svg></div><p class="use"><strong>Fits</strong> Resolvable uncertainty</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> resolution clarity, position limits, time-decayed reputation. </dd></div><div><dt>Stop</dt><dd> close time or price stability subject to minimum participation.</dd></div></dl><a class="detail-link" href="#pattern-8---calibrated-forecast-market">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-9"><div class="pattern-title"><span class="number">09</span><div><h3>Andon Blackboard</h3><p>Local signals can stop dependent work</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Local signals can stop dependent work"><title>Local signals can stop dependent work</title><defs><marker id="flow-arrow-9" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="10" y="28" width="103" height="36" rx="3"/><text x="61.5" y="51" text-anchor="middle">Task A</text></g><path marker-end="url(#flow-arrow-9)" class="edge " d="M113 46 H147"/><g class="node blue"><rect x="147" y="28" width="105" height="36" rx="3"/><text x="199.5" y="51" text-anchor="middle">Task B</text></g><path marker-end="url(#flow-arrow-9)" class="edge " d="M252 46 H285"/><g class="node blue"><rect x="285" y="28" width="105" height="36" rx="3"/><text x="337.5" y="51" text-anchor="middle">Task C</text></g><g class="node orange"><rect x="110" y="108" width="181" height="36" rx="3"/><text x="200.5" y="131" text-anchor="middle">Andon: STOP</text></g><path marker-end="url(#flow-arrow-9)" class="edge loop" d="M201 108 V70 H338 V64"/></svg></div><p class="use"><strong>Fits</strong> Dependent work pipelines</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> WIP limits and alert deduplication. </dd></div><div><dt>Stop</dt><dd> board empty and no open andons.</dd></div></dl><a class="detail-link" href="#pattern-9---andon-blackboard-unusual">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-10"><div class="pattern-title"><span class="number">10</span><div><h3>Silent Minute</h3><p>Private reflection precedes discussion</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Private reflection precedes discussion"><title>Private reflection precedes discussion</title><defs><marker id="flow-arrow-10" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="5" y="18" width="106" height="36" rx="3"/><text x="58" y="41" text-anchor="middle">Reflect A</text></g><g class="node blue"><rect x="5" y="104" width="106" height="36" rx="3"/><text x="58" y="127" text-anchor="middle">Reflect B</text></g><path marker-end="url(#flow-arrow-10)" class="edge " d="M111 36 H148 V79 H175"/><path marker-end="url(#flow-arrow-10)" class="edge " d="M111 122 H148 V79 H175"/><g class="node "><rect x="175" y="61" width="108" height="36" rx="3"/><text x="229" y="84" text-anchor="middle">Round</text></g><path marker-end="url(#flow-arrow-10)" class="edge " d="M283 79 H303"/><g class="node orange"><rect x="303" y="61" width="92" height="36" rx="3"/><text x="349" y="84" text-anchor="middle">Discuss</text></g></svg></div><p class="use"><strong>Fits</strong> Early framing and dissent</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> do not claim independent consensus after shared exposure. </dd></div><div><dt>Stop</dt><dd> accepted minute, principled stand-aside, or defer.</dd></div></dl><a class="detail-link" href="#pattern-10---silent-minute-unusual">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-11"><div class="pattern-title"><span class="number">11</span><div><h3>Two-Fire Council</h3><p>Separate deliberations meet in council</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Separate deliberations meet in council"><title>Separate deliberations meet in council</title><defs><marker id="flow-arrow-11" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node blue"><rect x="5" y="20" width="118" height="36" rx="3"/><text x="64" y="43" text-anchor="middle">Council A</text></g><g class="node blue"><rect x="5" y="105" width="118" height="36" rx="3"/><text x="64" y="128" text-anchor="middle">Council B</text></g><path marker-end="url(#flow-arrow-11)" class="edge " d="M123 38 H150 V79 H175"/><path marker-end="url(#flow-arrow-11)" class="edge " d="M123 123 H150 V79 H175"/><g class="node "><rect x="175" y="61" width="112" height="36" rx="3"/><text x="231" y="84" text-anchor="middle">Exchange</text></g><path marker-end="url(#flow-arrow-11)" class="edge " d="M287 79 H303"/><g class="node orange"><rect x="303" y="61" width="92" height="36" rx="3"/><text x="349" y="84" text-anchor="middle">Return</text></g></svg></div><p class="use"><strong>Fits</strong> Legitimacy and value conflict</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> do not treat simulated agents as substitutes for affected humans; attribute the abstract inspiration respectfully. </dd></div><div><dt>Stop</dt><dd> caucus consent plus invariant pass, or escalate.</dd></div></dl><a class="detail-link" href="#pattern-11---two-fire-council-unusual-culturally-bounded-inspiration">Full protocol and context ↗</a></article>
+<article class="pattern" id="visual-pattern-12"><div class="pattern-title"><span class="number">12</span><div><h3>Failure-First Foundry</h3><p>Challenge the premise shared by all</p></div></div><div class="mini"><svg viewBox="0 0 400 160" role="img" aria-label="Challenge the premise shared by all"><title>Challenge the premise shared by all</title><defs><marker id="flow-arrow-12" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 Z" fill="var(--edge)"/></marker></defs><g class="node "><rect x="8" y="55" width="120" height="36" rx="3"/><text x="68" y="78" text-anchor="middle">Shared premise</text></g><path marker-end="url(#flow-arrow-12)" class="edge " d="M128 73 H152"/><g class="node blue"><rect x="152" y="55" width="105" height="36" rx="3"/><text x="204.5" y="78" text-anchor="middle">Falsifiers</text></g><path marker-end="url(#flow-arrow-12)" class="edge " d="M257 73 H279"/><g class="node orange"><rect x="279" y="55" width="113" height="36" rx="3"/><text x="335.5" y="78" text-anchor="middle">Test/reframe</text></g><path marker-end="url(#flow-arrow-12)" class="edge loop" d="M335 91 V128 H67 V91"/></svg></div><p class="use"><strong>Fits</strong> Shared-premise failures</p><dl class="pattern-facts"><div><dt>Guard</dt><dd> catastrophic severity cannot be averaged away by low estimated frequency. </dd></div><div><dt>Stop</dt><dd> every above-threshold failure is mitigated, tested, or explicitly accepted.</dd></div></dl><a class="detail-link" href="#pattern-12---failure-first-foundry-unusual">Full protocol and context ↗</a></article></div><p class="small">Two-Fire Council is a culturally bounded inspiration. Decisions about legitimacy and value conflict require real stakeholders. <a href="#pattern-11---two-fire-council-unusual-culturally-bounded-inspiration">Read its full qualification ↗</a></p></section>
+<section class="chapter" id="comparison"><div class="chapter-head"><div class="section-label">04 / Compare</div><h2>Inspect tradeoffs across the same dimensions.</h2><p>These 1–5 scores are the report’s analytical judgments, not experimental results. Higher is favorable, including faster latency and better token economy. Conditions and ranges remain explicit.</p></div><div class="compare-controls"><span>Rows shown</span><button type="button" id="show-all" aria-pressed="true">All 12 patterns</button><button type="button" id="show-starters" aria-pressed="false">First prototypes</button><span class="small" id="matrix-count" role="status">12 patterns</span></div><div class="table-wrap" tabindex="0" aria-label="Scrollable pattern comparison"><table style="width:100%;" aria-label="Analytical comparison of twelve proposed coordination patterns">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr>
+<th>Pattern</th>
+<th style="text-align: right;">Quality</th>
+<th style="text-align: right;">Diversity preservation</th>
+<th style="text-align: right;">Factual reliability</th>
+<th style="text-align: right;">Creativity</th>
+<th style="text-align: right;">Robustness</th>
+<th style="text-align: right;">Latency</th>
+<th style="text-align: right;">Token economy</th>
+<th style="text-align: right;">Scalability</th>
+<th style="text-align: right;">Correlated-error resistance</th>
+</tr>
+</thead>
+<tbody>
+<tr data-pattern="0">
+<td><a href="#visual-pattern-1">Sealed Jury</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;">2–4, configuration-dependent</td>
+</tr>
+<tr data-pattern="1">
+<td><a href="#visual-pattern-2">Delphi Ladder</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+</tr>
+<tr data-pattern="2">
+<td><a href="#visual-pattern-3">ACH Evidence Matrix</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;">4 with source diversity</td>
+</tr>
+<tr data-pattern="3">
+<td><a href="#visual-pattern-4">Red–Blue–Umpire</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;">4 with tool-backed umpire</td>
+</tr>
+<tr data-pattern="4">
+<td><a href="#visual-pattern-5">Registered Replication Lab</a></td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="1">1</td>
+<td style="text-align: right;" data-score="1">1</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;">5 if replication is truly independent</td>
+</tr>
+<tr data-pattern="5">
+<td><a href="#visual-pattern-6">Mission Control Cells</a></td>
+<td style="text-align: right;">5 on decomposable tasks</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="3">3</td>
+</tr>
+<tr data-pattern="6">
+<td><a href="#visual-pattern-7">Rough Consensus, Running Tests</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+</tr>
+<tr data-pattern="7">
+<td><a href="#visual-pattern-8">Calibrated Forecast Market</a></td>
+<td style="text-align: right;">5 on forecasts</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="1">1</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;">3–4</td>
+</tr>
+<tr data-pattern="8">
+<td><a href="#visual-pattern-9">Andon Blackboard</a></td>
+<td style="text-align: right;">5 on pipelines</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="4">4</td>
+</tr>
+<tr data-pattern="9">
+<td><a href="#visual-pattern-10">Silent Minute</a></td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="3">3</td>
+</tr>
+<tr data-pattern="10">
+<td><a href="#visual-pattern-11">Two-Fire Council</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="2">2</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="4">4</td>
+</tr>
+<tr data-pattern="11">
+<td><a href="#visual-pattern-12">Failure-First Foundry</a></td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="4">4</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="5">5</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;" data-score="3">3</td>
+<td style="text-align: right;">5 for common-mode search</td>
+</tr>
+</tbody>
+</table></div><p class="small" style="margin-top:12px">Blue cells mark 5; warm cells mark 1. Values carry the meaning without color. Scroll within the table to inspect all dimensions.</p><div class="callout"><p><strong>No pattern dominates.</strong> Sealed Jury is a diversity baseline; Registered Replication targets verifiable reliability; Mission Control and Andon target decomposition; ACH targets diagnosis. Markets require resolvable outcomes. Value conflicts need stakeholders.</p></div></section>
+<section class="chapter" id="composition"><div class="chapter-head"><div class="section-label">05 / Compose</div><h2>MOSAIC: make each handoff explicit.</h2><p>The proposed meta-harness combines operators around a task profile. Freeze the rules first, preserve evidence through each stage, and stop when further work cannot justify its cost or authority.</p></div><div class="stages"><article class="stage"><h3>Prepare</h3><ol><li><b>01 Profile</b><span>Task, truth target, risk, budget.</span></li><li><b>02 Register</b><span>Rubric, evidence policy, tools, stopping rule, rights.</span></li><li><b>03 Diversify</b><span>Models, prompts, tools, corpora; estimate overlap.</span></li></ol></article><article class="stage"><h3>Generate & organize</h3><ol><li><b>04 Generate sealed</b><span>Independent candidates, hypotheses, forecasts, or plans.</span></li><li><b>05 Normalize</b><span>Claims, evidence, assumptions, confidence, falsifiers.</span></li><li><b>06 Route & fuse</b><span>Select mechanisms using the task profile.</span></li></ol></article><article class="stage"><h3>Challenge & verify</h3><ol><li><b>07 Challenge</b><span>Disputed, high-impact, low-evidence items.</span></li><li><b>08 Verify</b><span>Executable tests and source checks.</span></li></ol><p class="small">A revised candidate needs fresh checks. Do not carry a pass across changed bytes.</p></article><article class="stage"><h3>Decide & learn</h3><ol><li><b>09 Decide</b><span>Aggregate, accountable judge, commander, or human.</span></li><li><b>10 Record</b><span>Provenance, alternatives, minority report, residual risk.</span></li><li><b>11 Learn</b><span>Score resolved outcomes and review failures.</span></li></ol></article></div><div class="stop-row"><article class="stop"><h4>Finish with evidence</h4><p>Tests pass; no severe failure remains. Ranking or forecast precision meets its declared criterion.</p></article><article class="stop"><h4>Stop spending</h4><p>Evidence saturates, another call is not worth its cost, or the time/token budget is reached.</p></article><article class="stop"><h4>Escalate or preserve disagreement</h4><p>A safety veto, material objection, or lack of legitimate decision rights requires human authority.</p></article></div><a class="detail-link" href="#a-modular-meta-harness-mosaic">Full pipeline, typed protocol object, and eight stopping conditions ↗</a><h3 style="margin-top:32px">Prototype order proposed in the report</h3><ol class="build-order"><li><div><strong>Sealed Jury + correlation telemetry</strong><span>Establish whether the candidate pool contains useful diversity.</span></div></li><li><div><strong>ACH Evidence Matrix</strong><span>Exchange diagnostic evidence and hypotheses.</span></div></li><li><div><strong>Red–Blue–Umpire + executable checks</strong><span>Measure whether critique adds value beyond candidate selection.</span></div></li><li><div><strong>Mission Control + Andon</strong><span>Test task ownership, handoffs, and integration control.</span></div></li></ol><a class="detail-link" href="#prototype-order">Full prototype rationale ↗</a></section>
+<section class="chapter" id="evaluation"><div class="chapter-head"><div class="section-label">06 / Evaluate</div><h2>Separate better candidates from better coordination.</h2><p>Match total cost and the candidate pool. Count severe errors, coordination overhead, and negative results.</p></div><div class="evaluation"><article><h3>Generation gain</h3><p>Did independent work produce a better answer?</p><p class="metric">Candidate pool → oracle coverage</p><p>Compare the pool with the best individual. Track answer correlation and unique evidence.</p></article><article><h3>Selection gain</h3><p>Did the mechanism find the best available answer?</p><p class="metric">Oracle answer → chosen answer</p><p>Hold the pool constant. Audit order, identity, length, and judge-family sensitivity.</p></article><article><h3>Refinement gain</h3><p>Did interaction improve the candidates?</p><p class="metric">Before exchange → after exchange</p><p>Measure harmful flips, minority-correct recovery, grounded evidence, and added cost.</p></article></div><div class="table-wrap" tabindex="0" aria-label="Experiment questions and measures"><table><thead><tr><th>Question</th><th>Controlled comparison</th><th>What to measure</th></tr></thead><tbody><tr><td>Does isolation help?</td><td>Sealed/shared context × hidden/visible frequencies × same/heterogeneous models</td><td>Correlation, oracle coverage, harmful flips, final accuracy</td></tr><tr><td>Does exchange help?</td><td>Same candidate pool; vote, reasons, cross-examination, debate, or selection</td><td>Communication gain apart from sampling</td></tr><tr><td>Can dissent survive?</td><td>One valid minority signal against a plausible majority distractor</td><td>Recovery, suppression, malicious-dissenter discrimination</td></tr><tr><td>Do handoffs hold?</td><td>Vary task coupling and interface completeness</td><td>Duplicated edits, integration failures, critical-path latency</td></tr><tr><td>Does stopping adapt?</td><td>Fixed rounds versus evidence saturation and value of information</td><td>Quality-cost frontier and late-round regression</td></tr><tr><td>Does routing generalize?</td><td>Lock rules, then test shifted task distributions</td><td>Performance and regret versus the best per-task pattern</td></tr></tbody></table></div><div class="callout"><p><strong>Success criterion:</strong> beat the best ex-ante individual at matched total cost on at least three task strata, with statistically bounded improvement, no material rise in severe errors, and positive held-out results.</p></div><a class="detail-link" href="#evaluation-program-does-fusion-beat-the-best-individual">All six baselines, ten hypotheses, and ten experiments ↗</a></section>
+<section class="chapter" id="research"><div class="chapter-head"><div class="section-label">Research / Full detail</div><h2>Every argument, qualification, and source remains here.</h2><p>The complete version 3 research content is preserved below, including the composition response and TypeScript example added during review. Visual summaries above reorganize that material; they add no new research findings.</p></div><div class="reference-actions"><button type="button" id="expand-research">Expand all research</button><button type="button" id="collapse-research">Collapse research</button></div><details class="research-part"><summary>Executive finding</summary><div class="research-body"><section id="executive-finding" class="level2">
+<h2>Executive finding</h2>
+<p>The central design problem is not how to make agents talk. It is how to create, preserve, test, and selectively combine <strong>independent information</strong>.</p>
+<p>Human institutions that outperform individuals usually do at least one of five things:</p>
+<ol type="1">
+<li>expose the problem to genuinely different information or search paths;</li>
+<li>make claims legible enough to challenge;</li>
+<li>assign decision rights separately from proposal rights;</li>
+<li>connect confidence or authority to an external track record; or</li>
+<li>stop errors from propagating across boundaries.</li>
+</ol>
+<p>The corresponding anti-pattern is a roomful of nominally different agents that share a model, prompt, retrieved context, and transcript, then converge through persuasive prose. Human experiments show that even mild social influence can reduce estimate diversity without improving group error, while recent multi-agent-LLM studies report that debate can make correct agents adopt incorrect answers and that majority voting often accounts for most of debate's gains.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Consensus is therefore not evidence of independent agreement unless the harness can prove the independence of the paths that produced it.</p>
+<p>This report treats a “fusion harness” as an orchestration layer that can launch model instances, isolate or disclose context selectively, assign roles and tools, record structured claims, run external checks, aggregate judgments, and decide whether to answer, escalate, or abstain. The default assumptions are a mixture of same-model and cross-model agents, tasks spanning research/coding/planning/forecasting, and a harness able to keep private state and execute tools. The patterns remain usable under weaker assumptions, but their expected value changes.</p>
+</section></div></details>
+<details class="research-part"><summary>1. Design-space map</summary><div class="research-body"><section id="design-space-map" class="level2">
+<h2>1. Design-space map</h2>
+<section id="nine-coordination-mechanisms" class="level3">
+<h3>1.1 Nine coordination mechanisms</h3>
+<p>These are not mutually exclusive architectures. They are functional mechanisms that can be composed. I suggest composing them as stages with explicit inputs, outputs, and decision rights. See <a href="#composition-example">the composition recommendation and TypeScript example</a>.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table"><table>
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>What it preserves or creates</th>
+<th>Typical human institutions</th>
+<th>Natural decision rule</th>
+<th>Principal danger</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Independent diversity</td>
+<td>Uncorrelated hypotheses, estimates, or solutions</td>
+<td>blind parallel work, nominal groups, Delphi panels, juries before deliberation</td>
+<td>median, plurality, scoring, shortlist</td>
+<td>correlated errors disguised as a crowd</td>
+</tr>
+<tr>
+<td>Competition or adversarial pressure</td>
+<td>Search for counterexamples, deception, and weaknesses</td>
+<td>courts, debate, red teams, war games, prize contests</td>
+<td>judge/umpire, test result, dominance</td>
+<td>rhetoric, polarization, strategic gaming</td>
+</tr>
+<tr>
+<td>Cooperative synthesis</td>
+<td>A solution assembled from complementary partial views</td>
+<td>charrettes, interdisciplinary boards, councils</td>
+<td>editor/facilitator judgment, integrative proposal</td>
+<td>compromise artifact with no coherent theory</td>
+</tr>
+<tr>
+<td>Iterative criticism and refinement</td>
+<td>Error correction over versions</td>
+<td>peer review, replication, registered reports, design reviews, M&amp;M conferences</td>
+<td>pass/revise/reject; replicated/not replicated</td>
+<td>endless review, deference, reviewer monoculture</td>
+</tr>
+<tr>
+<td>Specialization and division of labor</td>
+<td>Coverage of a problem too large for one mind</td>
+<td>mission control, surgical teams, research labs, skilled trades</td>
+<td>domain go/no-go plus integrator</td>
+<td>brittle handoffs, local optimization, duplicated gaps</td>
+</tr>
+<tr>
+<td>Consensus formation</td>
+<td>Legitimacy and durable commitment</td>
+<td>juries, Quaker meetings, Haudenosaunee councils, IETF working groups</td>
+<td>unanimity, consent, rough consensus</td>
+<td>conformity, veto abuse, lowest-common-denominator answers</td>
+</tr>
+<tr>
+<td>Forecasting and uncertainty aggregation</td>
+<td>Calibrated probability from dispersed signals</td>
+<td>prediction markets, Delphi, weather ensembles, expert elicitation</td>
+<td>market price, weighted pool, proper score</td>
+<td>herding, thin participation, false precision</td>
+</tr>
+<tr>
+<td>Hierarchical command</td>
+<td>Fast coherent action under time pressure</td>
+<td>incident command, military command, flight control, monastic rule</td>
+<td>accountable commander decides</td>
+<td>authority bias, suppressed local knowledge</td>
+</tr>
+<tr>
+<td>Distributed/decentralized coordination</td>
+<td>Local adaptation without global micromanagement</td>
+<td>kanban/andon, mutual adjustment, federations, open technical communities</td>
+<td>local pull/stop rules plus interface standards</td>
+<td>inconsistent local state, integration debt</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section id="the-five-control-surfaces" class="level3">
+<h3>1.2 The five control surfaces</h3>
+<p>Any concrete protocol can be described by five control surfaces:</p>
+<p><strong>Information topology.</strong> Are initial contexts sealed, partially shared, or fully shared? Do agents receive identical evidence, different evidence shards, or deliberately heterogeneous tools? Are author/model identities visible? Information isolation must be a harness property with auditable boundaries, not a sentence in an agent prompt.</p>
+<p><strong>Work topology.</strong> Is effort redundant (several agents solve the whole task), decomposed (specialists own subtasks), conditional (critics awaken only on flags), or evolutionary (many candidates compete for a small continuation budget)?</p>
+<p><strong>Communication protocol.</strong> One-shot submissions, anonymous rounds, sequential entry, pairwise cross-examination, a shared blackboard, hierarchical reporting, or broadcast deliberation each create different failure modes.</p>
+<p><strong>Epistemic accounting.</strong> Free prose is the weakest interface. Stronger interfaces distinguish claims, evidence, assumptions, uncertainty, provenance, falsifiers, dependencies, and predicted observations. Confidence should be scored for calibration, not treated as authority.</p>
+<p><strong>Decision rights and stopping.</strong> Fusion may mean mechanical aggregation, selecting an existing candidate, editing a new synthesis, vetoing unsafe actions, or escalating to a human. Fixed rounds are easy but often wasteful; evidence saturation, test completion, posterior stability, risk thresholds, and marginal-value estimates are better stopping signals.</p>
+</section>
+<section id="a-useful-separation-generation-adjudication-and-execution" class="level3">
+<h3>1.3 A useful separation: generation, adjudication, and execution</h3>
+<p>A harness should normally separate three powers:</p>
+<ol class="pipeline">
+<li>
+Private generation
+</li>
+<li>
+Normalized claims and evidence
+</li>
+<li>
+Challenge and verification
+</li>
+<li>
+Decision record and minority report
+</li>
+<li>
+Execution gate
+</li>
+</ol>
+<p>The generator should not silently choose the rubric. The synthesizer should not erase dissent. The judge should not see authorship or answer frequency unless those are intentionally part of the rule. The executor should receive a decision record, not an unrestricted transcript containing prompt injections or persuasive noise.</p>
+<p>This resembles separation of powers more than a meeting. It also limits a known evaluator problem: LLM judges exhibit position, verbosity, and self-preference biases, so a single same-family judge is not a neutral oracle.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a><a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</section>
+<section id="composition-example" class="level3">
+<h3>1.4 Composing mechanisms in code</h3>
+<p><strong>Make each mechanism a typed step. Compose steps with sequence, parallel branches, and collection processing.</strong> A complete workflow is itself a step, so it can be reused inside another workflow.</p>
+<p>The previous example hardcoded one sequence. Here, the same generation, criticism, and verification steps support two different workflows:</p>
+<ul>
+<li><strong>Selection:</strong> generate independent candidates, inspect each candidate, then choose among those that pass. Start here for verifiable coding tasks because the selected artifact has already been checked.</li>
+<li><strong>Synthesis:</strong> generate independent candidates, combine useful parts into a new candidate, then inspect that new candidate. Use this when complementary contributions matter. Combining candidates creates a new artifact that needs its own checks.</li>
+</ul>
+<p class="provenance">Proposed design, not an existing SDK. The composition functions below are implemented; the agent and verification steps are injected adapters.</p>
+<h4>The two recipes</h4>
+<pre tabindex="0" aria-label="Two composable TypeScript workflows"><code>export function recipes(parts: Parts): {
+  readonly selection: Step&lt;Task, Decision&gt;;
+  readonly synthesis: Step&lt;Task, Decision&gt;;
+} {
+  const generate = parallel(parts.workers);
+  const inspect = flow(parts.challenge).then(parts.verify).run;
+
+  return {
+    selection: flow(generate)
+      .then(each(inspect))
+      .then(parts.select)
+      .run,
+
+    synthesis: flow(generate)
+      .then(parts.merge)
+      .then(inspect)
+      .then(parts.accept)
+      .run,
+  };
+}</code></pre>
+<p><code>inspect</code> is a composition of criticism and verification. In the selection workflow, <code>each(inspect)</code> applies it to every candidate. In the synthesis workflow, it checks the merged candidate. Both workflows expose the same <code>Step&lt;Task, Decision&gt;</code> interface.</p>
+<p>For example, three agents propose different designs for a cache. Selection checks all three designs and returns one. Synthesis may combine one candidate's eviction policy with another's invalidation rules, but the combined design must pass a fresh review. Passing checks on its ingredients does not establish that they work together.</p>
+<h4>The small composition layer</h4>
+<p><code>flow</code> sequences steps and stops downstream work on failure. <code>parallel</code> sends one input to several steps. <code>each</code> sends each item in a collection through the same step. The types require each output to match the next input.</p>
+<details>
+<summary>Show the TypeScript functions and adapter types</summary>
+<pre tabindex="0" aria-label="Composition functions and adapter types"><code>type Result&lt;TValue&gt; =
+  | { readonly ok: true; readonly value: TValue }
+  | { readonly ok: false; readonly reason: string };
+
+type Step&lt;TInput, TOutput&gt; =
+  (input: TInput) =&gt; Promise&lt;Result&lt;TOutput&gt;&gt;;
+
+interface Flow&lt;TInput, TOutput&gt; {
+  readonly run: Step&lt;TInput, TOutput&gt;;
+  then&lt;TNext&gt;(next: Step&lt;TOutput, TNext&gt;): Flow&lt;TInput, TNext&gt;;
+}
+
+export function flow&lt;TInput, TOutput&gt;(
+  run: Step&lt;TInput, TOutput&gt;,
+): Flow&lt;TInput, TOutput&gt; {
+  return {
+    run,
+    then: (next) =&gt; flow(async (input: TInput) =&gt; {
+      const result = await run(input);
+      return result.ok ? next(result.value) : result;
+    }),
+  };
+}
+
+async function collect&lt;TOutput&gt;(
+  pending: readonly Promise&lt;Result&lt;TOutput&gt;&gt;[],
+): Promise&lt;Result&lt;readonly TOutput[]&gt;&gt; {
+  const values: TOutput[] = [];
+  for (const result of await Promise.all(pending)) {
+    if (!result.ok) return result;
+    values.push(result.value);
+  }
+  return { ok: true, value: values };
+}
+
+export function parallel&lt;TInput, TOutput&gt;(
+  steps: readonly Step&lt;TInput, TOutput&gt;[],
+): Step&lt;TInput, readonly TOutput[]&gt; {
+  return (input) =&gt; collect(steps.map((step) =&gt; step(input)));
+}
+
+export function each&lt;TInput, TOutput&gt;(
+  step: Step&lt;TInput, TOutput&gt;,
+): Step&lt;readonly TInput[], readonly TOutput[]&gt; {
+  return (inputs) =&gt; collect(inputs.map((input) =&gt; step(input)));
+}
+
+// Domain records are immutable references to stored artifacts.
+type Task = { readonly brief: string; readonly snapshot: string };
+type Candidate = { readonly artifactId: string };
+type Review = {
+  readonly candidate: Candidate;
+  readonly objections: readonly string[];
+};
+type Checked = {
+  readonly review: Review;
+  readonly status: "pass" | "blocked";
+};
+type Decision =
+  | { readonly reason: string; readonly status: "blocked" }
+  | {
+      readonly candidate: Candidate;
+      readonly recordId: string;
+      readonly status: "selected";
+    };
+
+interface Parts {
+  readonly accept: Step&lt;Checked, Decision&gt;;
+  readonly challenge: Step&lt;Candidate, Review&gt;;
+  readonly merge: Step&lt;readonly Candidate[], Candidate&gt;;
+  readonly select: Step&lt;readonly Checked[], Decision&gt;;
+  readonly verify: Step&lt;Review, Checked&gt;;
+  readonly workers: readonly Step&lt;Task, Candidate&gt;[];
+}</code></pre>
+</details>
+<h4>What makes these agent mechanisms</h4>
+<p>The composition functions control data flow. The adapters supply each mechanism's behavior and enforce its rules. Bind the adapters to the run's fixed task, requirements, rubric, permissions, and record store.</p>
+<ul>
+<li><strong>Workers implement sealed generation.</strong> Each worker runs in its own session and workspace against the same input snapshot. It commits an immutable artifact before downstream disclosure. Parallel calls alone do not provide isolation.</li>
+<li><strong>Challenge and verify implement Red–Blue–Umpire.</strong> The critic receives the candidate and requirements, then produces objections. The verifier checks the exact artifact and records evidence and a disposition for every material objection. Only verified results can receive <code>pass</code>.</li>
+<li><strong>Select implements constrained adjudication.</strong> It considers only passing candidates, returns one of their exact artifact references, and preserves the full review record. Empty input or no passing candidates returns a blocked decision. The judge cannot introduce a rewritten candidate.</li>
+<li><strong>Merge implements cooperative synthesis.</strong> It records which contributions it used, resolves conflicting assumptions, and creates a new immutable artifact. Its position before <code>inspect</code> makes fresh criticism and verification part of the workflow.</li>
+<li><strong>Accept implements the final gate.</strong> It converts a passing check into a selected decision and a blocked check into a blocked decision. Selection carries no additional permission to execute or publish.</li>
+</ul>
+<h4>How I would extend this</h4>
+<p><strong>Compose locally first.</strong> Use selection for one bounded task. When a larger task can be decomposed, let Mission Control assign subtasks that each run this workflow, then verify their integration. Add Andon at the dependency boundary so invalidating an artifact stops its consumers. The child workflow keeps its existing interface.</p>
+<p>For a diagnosis, define steps for hypotheses, evidence comparison, and falsification. For a forecast, define steps for probability estimates and aggregation. Reuse the composition functions while giving each domain its own record types and decision rules.</p>
+<p><strong>Keep enforcement in the runtime.</strong> The small functions above assume adapters return declared results rather than reject their promises. They do not implement cancellation, concurrency limits, budgets, isolation, output validation, or durable records. <code>parallel</code> waits for its launched branches before returning a failure; it does not cancel them. The runtime must record partial results and enforce deadlines independently.</p>
+<p class="provenance">Checked: strict TypeScript compilation, failure stopping downstream work, parallel result order, collection processing, and both recipes with test adapters. The synthesis check confirmed that the merged artifact reaches review. These checks do not establish real agent isolation or verification quality. No project files were written; browser rendering remains untested.</p>
+<details>
+<summary>Earlier fixed-workflow sketch</summary>
+<p><strong>Start with sealed proposals, separate criticism, external verification, and selection.</strong> Each mechanism has one job. The output of one stage becomes the explicitly allowed input to the next. Keep the sequence in ordinary code so its decision rules can be inspected.</p>
+<p class="provenance">Design proposal added in response to your annotation. The TypeScript below illustrates proposed runtime interfaces; it is not an existing Fusion Harness or HCN API.</p>
+<h4>A first composition for verifiable coding tasks</h4>
+<p>For a caller asking for a code change, use three independent proposals against the same repository snapshot and requirements. Each proposal is an immutable candidate patch. This composition explores alternatives, checks them, and returns a selected candidate with its review record.</p>
+<ol class="pipeline">
+<li><strong>SEALED GENERATION</strong>Take the independent first-pass mechanism from Sealed Jury. Three isolated workers produce candidates. They cannot read one another's work.</li>
+<li><strong>RED REVIEW</strong>A fresh critic examines each candidate against the requirements and proposes objections with tests. It receives that candidate, without the producer's transcript or the other candidates.</li>
+<li><strong>TOOL-BACKED VERIFICATION</strong>The Umpire runs the required checks and investigates the objections against the exact candidate. Failed or unresolved material checks block that candidate.</li>
+<li><strong>SELECTION AND RECORD</strong>A separate judge chooses an existing candidate from those that passed. The result retains every candidate, objection, and verification result.</li>
+</ol>
+<p>This uses Sealed Jury's isolation and Red–Blue–Umpire's challenge and verification. For open-ended patches, selection replaces majority voting. An optional revision stage can come later; every revised or synthesized artifact must go through criticism and verification again.</p>
+<h4>TypeScript example</h4>
+<p>The orchestration is concrete; model calls, isolation, tool execution, and durable recording are runtime adapters. Each adapter returns a result for operational failures. The runtime contracts following the code define what those adapters must enforce.</p>
+<pre tabindex="0" aria-label="TypeScript composition example"><code>type Result&lt;TValue&gt; =
+  | { readonly ok: true; readonly value: TValue }
+  | { readonly error: string; readonly ok: false };
+
+interface Task {
+  readonly requirements: readonly string[];
+  readonly snapshot: string;
+}
+interface Candidate {
+  readonly artifact: string;
+  readonly id: string;
+}
+interface Objection {
+  readonly claim: string;
+  readonly test: string;
+}
+type Gate =
+  | { readonly evidence: readonly string[]; readonly status: "pass" }
+  | { readonly reasons: readonly string[]; readonly status: "blocked" };
+interface Reviewed {
+  readonly candidate: Candidate;
+  readonly gate: Gate;
+  readonly objections: readonly Objection[];
+}
+type Decision =
+  | { readonly reason: string; readonly status: "blocked" }
+  | {
+      readonly candidates: readonly Reviewed[];
+      readonly chosen: Candidate;
+      readonly reason: string;
+      readonly status: "selected";
+    };
+
+// Proposed ports, implemented by your runtime.
+interface Runtime {
+  challenge(task: Task, candidate: Candidate):
+    Promise&lt;Result&lt;readonly Objection[]&gt;&gt;;
+  choose(task: Task, candidates: readonly Candidate[]):
+    Promise&lt;Result&lt;{ readonly id: string; readonly reason: string }&gt;&gt;;
+  propose(task: Task, route: string): Promise&lt;Result&lt;string&gt;&gt;;
+  verify(
+    task: Task,
+    candidate: Candidate,
+    objections: readonly Objection[],
+  ): Promise&lt;Result&lt;Gate&gt;&gt;;
+}
+
+export async function compose(
+  task: Task,
+  routes: readonly [string, string, string],
+  runtime: Runtime,
+): Promise&lt;Decision&gt; {
+  // 1. Sealed generation. No candidate is disclosed before all finish.
+  const drafts = await Promise.all(
+    routes.map((route) =&gt; runtime.propose(task, route)),
+  );
+  const candidates: Candidate[] = [];
+  for (const [index, draft] of drafts.entries()) {
+    if (!draft.ok) {
+      return { reason: draft.error, status: "blocked" };
+    }
+    candidates.push({ artifact: draft.value, id: "C" + (index + 1) });
+  }
+
+  // 2. Red review, then tool-backed verification of every candidate.
+  const reviewed: Reviewed[] = [];
+  for (const candidate of candidates) {
+    const critique = await runtime.challenge(task, candidate);
+    if (!critique.ok) {
+      return { reason: critique.error, status: "blocked" };
+    }
+    const check = await runtime.verify(task, candidate, critique.value);
+    if (!check.ok) {
+      return { reason: check.error, status: "blocked" };
+    }
+    reviewed.push({
+      candidate,
+      gate: check.value,
+      objections: critique.value,
+    });
+  }
+
+  // 3. Selection is limited to artifacts that passed the gate.
+  const eligible = reviewed
+    .filter((item) =&gt; item.gate.status === "pass")
+    .map((item) =&gt; item.candidate);
+  if (eligible.length === 0) {
+    return { reason: "No candidate passed verification.", status: "blocked" };
+  }
+  const selection = await runtime.choose(task, eligible);
+  if (!selection.ok) {
+    return { reason: selection.error, status: "blocked" };
+  }
+  const chosen = eligible.find(
+    (candidate) =&gt; candidate.id === selection.value.id,
+  );
+  if (!chosen) {
+    return { reason: "Judge returned an ineligible ID.", status: "blocked" };
+  }
+  return {
+    candidates: reviewed,
+    chosen,
+    reason: selection.value.reason,
+    status: "selected",
+  };
+}</code></pre>
+<h4>What the runtime must enforce</h4>
+<ul>
+<li><strong>Isolation and disclosure.</strong> Each proposal runs in a fresh session with an isolated workspace and the fixed input snapshot. Shared files, memory, and tool state must not expose other workers' outputs. <code>Promise.all</code> only schedules calls; it does not create isolation. Resolve the three route names to recorded model, prompt, and tool configurations. Different routes alone do not prove independent errors.</li>
+<li><strong>Verification authority.</strong> Freeze requirements and the selection rubric before generation. Validate model outputs at runtime. Only the verifier can issue <code>pass</code>, based on recorded checks tied to the candidate's exact bytes. A critic's empty objection list is insufficient. Missing checks, unresolved material objections, and unavailable verification produce <code>blocked</code>. Treat suggested tests as untrusted input to the authorized test runner.</li>
+<li><strong>Selection limits.</strong> Give the judge anonymous candidates in shuffled order, the fixed rubric, and no producer transcripts or vote counts. The example validates the returned ID and returns the original candidate bytes. If the judge cannot justify a selection, its adapter returns a failure result. Selection does not authorize applying, merging, or deploying the patch.</li>
+<li><strong>Bounded execution and records.</strong> Apply a shared deadline and total budget across calls and tools. Convert operational failures into the declared result type. Persist each submission, objection, receipt, and terminal outcome as it arrives, including on blocked runs. The compact function returns the complete review record on selection; partial records on failure remain the runtime's responsibility.</li>
+</ul>
+<p><strong>Example outcome:</strong> C1 fails a required compatibility test. C2 passes. C3 has an unresolved material objection. Only C2 reaches selection, while C1 and C3 remain in the record. If none passes, the run stops with a blocked result. A later revision is a new candidate with new verification.</p>
+<h4>How the other mechanisms fit</h4>
+<ul>
+<li><strong>ACH Evidence Matrix:</strong> for ambiguous diagnosis, have the sealed workers propose hypotheses. Insert the evidence matrix before challenge so the critic targets the leading explanation and competing causes.</li>
+<li><strong>Mission Control plus Andon:</strong> for decomposable work, put this candidate-selection sequence inside each bounded task. Mission Control owns task interfaces and integration; Andon blocks dependent work when an accepted artifact is invalidated. The combined result still needs integration checks.</li>
+<li><strong>Registered Replication:</strong> for a path requiring stronger evidence, register the method and review it before production, then independently replicate the selected candidate before release. Merely rerunning tests at the end implements a replication check, not the full registered protocol.</li>
+<li><strong>Delphi or a calibrated forecast pool:</strong> for forecasts, replace patch selection with probability aggregation and later outcome scoring. A forecast does not pass an immediate correctness gate in the same way as an executable test.</li>
+</ul>
+<p><strong>Composition rule:</strong> add a mechanism where its input, output, and authority fit the task. A stage that changes an artifact invalidates checks on the previous version. A stage that shares candidates ends their sealed phase. A stage that grants decision authority needs that authority declared explicitly.</p>
+<p class="provenance">The earlier fixed-workflow example passed strict TypeScript checking. Its runtime adapters and end-to-end behavior were not tested.</p>
+</details>
+</section>
+</section></div></details>
+<details class="research-part"><summary>2. What changes when the participants are AI agents</summary><div class="research-body"><section id="what-changes-when-the-participants-are-ai-agents" class="level2">
+<h2>2. What changes when the participants are AI agents</h2>
+<p>Human methods cannot be copied literally. Their useful mechanisms and their AI substitutions are:</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>Human property</th>
+<th>AI difference</th>
+<th>Harness implication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Different biographies and private experience</td>
+<td>Same-model agents share training, policy, and inductive biases</td>
+<td>Create diversity with model families, prompts, tools, retrieval corpora, seeds, and problem representations; measure output correlation</td>
+</tr>
+<tr>
+<td>Social status and authority gradients</td>
+<td>Agents infer authority from wording, labels, verbosity, or majority signals</td>
+<td>Anonymize sources, randomize order, hide vote counts, require itemized rebuttals</td>
+</tr>
+<tr>
+<td>Costly effort and reputational stakes</td>
+<td>More fluent text is cheap; role-played incentives may be cosmetic</td>
+<td>Reward externally checkable discoveries, tests, calibrated forecasts, or unique evidence - not persuasiveness</td>
+</tr>
+<tr>
+<td>Tacit knowledge</td>
+<td>Models can produce plausible rationales not causally tied to answers</td>
+<td>Score artifacts and predictions; do not equate chain-of-thought quality with correctness</td>
+</tr>
+<tr>
+<td>Independent witnesses</td>
+<td>Cloned agents may be statistically dependent</td>
+<td>Estimate effective channel count; five correlated votes are not five votes</td>
+</tr>
+<tr>
+<td>Deliberation can reveal private facts</td>
+<td>Full transcripts also leak anchors, errors, and prompt injections</td>
+<td>Use staged disclosure and structured claim exchange rather than transcript broadcast</td>
+</tr>
+<tr>
+<td>Human fatigue and meeting cost</td>
+<td>Tokens and latency still scale with agents × rounds × context</td>
+<td>Route expensive patterns only when task value and uncertainty justify them</td>
+</tr>
+<tr>
+<td>Consensus can create commitment</td>
+<td>Agents need no emotional buy-in</td>
+<td>Preserve dissent for epistemic value; do not spend tokens manufacturing unanimity</td>
+</tr>
+<tr>
+<td>Expertise can be earned and socially recognized</td>
+<td>Model self-confidence is often uncalibrated</td>
+<td>Maintain task-specific empirical scorecards and calibrate on held-out “seed” questions</td>
+</tr>
+</tbody>
+</table></div>
+<p>Recent evidence makes the correlation issue concrete. Self-consistency improves several reasoning benchmarks by sampling multiple paths and marginalizing answers, but it does not guarantee independent errors.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a> A 2026 study reports strong diminishing returns for homogeneous multi-agent scaling and larger gains from heterogeneous models, prompts, or tools; its finding should be treated as recent, not settled.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> Anthropic's experiments also found sycophancy across several assistants and linked it partly to preference optimization, reinforcing the need to prevent agents from reading a supposed consensus before committing their own view.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+</section></div></details>
+<details class="research-part"><summary>3. Method families and agent translations</summary><div class="research-body"><section id="method-families-and-agent-translations" class="level2">
+<h2>3. Method families and agent translations</h2>
+<p>Each entry marks historical description as <strong>documented</strong> and the proposed AI protocol as <strong>design inference</strong>.</p>
+<section id="a.-independent-diversity" class="level3">
+<h3>A. Independent diversity</h3>
+<section id="a1.-blind-parallel-estimates-and-the-wisdom-of-crowds" class="level4">
+<h4>A1. Blind parallel estimates and the “wisdom of crowds”</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Individuals estimate or solve before communicating; an aggregate such as a median cancels some idiosyncratic error. It is designed for noisy estimation and choice where relevant information is dispersed. Lorenz et al.'s experiment is also the key warning: showing people others' estimates narrowed diversity and increased confidence without reliably improving collective error.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Identical question → sealed individual work → standardized answer/confidence → mechanical aggregate. There is no discussion before commitment.</li>
+<li><strong>Why it succeeds.</strong> Errors that point in different directions cancel; the aggregate is less sensitive to one outlier.</li>
+<li><strong>Failure modes.</strong> Shared priors or sources produce correlated errors; majority vote can bury a rare correct answer; duplicated effort is deliberate; aggregation is poor for open-ended designs; information cascades begin as soon as earlier answers are visible. Formal cascade models show how later actors can rationally ignore private signals after observing predecessors.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></li>
+<li><strong>Agent protocol - design inference.</strong> Launch 3–9 sealed agents with varied model/prompt/tool configurations. Require an answer, confidence, evidence references, and a short falsifier. Canonicalize equivalent answers before vote/median. Preserve the full candidate set for an oracle-gap analysis.</li>
+<li><strong>Harness enforcement.</strong> No shared transcript or vote counts; independent random seeds; model/config provenance; correlation-aware weights; abstention; answer-order randomization.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for bounded questions, estimates, classification, math with a canonical answer, and candidate generation. Worst for tightly coupled systems, rare-expert facts absent from all contexts, and coherent long-form artifacts.</li>
+</ul>
+</section>
+<section id="a2.-nominal-group-technique" class="level4">
+<h4>A2. Nominal group technique</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Participants first generate ideas silently, then contribute them in a round-robin, clarify without advocacy, and privately rank priorities. It was developed to prevent dominant speakers and premature evaluation from suppressing problem identification and planning.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Facilitator; silent ideators; recorder; sequential idea listing; clarification; secret ranking. Ranked totals select priorities.</li>
+<li><strong>Why it succeeds.</strong> Separating production from evaluation gives every member agenda access and creates an auditable option inventory.</li>
+<li><strong>Failure modes.</strong> Similar participants still generate similar lists; clarification can smuggle advocacy; ranking favors broadly acceptable but mediocre options; the structured meeting has overhead.</li>
+<li><strong>Agent protocol - design inference.</strong> All agents submit a fixed number of distinct proposals privately. The harness deduplicates semantically but retains provenance. Agents receive an anonymized option list, may ask factual clarification only, then score against a precommitted rubric.</li>
+<li><strong>Harness enforcement.</strong> Phase gates; equal proposal quota; anonymous IDs; anti-duplication clustering; rubric fixed before options are shown; no free-form persuasion during scoring.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for requirements, risk lists, research questions, naming, feature ideation, and test generation. Worst when proposals are meaningful only as integrated wholes or require long interactive construction.</li>
+</ul>
+</section>
+<section id="a3.-stepladder-entry" class="level4">
+<h4>A3. Stepladder entry</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Two members begin discussing after everyone first thinks independently. Additional members enter one at a time and present their ideas before hearing the group's current conclusion. In an original four-person experiment, stepladder groups outperformed conventional groups on a survival decision task.<a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Private preparation; a growing core; ordered entrants; final group choice.</li>
+<li><strong>Why it succeeds.</strong> Late entrants retain fresh information and cannot merely echo a settled opening position.</li>
+<li><strong>Failure modes.</strong> Early core still frames the debate; later agents may have too little influence; sequence matters; latency is linear.</li>
+<li><strong>Agent protocol - design inference.</strong> Each agent commits a sealed answer. A two-agent core forms a draft. One new agent at a time sees only the task and its own commitment, states differences, then receives the current draft. The draft must log accepted/rejected deltas.</li>
+<li><strong>Harness enforcement.</strong> Commit-before-read; randomized entry; change log; dissent retention; stop when two consecutive entrants add no new claim, evidence, or test.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for synthesis where fresh critique matters and a draft must remain coherent. Worst for urgent tasks or large swarms.</li>
+</ul>
+</section>
+<section id="a4.-delphi-panels" class="level4">
+<h4>A4. Delphi panels</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Experts answer anonymously in rounds; a facilitator returns statistical summaries and selected rationales; experts revise without face-to-face status pressure. RAND's early experiments framed Delphi as a method for group judgment under uncertainty.<a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Panelists; facilitator; repeated questionnaire; anonymous feedback; convergence, stable distribution, or round limit. Median and interquartile range are common outputs rather than forced unanimity.</li>
+<li><strong>Why it succeeds.</strong> It combines revision with anonymity and gives extreme views a chance to contribute reasons without letting personalities dominate.</li>
+<li><strong>Failure modes.</strong> Facilitator selection of feedback biases the panel; repeated medians anchor; convergence may be cosmetic; expert selection dominates results; slow rounds.</li>
+<li><strong>Agent protocol - design inference.</strong> Agents submit probability distributions plus rationales. The harness returns anonymized distribution summaries and the most diagnostic pro/con evidence, not a single “group answer.” Revision requires a reason code: new evidence, corrected logic, or social update.</li>
+<li><strong>Harness enforcement.</strong> Anonymous rounds; robust statistics; rationale sampling from both tails; calibration history; maximum rounds; convergence and unresolved-width stopping conditions.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for forecasts, uncertain estimates, policy scenarios, and requirement prioritization. Worst for externally verifiable tasks where running the test is cheaper than eliciting opinion.</li>
+</ul>
+</section>
+</section>
+<section id="b.-competition-and-adversarial-pressure" class="level3">
+<h3>B. Competition and adversarial pressure</h3>
+<section id="b1.-adversarial-courts-and-cross-examination" class="level4">
+<h4>B1. Adversarial courts and cross-examination</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Opposing parties develop their strongest cases under shared rules; witnesses and evidence are tested through cross-examination; a judge controls relevance, order, time, and harassment; a jury or judge decides. Federal Rule of Evidence 611 explicitly connects court control to truth-finding and avoiding wasted time.<a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Claimant, opponent, witnesses/evidence, judge, fact-finder; pleadings → evidence → direct examination → cross-examination → decision under a burden of proof.</li>
+<li><strong>Why it succeeds.</strong> It gives a motivated party standing to search for weaknesses that a cooperative group may overlook, while procedure constrains the contest.</li>
+<li><strong>Failure modes.</strong> Advocacy can optimize persuasion rather than truth; unequal capability/resources; binary framing excludes alternatives; polarization; the better rhetorician may win; excessive process.</li>
+<li><strong>Agent protocol - design inference.</strong> A claimant submits atomic claims and evidence. An opposing agent may challenge admissibility, relevance, credibility, or inference. A neutral evidence clerk resolves source facts; the judge scores only the surviving record against an explicit burden.</li>
+<li><strong>Harness enforcement.</strong> Symmetric budgets; fixed burdens; source citation and quotation limits; anonymous parties; claim-level rulings; judge blind to model identity; appeal on specified procedural errors.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for audit, safety cases, legal-like evidence disputes, architecture choices, and high-impact claims. Worst for broad creative exploration, underspecified values, and problems with many more than two live hypotheses.</li>
+</ul>
+</section>
+<section id="b2.-red-teams-and-devils-advocates" class="level4">
+<h4>B2. Red teams and devil's advocates</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> A protected team adopts the perspective of an adversary or attacks assumptions, vulnerabilities, and failure paths in a friendly plan. Army guidance emphasizes defined roles, focus on key vulnerabilities, plausible adversary actions, a facilitator/arbitrator, and improvement of the plan rather than argument for its own sake.<a href="#fn15" class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Blue plan; red challenge; controller/umpire; plan owner revises; accountable authority accepts risk.</li>
+<li><strong>Why it succeeds.</strong> The institution gives dissent a job, budget, and legitimacy; it turns “being negative” into useful work.</li>
+<li><strong>Failure modes.</strong> Ritual opposition, predictable critiques, red-team capture, performative hostility, endless edge cases, or blue-team defensiveness. A forced devil's advocate may produce arguments it does not actually believe.</li>
+<li><strong>Agent protocol - design inference.</strong> Red receives the plan but not blue's internal reasoning. It must provide executable counterexamples, exploit paths, or falsification tests, ranked by impact × plausibility. Blue must answer each high-risk finding with mitigation, acceptance, or evidence of impossibility. Umpire verifies.</li>
+<li><strong>Harness enforcement.</strong> Separate contexts; asymmetric objectives; exploit/test requirement; severity rubric; no “looks good” completion; residual-risk register; hard timebox.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for cybersecurity, plans, contracts, safety, policy abuse cases, and production readiness. Worst for simple factual questions and early ideation where criticism would freeze exploration.</li>
+</ul>
+</section>
+<section id="b3.-war-gaming-and-scenario-play" class="level4">
+<h4>B3. War-gaming and scenario play</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Teams simulate action, reaction, and counteraction across plausible courses of action; controllers adjudicate effects and surface assumptions. Army planning guidance uses war-gaming to anticipate enemy responses and refine controls that reduce risk.<a href="#fn16" class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Blue, red, neutral control, sometimes green/civilian actors; scenario setup → turns → adjudication → branch/sequel analysis → plan revision. The commander selects a course of action.</li>
+<li><strong>Why it succeeds.</strong> Dynamic interaction reveals second-order effects that static critique misses.</li>
+<li><strong>Failure modes.</strong> Umpire bias; unrealistic adversary; game rules encode the conclusion; narrative seduction; combinatorial explosion; agents exploit simulator artifacts.</li>
+<li><strong>Agent protocol - design inference.</strong> Encode state, objectives, action budget, observability, and adjudication rules. Run several seeded scenarios with red strategies drawn independently. Compare plans on regret, not just average outcome; mine failures into contingency triggers.</li>
+<li><strong>Harness enforcement.</strong> Explicit state transitions; hidden information; multiple red policies; stochastic runs; adjudicator evidence; branch budget; ban retrospective rule changes.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for strategy, negotiations, incident response, rollout planning, and adversarial environments. Worst where the transition model is mostly invented or a direct real-world test is available.</li>
+</ul>
+</section>
+</section>
+<section id="c.-cooperative-synthesis" class="level3">
+<h3>C. Cooperative synthesis</h3>
+<section id="c1.-design-charrettes" class="level4">
+<h4>C1. Design charrettes</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Interdisciplinary participants work rapidly, often in subgroups, on aspects or alternative solutions and repeatedly bring them together into a comprehensive design. The U.S. National Park Service describes charrettes as collaborative, time-bounded sessions that may split into subgroups and reconvene.<a href="#fn17" class="footnote-ref" id="fnref17" role="doc-noteref"><sup>17</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Sponsor/problem owner; facilitator; domain participants; sketch teams; review pin-ups; integrator. A design owner or sponsor selects and combines.</li>
+<li><strong>Why it succeeds.</strong> External representations - sketches, maps, prototypes - let participants coordinate around an artifact rather than prose and expose interface conflicts early.</li>
+<li><strong>Failure modes.</strong> Charismatic designer dominance; incoherent feature collage; solution fixation; aesthetics outrun evidence; high synchronization cost.</li>
+<li><strong>Agent protocol - design inference.</strong> Parallel agents produce artifacts with declared assumptions and interfaces. A synthesis agent may only combine modules after interface tests and must name the governing concept, rejected alternatives, and unresolved contradictions.</li>
+<li><strong>Harness enforcement.</strong> Shared artifact schema; independent first sketches; timed divergence/convergence; interface contracts; visual/testable prototypes; coherence review separate from feature voting.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for product design, architectures, curricula, research agendas, and complex documents. Worst for single-answer factual tasks or changes that cannot be modularized.</li>
+</ul>
+</section>
+<section id="c2.-multidisciplinary-case-conference" class="level4">
+<h4>C2. Multidisciplinary case conference</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented by analogy.</strong> Medicine brings specialists with different evidence and risk models around one case; surgical checklist practice adds mandatory pauses in which the whole team verbally confirms critical facts rather than relying on memory. WHO specifies three critical pauses and whole-team participation; the original multicenter study associated the checklist program with lower complications and deaths.<a href="#fn18" class="footnote-ref" id="fnref18" role="doc-noteref"><sup>18</sup></a><a href="#fn19" class="footnote-ref" id="fnref19" role="doc-noteref"><sup>19</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Case owner; specialists; coordinator; shared record; differential/options; attending or patient makes the final decision.</li>
+<li><strong>Why it succeeds.</strong> Complementary expertise covers blind spots, while a shared case record prevents basic facts from falling between specialties.</li>
+<li><strong>Failure modes.</strong> Senior physician anchoring; specialist tunnel vision; diffusion of responsibility; duplicated testing; handoff loss; conference conclusions without ownership.</li>
+<li><strong>Agent protocol - design inference.</strong> Specialists receive the same canonical case plus domain-specific tools. Each submits findings, contraindications, and unknowns. A coordinator merges the state; a mandatory “time-out” checks identity, objective, constraints, evidence freshness, and irreversible actions before execution.</li>
+<li><strong>Harness enforcement.</strong> Domain ownership; common data model; explicit handoffs; contradiction detector; no execution until all required checks return; named owner for each unresolved risk.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for cross-domain research, migrations, complex debugging, and high-stakes action planning. Worst when roles are artificial and all agents have identical capability.</li>
+</ul>
+</section>
+</section>
+<section id="d.-iterative-criticism-and-refinement" class="level3">
+<h3>D. Iterative criticism and refinement</h3>
+<section id="d1.-peer-review-registered-reports-and-replication" class="level4">
+<h4>D1. Peer review, registered reports, and replication</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Peer review subjects methods and claims to expert criticism; registered reports review the question and method before results are known and grant in-principle acceptance based on rigor; independent replication tests whether a result survives a new team and run.<a href="#fn20" class="footnote-ref" id="fnref20" role="doc-noteref"><sup>20</sup></a> The Open Science Collaboration's 100-study project illustrates why replication is a distinct information channel rather than a ceremonial second opinion.<a href="#fn21" class="footnote-ref" id="fnref21" role="doc-noteref"><sup>21</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Authors; editor; reviewers; independent replicators; preregistered protocol; revision; replicate/reject/qualify. Publication and truth are separate decisions.</li>
+<li><strong>Why it succeeds.</strong> Precommitment prevents post-hoc story repair; reviewers improve design before sunk cost; replication exposes hidden dependencies and implementation mistakes.</li>
+<li><strong>Failure modes.</strong> Reviewer consensus and prestige bias; publication incentives; replication using the same flawed materials; slow cycles; authors gaming metrics; “reviewed” mistaken for “true.”</li>
+<li><strong>Agent protocol - design inference.</strong> Before solving, one agent writes a testable plan, expected outputs, and failure criteria. A methods reviewer critiques it blind to results. A producer executes. An independent replicator gets the task, plan, and public artifacts but not the producer's narrative, and uses a different model/tool chain when possible.</li>
+<li><strong>Harness enforcement.</strong> Immutable preregistration hash; results-blind review; provenance; environment capture; independent tool/model path; discrepancy report; no silent post-hoc metric changes.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for research, coding, data analysis, migrations, and high-stakes factual claims. Worst for trivial tasks or subjective creative work lacking falsifiable criteria.</li>
+</ul>
+</section>
+<section id="d2.-failure-mode-analysis-premortems-and-safety-cases" class="level4">
+<h4>D2. Failure-mode analysis, premortems, and safety cases</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> FMEA decomposes a system into functions, possible failure modes, causes, effects, detection, and mitigation; NASA treats it as a living risk assessment performed alongside development.<a href="#fn22" class="footnote-ref" id="fnref22" role="doc-noteref"><sup>22</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Cross-functional owners; failure enumerators; risk assessors; control owners; review authority. Risks are prioritized by severity, occurrence/plausibility, and detectability, then closed or accepted.</li>
+<li><strong>Why it succeeds.</strong> It reverses the default search direction: begin from failure and trace backward, making silent interfaces and common-mode risks visible.</li>
+<li><strong>Failure modes.</strong> Huge tables, invented probabilities, checkbox compliance, correlated reviewers missing the same mode, low-frequency catastrophic risks washed out by multiplicative scores.</li>
+<li><strong>Agent protocol - design inference.</strong> A failure-first agent receives only requirements and architecture, not the optimistic rationale. For every function it proposes failure → cause → observable symptom → consequence → test → mitigation. A common-mode specialist searches for one cause that defeats multiple agents or safeguards.</li>
+<li><strong>Harness enforcement.</strong> Coverage map; severity floor; separate common-mode pass; evidence for closure; owner/deadline; no averaging away a catastrophic unresolved mode.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for systems, code, workflows, safety, compliance, and launch review. Worst for unconstrained ideation and low-consequence prose.</li>
+</ul>
+</section>
+<section id="d3.-morbidity-and-mortality-conference-after-action-review" class="level4">
+<h4>D3. Morbidity-and-mortality conference / after-action review</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Teams reconstruct what was intended, what happened, why, and what should change. Army AAR guidance emphasizes candid multi-perspective discussion against standards; medical M&amp;M conferences aim to learn from errors, though studies note that errors may be discussed too infrequently.<a href="#fn23" class="footnote-ref" id="fnref23" role="doc-noteref"><sup>23</sup></a><a href="#fn24" class="footnote-ref" id="fnref24" role="doc-noteref"><sup>24</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Participants, facilitator, record keeper, action owner; timeline → contributing factors → counterfactuals → changes → follow-up.</li>
+<li><strong>Why it succeeds.</strong> Outcome feedback updates the institution, not only the individual; near misses become training data.</li>
+<li><strong>Failure modes.</strong> Blame, hindsight bias, sanitized narratives, vague lessons, no ownership, recurrence without measurement.</li>
+<li><strong>Agent protocol - design inference.</strong> After each benchmark or production incident, replay decisions from logged state. Separate “known then” from “known now.” Agents identify local error, process error, and common-mode error; the harness turns only testable lessons into routing or protocol changes.</li>
+<li><strong>Harness enforcement.</strong> Immutable event log; counterfactual replay; blameless language; evidence-linked lessons; action owner; regression test; expiry/revalidation of rules.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for long-running systems with repeated task classes. Worst for one-off tasks with no feedback.</li>
+</ul>
+</section>
+</section>
+<section id="e.-specialization-and-division-of-labor" class="level3">
+<h3>E. Specialization and division of labor</h3>
+<section id="e1.-mission-control-and-crew-resource-management" class="level4">
+<h4>E1. Mission control and crew resource management</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Mission control assigns consoles to subsystems under a flight director; key decisions use explicit go/no-go polls and prewritten flight rules. NASA describes the flight director as overseeing specialized controllers, while mission management polls technical teams at decision points.<a href="#fn25" class="footnote-ref" id="fnref25" role="doc-noteref"><sup>25</sup></a> Aviation crew resource management emphasizes using all available people, equipment, and information, with open communication and assertion across authority gradients.<a href="#fn26" class="footnote-ref" id="fnref26" role="doc-noteref"><sup>26</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Domain controllers; integrator/flight director; single communication channel; criteria-based polls; commander decides.</li>
+<li><strong>Why it succeeds.</strong> Specialization improves monitoring depth, standardized calls reduce ambiguity, and one accountable integrator prevents conflicting commands.</li>
+<li><strong>Failure modes.</strong> Local “go” statuses hide system interactions; authority bias; channel bottlenecks; alert overload; specialists optimize their console rather than mission outcome.</li>
+<li><strong>Agent protocol - design inference.</strong> Route work to capability-scored specialists. Each owns a bounded state slice and returns <code>GO</code>, <code>NO-GO</code>, or <code>GO WITH CONSTRAINT</code>, plus evidence and freshness. The director sees the global state but cannot overwrite a <code>NO-GO</code>; it must resolve, accept risk explicitly, or escalate.</li>
+<li><strong>Harness enforcement.</strong> Typed reports; span-of-control limit; freshness timestamps; one owner per interface; decision criteria predeclared; concise exception-only communication; human gate for irreversible risk.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for large coding projects, operations, migrations, investigations, and tool-rich tasks. Worst for small indivisible questions where orchestration costs more than solving.</li>
+</ul>
+</section>
+<section id="e2.-apprenticeship-and-master-review" class="level4">
+<h4>E2. Apprenticeship and master review</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented by broad tradition; protocol is inferential.</strong> Skilled trades divide work by demonstrated competence: novices perform bounded tasks using exemplars, while masters inspect critical joins and retain sign-off authority. The mechanism addresses reliable skill transfer and safe delegation.</li>
+<li><strong>Roles, stages, communication, decision.</strong> Master scopes and demonstrates; apprentice executes; journeyman checks; master signs off or returns work.</li>
+<li><strong>Why it succeeds.</strong> Expensive expertise is concentrated at task definition and high-risk inspection rather than every action.</li>
+<li><strong>Failure modes.</strong> Master bottleneck; inherited bad practice; novice hides uncertainty; review becomes rubber-stamping; little independent diversity.</li>
+<li><strong>Agent protocol - design inference.</strong> A strong model decomposes and creates acceptance tests; cheaper agents execute bounded tickets; a separate verifier checks artifacts; the strong model handles only failed or high-risk joins.</li>
+<li><strong>Harness enforcement.</strong> Capability registry from observed results; bounded permissions; examples/tests; escalation triggers; random audit even after pass; no self-signoff.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for scalable routine coding, extraction, classification, and document production. Worst for tasks whose hard part is decomposition or where cheap-agent errors are hard to detect.</li>
+</ul>
+</section>
+</section>
+<section id="f.-consensus-formation" class="level3">
+<h3>F. Consensus formation</h3>
+<section id="f1.-jury-deliberation" class="level4">
+<h4>F1. Jury deliberation</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Jurors hear a bounded evidentiary record, apply a common legal standard, deliberate, and in U.S. federal criminal practice must reach unanimity. Model instructions emphasize that each juror decides for themselves, may change when persuaded, but should not surrender judgment merely because others disagree.<a href="#fn27" class="footnote-ref" id="fnref27" role="doc-noteref"><sup>27</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Judge/instructions; advocates/evidence; jurors; foreperson; private deliberation; unanimous or threshold verdict, otherwise hung jury.</li>
+<li><strong>Why it succeeds.</strong> Diverse lay interpretation plus a demanding burden can reduce unilateral error and confer legitimacy.</li>
+<li><strong>Failure modes.</strong> Group polarization, charismatic foreperson, compromise verdicts, hidden-profile failure, holdouts, social pressure. Human group research finds discussion often over-samples shared information and preference-consistent facts.<a href="#fn28" class="footnote-ref" id="fnref28" role="doc-noteref"><sup>28</sup></a></li>
+<li><strong>Agent protocol - design inference.</strong> Sealed verdicts precede deliberation. Only disagreements and decisive evidence are disclosed. Each juror must file an individual post-deliberation verdict and change reason. A hung result triggers more evidence or escalation, not forced consensus.</li>
+<li><strong>Harness enforcement.</strong> Evidence boundary; independent pre-vote; anonymous arguments; burden of proof; dissent right; maximum deliberation; hung/abstain state.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for consequential binary decisions, moderation appeals, test acceptance, and evidence-bounded diagnosis. Worst for creative generation and many-option optimization.</li>
+</ul>
+</section>
+<section id="f2.-ietf-rough-consensus-and-running-code" class="level4">
+<h4>F2. IETF rough consensus and running code</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> The IETF does not reduce consensus to vote counts. RFC 7282 defines rough consensus as addressing technical objections, not necessarily accommodating each one, while implementations and interoperability evidence constrain elegant but untested preferences.<a href="#fn29" class="footnote-ref" id="fnref29" role="doc-noteref"><sup>29</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Contributors; document editor; working-group chair; implementers; objections; prototypes; chair calls consensus, subject to appeal.</li>
+<li><strong>Why it succeeds.</strong> It prevents both 51% majoritarianism and single-person veto, and moves disputes from taste toward demonstrated consequences.</li>
+<li><strong>Failure modes.</strong> Chair bias; endless recurring objections; incumbent implementation advantage; “running code” that is not representative; ugly compromises.</li>
+<li><strong>Agent protocol - design inference.</strong> Agents submit objections in a structured form: requirement threatened, mechanism, evidence/test, severity. The chair may close an objection only with a recorded technical answer. Implementations/tests outrank raw vote count; unresolved material objections remain in the decision record.</li>
+<li><strong>Harness enforcement.</strong> Objection ledger; no duplicate vote weighting; executable tests; chair separated from proposer; appeal; distinguish “addressed” from “agreed.”</li>
+<li><strong>Best / worst AI tasks.</strong> Best for protocols, APIs, architecture, standards, and interoperable code. Worst for pure forecasts, aesthetics, or urgent incidents.</li>
+</ul>
+</section>
+<section id="f3.-quaker-sense-of-the-meeting-and-deliberate-silence" class="level4">
+<h4>F3. Quaker “sense of the meeting” and deliberate silence</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Quaker business meetings seek a shared “sense of the meeting” through communal discernment rather than majority voting; silence and pauses are part of the method, contentious matters may be laid over, and a member may stand aside while their disagreement is recorded.<a href="#fn30" class="footnote-ref" id="fnref30" role="doc-noteref"><sup>30</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Clerk/facilitator; participants; periods of silence; concise contributions; clerk proposes a minute; participants test whether it captures the sense; defer, stand aside, or unite.</li>
+<li><strong>Why it succeeds.</strong> Slowness suppresses reactive turn-taking; the written minute becomes the object of agreement; standing aside distinguishes principled dissent from obstruction.</li>
+<li><strong>Failure modes.</strong> Informal status remains; silence can conceal exclusion; long latency; ambiguous metaphysical legitimacy; pressure to appear spiritually unified.</li>
+<li><strong>Agent protocol - design inference.</strong> After reading candidate claims, impose a no-communication reflection pass in which every agent privately lists what would change its mind and whether it has novel evidence. A clerk drafts a minimal decision minute. Agents may accept, object with a material test, or stand aside with a recorded minority note.</li>
+<li><strong>Harness enforcement.</strong> Silent phase; one concise intervention per agent; materiality test for objections; defer option; immutable minority minute; prohibit claims that “everyone independently agrees” after shared exposure.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for value-sensitive policies, governance rules, and decisions where durable dissent records matter. Worst for emergencies and routine verifiable work.</li>
+</ul>
+</section>
+<section id="f4.-haudenosaunee-layered-council" class="level4">
+<h4>F4. Haudenosaunee layered council</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented with cultural caution.</strong> Haudenosaunee governance unites nations while preserving their internal councils. Confederacy materials describe chiefs accountable to clans, selected and removable by Clan Mothers, and a Grand Council with ordered consideration among national groups; Onondaga leaders may raise objections concerning consistency with the Great Law.<a href="#fn31" class="footnote-ref" id="fnref31" role="doc-noteref"><sup>31</sup></a> This is a living political tradition, not a generic workshop technique.</li>
+<li><strong>Roles, stages, communication, decision.</strong> Clan constituencies; chiefs as representatives; Clan Mothers with selection/accountability powers; ordered national “fires”; Onondaga keepers; consensus bounded by constitutional law.</li>
+<li><strong>Why it succeeds.</strong> Representation, agenda flow, and constitutional review are separated; leaders are accountable to a constituency rather than owning their seat.</li>
+<li><strong>Failure modes.</strong> Slow movement across layers; translation loss; gatekeeper capture; formal consensus can hide unequal inclusion. Extracting the form without its cultural and ethical context would be inappropriate.</li>
+<li><strong>Agent protocol - design inference.</strong> Use only the abstract mechanism: independent caucuses evaluate a proposal, successive caucuses can amend but not erase prior objections, and a final constitutional-constraint agent checks invariants. Agent selectors/evaluators are separate from proposal agents.</li>
+<li><strong>Harness enforcement.</strong> Layered state machine; constituency-specific rubrics; amendment provenance; constitutional veto limited to enumerated invariants; replace agents based on observed failure; respectful attribution.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for federated systems, multi-stakeholder policy, and requirements with non-negotiable constraints. Worst for simple tasks and contexts where the cultural analogy would substitute for engaging affected people.</li>
+</ul>
+</section>
+<section id="f5.-benedictine-full-counsel-with-accountable-final-authority" class="level4">
+<h4>F5. Benedictine full counsel with accountable final authority</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Chapter 3 of the Rule of St. Benedict directs the abbot to call the whole community on weighty matters because insight may come from the younger member, then places the final decision and accountability on the abbot.<a href="#fn32" class="footnote-ref" id="fnref32" role="doc-noteref"><sup>32</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Whole community advises; junior and senior voices are heard; abbot decides under a governing rule and bears responsibility.</li>
+<li><strong>Why it succeeds.</strong> Broad consultation captures peripheral knowledge without diffusing final accountability.</li>
+<li><strong>Failure modes.</strong> Advice can be ceremonial; authority bias; obedience suppresses correction; the leader becomes a bottleneck.</li>
+<li><strong>Agent protocol - design inference.</strong> For high-impact decisions, solicit one sealed view from every relevant specialist, including the cheapest/least-established agent before exposing the lead model's view. A commander agent decides but must cite each materially different submission and own an explicit risk statement.</li>
+<li><strong>Harness enforcement.</strong> Junior-first disclosure; mandatory consultation coverage; decision rationale; dissent ledger; accountable signer; appeal for omitted evidence.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for time-bounded choices requiring broad input and one coherent action. Worst when the commander cannot be externally evaluated or when decentralized execution is safer.</li>
+</ul>
+</section>
+<section id="f6.-deliberative-polling-and-citizens-assemblies" class="level4">
+<h4>F6. Deliberative polling and citizens' assemblies</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Deliberative Polling draws a random representative sample, records baseline views, supplies balanced briefing materials, uses moderated small groups and questions to competing experts, then polls again.<a href="#fn33" class="footnote-ref" id="fnref33" role="doc-noteref"><sup>33</sup></a> Ireland's Citizens' Assembly uses stratified random selection, repeated evidence sessions, deliberation, and votes on recommendations.<a href="#fn34" class="footnote-ref" id="fnref34" role="doc-noteref"><sup>34</sup></a> These mechanisms address complex public choices where ordinary polls measure uninformed reaction and open meetings overrepresent organized participants.</li>
+<li><strong>Roles, stages, communication, decision.</strong> Sortition/recruitment authority; representative participants; neutral secretariat; moderators; competing experts and stakeholders; baseline poll → learning → small-group deliberation → plenary questions → private final vote or recommendations. Elected institutions retain formal authority.</li>
+<li><strong>Why it succeeds.</strong> Selection creates viewpoint coverage without requiring permanent experts; balanced time and information can expose participants to tradeoffs; pre/post measurement distinguishes deliberation from simple preference collection.</li>
+<li><strong>Failure modes.</strong> Briefing authors and expert panels frame the option set; demographic representation does not ensure cognitive independence; small groups can polarize; the process is expensive; governments may ignore recommendations; “representative” agents cannot create democratic legitimacy.</li>
+<li><strong>Agent protocol - design inference.</strong> For epistemic search only, sample a stratified panel across model families, tools, disciplines, risk attitudes, and problem framings. Record sealed baseline rankings, provide balanced evidence packets with adversarial source coverage, deliberate in small cells, then take anonymous post-deliberation rankings and explain changes.</li>
+<li><strong>Harness enforcement.</strong> Stratification targets; information isolation for the baseline; symmetric evidence budgets; neutral moderation; secret pre/post votes; agenda provenance; separate factual findings from value choices; human decision rights whenever real stakeholders are affected.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for mapping policy options, stakeholder-relevant tradeoffs, and evidence-sensitive recommendations. Worst - and illegitimate - for substituting simulated agents for consent, representation, or decisions that belong to affected people.</li>
+</ul>
+</section>
+</section>
+<section id="g.-forecasting-and-uncertainty-aggregation" class="level3">
+<h3>G. Forecasting and uncertainty aggregation</h3>
+<section id="g1.-prediction-markets-and-proper-scoring" class="level4">
+<h4>G1. Prediction markets and proper scoring</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Participants buy or sell contracts tied to outcomes; prices aggregate willingness to risk resources on beliefs. Market scoring rules make continuous probability elicitation possible even with thin participation.<a href="#fn35" class="footnote-ref" id="fnref35" role="doc-noteref"><sup>35</sup></a> Proper scoring rules such as the Brier score reward probabilistic accuracy over repeated resolved questions.<a href="#fn36" class="footnote-ref" id="fnref36" role="doc-noteref"><sup>36</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Traders; market maker; contract resolver; repeated trades; closing price or time-weighted price becomes the forecast.</li>
+<li><strong>Why it succeeds.</strong> Participants can express intensity, update continuously, and profit from correcting a mistaken consensus.</li>
+<li><strong>Failure modes.</strong> Thin markets, ambiguous resolution criteria, manipulation, correlated information, wealth/budget effects, no learning when events resolve late.</li>
+<li><strong>Agent protocol - design inference.</strong> Give agents virtual budgets based on task-specific calibration. They trade probability mass on explicit outcomes and attach evidence to large moves. Payoffs update their future influence after resolution; a market maker ensures liquidity.</li>
+<li><strong>Harness enforcement.</strong> Precise resolution rules; budget conservation; proper scores; position limits; identity separation; evidence log; no use for unresolvable normative questions.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for repeated forecasting, risk triage, timeline estimates, and test pass probabilities. Worst for one-off creative outputs or outcomes without objective resolution.</li>
+</ul>
+</section>
+<section id="g2.-performance-weighted-expert-judgment-and-superforecasting" class="level4">
+<h4>G2. Performance-weighted expert judgment and superforecasting</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Cooke-style structured expert judgment uses calibration questions with known answers to measure statistical accuracy and informativeness, then constructs performance-weighted pools.<a href="#fn37" class="footnote-ref" id="fnref37" role="doc-noteref"><sup>37</sup></a> In geopolitical forecasting experiments, probability training, team collaboration, and tracking high performers improved calibration and resolution.<a href="#fn38" class="footnote-ref" id="fnref38" role="doc-noteref"><sup>38</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Experts/forecasters; calibration-set designer; scorer; aggregator; repeated updates; performance-weighted probability.</li>
+<li><strong>Why it succeeds.</strong> Influence is earned on observable task performance rather than status or confidence alone.</li>
+<li><strong>Failure modes.</strong> Seed questions may not match the target; past performance decays; scoring can reward overfitting; elite grouping narrows diversity; rare events calibrate slowly.</li>
+<li><strong>Agent protocol - design inference.</strong> Maintain capability vectors by domain, tool, horizon, and task form. Before a high-stakes estimate, give agents hidden matched seeds. Weight current forecasts by out-of-sample calibration and novelty, not self-reported certainty.</li>
+<li><strong>Harness enforcement.</strong> Held-out rotating seeds; time-decayed weights; calibration curves; minimum diversity quota; equal-weight fallback when validation is weak.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for repeated estimates and domains with resolvable historical items. Worst for novel regimes and sparse outcome feedback.</li>
+</ul>
+</section>
+</section>
+<section id="h.-hierarchical-command" class="level3">
+<h3>H. Hierarchical command</h3>
+<section id="h1.-incident-command-system-and-unified-command" class="level4">
+<h4>H1. Incident Command System and unified command</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> The Incident Command System provides common terminology, modular organization, manageable span of control, resource tracking, and unity of command. Unified Command lets agencies with different authority coordinate without surrendering their legal responsibilities.<a href="#fn39" class="footnote-ref" id="fnref39" role="doc-noteref"><sup>39</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Incident commander/unified command; operations, planning, logistics, finance; command staff; operational periods and incident action plans. Each person has one supervisor.</li>
+<li><strong>Why it succeeds.</strong> Under pressure it reduces conflicting directives, makes ownership visible, and expands or contracts with the incident.</li>
+<li><strong>Failure modes.</strong> Central bottleneck; stale situation reports; frontline signals filtered upward; bureaucracy applied to small incidents; authority suppresses specialist alarms.</li>
+<li><strong>Agent protocol - design inference.</strong> Create a temporary org chart sized to task complexity. Planning maintains state and forecasts; operations executes; logistics manages tools/context; safety can halt; commander sets objectives and approves action. Replan at bounded operational periods.</li>
+<li><strong>Harness enforcement.</strong> One reporting line; span-of-control cap; shared incident state; resource ledger; explicit objectives; safety stop; handoff protocol; demobilize roles when complexity falls.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for live incidents, multi-tool operations, migrations, and long-running autonomous work. Worst for brainstorming, small questions, and problems where central control creates a single point of failure.</li>
+</ul>
+</section>
+</section>
+<section id="i.-distributed-and-decentralized-coordination" class="level3">
+<h3>I. Distributed and decentralized coordination</h3>
+<section id="i1.-toyota-kanban-jidoka-and-andon" class="level4">
+<h4>I1. Toyota kanban, jidoka, and andon</h4>
+<ul>
+<li><strong>Human mechanism and problem - documented.</strong> Kanban makes downstream need pull upstream work; jidoka stops production when an abnormality appears; andon makes the problem and its location visible so help arrives before defects flow onward. Toyota documents stop-button-linked andons and the principle that defects should not be passed to the next process.<a href="#fn40" class="footnote-ref" id="fnref40" role="doc-noteref"><sup>40</sup></a></li>
+<li><strong>Roles, stages, communication, decision.</strong> Local operator; downstream requester; visible board; supervisor/problem solver; pull token; stop signal; resume after correction.</li>
+<li><strong>Why it succeeds.</strong> It localizes coordination, limits work in progress, and gives any worker power to prevent error propagation.</li>
+<li><strong>Failure modes.</strong> Too many stops, hidden buffers, gaming metrics, local flow optimization, starvation, and treating alerts as noise.</li>
+<li><strong>Agent protocol - design inference.</strong> Agents pull typed tasks from a shared blackboard only when capacity is free. Every artifact carries acceptance tests and provenance. Any consumer can raise an <code>ANDON</code> that freezes dependent propagation while leaving independent branches running.</li>
+<li><strong>Harness enforcement.</strong> Work-in-progress limits; dependency graph; consumer-driven pull; stop-the-line permission; alert deduplication; root-cause owner; resume criteria; cache/reuse to prevent duplicated effort.</li>
+<li><strong>Best / worst AI tasks.</strong> Best for pipelines, repositories, data processing, and distributed research with clear artifacts. Worst for tightly coupled real-time deliberation or problems without testable handoffs.</li>
+</ul>
+</section>
+</section>
+</section></div></details>
+<details class="research-part"><summary>4. Cross-cutting failure modes and countermeasures</summary><div class="research-body"><section id="cross-cutting-failure-modes-and-countermeasures" class="level2">
+<h2>4. Cross-cutting failure modes and countermeasures</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Mechanism</th>
+<th>Harness countermeasure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Groupthink / sycophancy</td>
+<td>Agents infer agreement is rewarded</td>
+<td>sealed first answers; anonymous claims; explicit dissent quota; no consensus reward</td>
+</tr>
+<tr>
+<td>Authority bias</td>
+<td>Model label, verbosity, or “lead agent” status substitutes for evidence</td>
+<td>hide identities; junior-first order; itemized evidence; appeal path</td>
+</tr>
+<tr>
+<td>Polarization</td>
+<td>Roles become identities and arguments escalate</td>
+<td>rotate roles; score discoveries not wins; allow synthesis only after factual rulings</td>
+</tr>
+<tr>
+<td>Information cascade</td>
+<td>Later agents copy visible early answers</td>
+<td>commit-before-read; random order; disclose reasons without frequencies</td>
+</tr>
+<tr>
+<td>Compromise answer</td>
+<td>Synthesizer blends incompatible candidates</td>
+<td>require governing theory and interface tests; selection allowed; do not force averaging</td>
+</tr>
+<tr>
+<td>Hidden-profile failure</td>
+<td>Shared facts dominate discussion over unique decisive facts</td>
+<td>unique-evidence slots; diagnosticity scoring; query each agent for nonshared evidence</td>
+</tr>
+<tr>
+<td>Duplicated effort</td>
+<td>Parallelism repeats identical search</td>
+<td>use redundancy only when independence is valuable; diversify tools/corpora; semantic dedup</td>
+</tr>
+<tr>
+<td>Coordination overhead</td>
+<td>Agents × rounds × transcript grows rapidly</td>
+<td>task router; exception-only communication; adaptive stopping; cheap scouts before expensive agents</td>
+</tr>
+<tr>
+<td>Correlated agent errors</td>
+<td>Same model/data produces same confident mistake</td>
+<td>heterogeneous channels; common-mode critic; effective-sample-size estimate; external tests</td>
+</tr>
+<tr>
+<td>Judge bias</td>
+<td>Evaluator prefers position, style, verbosity, or own family</td>
+<td>shuffle order; blind authorship; pairwise rubric items; multiple judges; executable checks</td>
+</tr>
+<tr>
+<td>Context leakage</td>
+<td>Error, anchor, or prompt injection crosses agents</td>
+<td>least-privilege context; typed messages; sanitize retrieved text; separate executor context</td>
+</tr>
+<tr>
+<td>False confidence</td>
+<td>Agreement or fluent rationale is mistaken for calibration</td>
+<td>probability forecasts; calibration histories; answer-changing reasons; abstention</td>
+</tr>
+</tbody>
+</table></div>
+</section></div></details>
+<details class="research-part"><summary>5. Twelve concrete fusion-harness patterns</summary><div class="research-body"><section id="twelve-concrete-fusion-harness-patterns" class="level2">
+<h2>5. Twelve concrete fusion-harness patterns</h2>
+<section id="pattern-1---sealed-jury" class="level3">
+<h3>Pattern 1 - Sealed Jury</h3>
+<p><strong>Protocol:</strong> 5–9 agents answer independently with confidence, evidence, and falsifier. Normalize answers. Take a mechanical vote/median for bounded outputs; for open outputs, shortlist by rubric-blind pairwise judging. Reveal disagreement only after the pre-vote. A final juror vote may change only with a logged reason.</p>
+<p><strong>Use:</strong> Default high-value bounded reasoning. <strong>Guard:</strong> estimate effective rather than nominal voter count. <strong>Stop:</strong> stable aggregate plus no unresolved high-confidence minority evidence.</p>
+</section>
+<section id="pattern-2---delphi-ladder" class="level3">
+<h3>Pattern 2 - Delphi Ladder</h3>
+<p><strong>Protocol:</strong> Round 1 sealed distributions. Return median/range and anonymized rationales sampled from both tails. Round 2 revisions include reason codes. Continue only while new diagnostic evidence appears or interval width materially shrinks.</p>
+<p><strong>Use:</strong> Forecasts and estimates. <strong>Guard:</strong> never show model identities or a single authoritative “consensus.” <strong>Stop:</strong> two stable rounds, target interval width, or budget.</p>
+</section>
+<section id="pattern-3---ach-evidence-matrix" class="level3">
+<h3>Pattern 3 - ACH Evidence Matrix</h3>
+<p><strong>Protocol:</strong> One agent generates mutually exclusive hypotheses; other agents independently add evidence and alternatives. Score each evidence item's consistency and diagnosticity across hypotheses. A falsifier attacks the leading hypothesis; the conclusion is the least-disconfirmed hypothesis plus sensitivity analysis, not the most eloquently supported one. This directly adapts the CIA's Analysis of Competing Hypotheses.<a href="#fn41" class="footnote-ref" id="fnref41" role="doc-noteref"><sup>41</sup></a></p>
+<p><strong>Use:</strong> Diagnosis, intelligence-style research, root-cause analysis. <strong>Guard:</strong> require missing hypotheses and deception/common-cause checks. <strong>Stop:</strong> ranking stable under reasonable evidence-weight perturbations.</p>
+</section>
+<section id="pattern-4---redblueumpire" class="level3">
+<h3>Pattern 4 - Red–Blue–Umpire</h3>
+<p><strong>Protocol:</strong> Blue proposes; Red sees the artifact but not Blue's hidden rationale and produces executable attacks; a tool-backed Umpire rules claim by claim; Blue mitigates or explicitly accepts residual risks.</p>
+<p><strong>Use:</strong> Security, architecture, rollout plans. <strong>Guard:</strong> symmetrical budgets and external tests. <strong>Stop:</strong> no unresolved risk above threshold or human escalation.</p>
+</section>
+<section id="pattern-5---registered-replication-lab" class="level3">
+<h3>Pattern 5 - Registered Replication Lab</h3>
+<p><strong>Protocol:</strong> Planner preregisters method, success metric, and failure criteria. Results-blind reviewer approves/revises. Producer executes. A differently configured replicator re-runs from public artifacts. Meta-review compares outcomes and reports discrepancies.</p>
+<p><strong>Use:</strong> Research, code, data transformations, high-stakes claims. <strong>Guard:</strong> immutable plan hash and environment capture. <strong>Stop:</strong> successful independent replication or explicit nonreplication.</p>
+</section>
+<section id="pattern-6---mission-control-cells" class="level3">
+<h3>Pattern 6 - Mission Control Cells</h3>
+<p><strong>Protocol:</strong> A director assigns typed subsystem ownership. Specialists send exception-only <code>GO/NO-GO/CONSTRAINED</code> reports with freshness and evidence. The director integrates; a safety role can halt; an action agent receives only approved instructions.</p>
+<p><strong>Use:</strong> Large decomposable tool tasks and incidents. <strong>Guard:</strong> one owner per interface and span-of-control limit. <strong>Stop:</strong> all critical consoles go or accepted risk is human-signed.</p>
+</section>
+<section id="pattern-7---rough-consensus-running-tests" class="level3">
+<h3>Pattern 7 - Rough Consensus, Running Tests</h3>
+<p><strong>Protocol:</strong> Proposals become implementations or testable specs. Objections must name a violated requirement and reproducible test. A chair closes objections only with technical dispositions; raw vote count is nonbinding. The minority report ships with the decision.</p>
+<p><strong>Use:</strong> APIs, standards, code architecture. <strong>Guard:</strong> chair cannot be proposal author. <strong>Stop:</strong> all material objections addressed, not necessarily agreed with.</p>
+</section>
+<section id="pattern-8---calibrated-forecast-market" class="level3">
+<h3>Pattern 8 - Calibrated Forecast Market</h3>
+<p><strong>Protocol:</strong> Agents trade virtual probability shares with budgets derived from domain calibration. Large moves require evidence links. Outcomes settle under prewritten rules; scores update future budgets.</p>
+<p><strong>Use:</strong> Repeated forecasts and risk estimates. <strong>Guard:</strong> resolution clarity, position limits, time-decayed reputation. <strong>Stop:</strong> close time or price stability subject to minimum participation.</p>
+</section>
+<section id="pattern-9---andon-blackboard-unusual" class="level3">
+<h3>Pattern 9 - Andon Blackboard <em>(unusual)</em></h3>
+<p><strong>Protocol:</strong> Agents pull work from a dependency board. Outputs are immutable versioned artifacts, not chat turns. Any downstream consumer can raise <code>ANDON(reason, evidence, affected_edges)</code>, freezing only dependent work. A root-cause cell repairs and revalidates before resumption.</p>
+<p><strong>Use:</strong> Long pipelines, repositories, distributed research. <strong>Guard:</strong> WIP limits and alert deduplication. <strong>Stop:</strong> board empty and no open andons.</p>
+</section>
+<section id="pattern-10---silent-minute-unusual" class="level3">
+<h3>Pattern 10 - Silent Minute <em>(unusual)</em></h3>
+<p><strong>Protocol:</strong> After candidates are available, every agent performs a private silent pass: strongest objection, change-my-mind evidence, and preferred action. A clerk writes the shortest decision minute that addresses material objections. Agents accept, object with a test, or stand aside; stand-asides are preserved rather than argued away.</p>
+<p><strong>Use:</strong> Governance and value-laden decisions. <strong>Guard:</strong> do not claim independent consensus after shared exposure. <strong>Stop:</strong> accepted minute, principled stand-aside, or defer.</p>
+</section>
+<section id="pattern-11---two-fire-council-unusual-culturally-bounded-inspiration" class="level3">
+<h3>Pattern 11 - Two-Fire Council <em>(unusual; culturally bounded inspiration)</em></h3>
+<p><strong>Protocol:</strong> Two or more stakeholder caucuses evaluate independently under different rubrics. Their amendments flow sequentially with full provenance. A separate constitutional keeper may veto only enumerated invariant violations. The final record includes each caucus's unresolved objection.</p>
+<p><strong>Use:</strong> Multi-stakeholder policies and federated systems. <strong>Guard:</strong> do not treat simulated agents as substitutes for affected humans; attribute the abstract inspiration respectfully. <strong>Stop:</strong> caucus consent plus invariant pass, or escalate.</p>
+</section>
+<section id="pattern-12---failure-first-foundry-unusual" class="level3">
+<h3>Pattern 12 - Failure-First Foundry <em>(unusual)</em></h3>
+<p><strong>Protocol:</strong> Before solution optimization, one team enumerates function → failure → cause → propagation → symptom → mitigation. A separate common-mode agent searches for single causes that defeat multiple safeguards. Only then do builders spend the main implementation budget.</p>
+<p><strong>Use:</strong> Safety-critical systems and irreversible workflows. <strong>Guard:</strong> catastrophic severity cannot be averaged away by low estimated frequency. <strong>Stop:</strong> every above-threshold failure is mitigated, tested, or explicitly accepted.</p>
+</section>
+</section></div></details>
+<details class="research-part"><summary>6. Comparative assessment of the strongest candidates</summary><div class="research-body"><section id="comparative-assessment-of-the-strongest-candidates" class="level2">
+<h2>6. Comparative assessment of the strongest candidates</h2>
+<p>Scores are analytical judgments for a capable implementation, not empirical facts: <strong>5 = favorable</strong>, except latency and token cost where <strong>5 = fast/cheap</strong>, and correlated-error resistance where <strong>5 = resistant</strong>.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table"><table style="width:100%;">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr>
+<th>Pattern</th>
+<th style="text-align: right;">Quality</th>
+<th style="text-align: right;">Diversity preservation</th>
+<th style="text-align: right;">Factual reliability</th>
+<th style="text-align: right;">Creativity</th>
+<th style="text-align: right;">Robustness</th>
+<th style="text-align: right;">Latency</th>
+<th style="text-align: right;">Token economy</th>
+<th style="text-align: right;">Scalability</th>
+<th style="text-align: right;">Correlated-error resistance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sealed Jury</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2–4, configuration-dependent</td>
+</tr>
+<tr>
+<td>Delphi Ladder</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>ACH Evidence Matrix</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4 with source diversity</td>
+</tr>
+<tr>
+<td>Red–Blue–Umpire</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4 with tool-backed umpire</td>
+</tr>
+<tr>
+<td>Registered Replication Lab</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5 if replication is truly independent</td>
+</tr>
+<tr>
+<td>Mission Control Cells</td>
+<td style="text-align: right;">5 on decomposable tasks</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>Rough Consensus, Running Tests</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>Calibrated Forecast Market</td>
+<td style="text-align: right;">5 on forecasts</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3–4</td>
+</tr>
+<tr>
+<td>Andon Blackboard</td>
+<td style="text-align: right;">5 on pipelines</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>Silent Minute</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>Two-Fire Council</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>Failure-First Foundry</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5 for common-mode search</td>
+</tr>
+</tbody>
+</table></div>
+<p>No pattern dominates. Sealed Jury is a cheap diversity baseline; Registered Replication is the reliability ceiling for verifiable work; Mission Control and Andon win on decomposition; ACH wins on ambiguous diagnosis; markets win only when outcomes resolve; value conflicts need real stakeholders, not simulated consensus.</p>
+</section></div></details>
+<details class="research-part"><summary>7. Prototype order</summary><div class="research-body"><section id="prototype-order" class="level2">
+<h2>7. Prototype order</h2>
+<section id="prototype-first-four-primitives-not-four-monoliths" class="level3">
+<h3>Prototype first: four primitives, not four monoliths</h3>
+<ol type="1">
+<li><strong>Sealed Jury + correlation telemetry.</strong> It is simple, gives a strong baseline, and reveals whether the agent pool contains useful diversity at all. Implement independent contexts, structured answer/confidence/evidence, semantic answer normalization, and oracle-gap logging.</li>
+<li><strong>ACH Evidence Matrix.</strong> It changes the unit of exchange from prose to hypotheses and diagnostic evidence, making research and diagnosis auditable. It also supports selective retrieval and falsification without free-form debate.</li>
+<li><strong>Red–Blue–Umpire with executable checks.</strong> This tests whether critique adds value beyond best-of-N and whether tool-backed adjudication prevents persuasion failures.</li>
+<li><strong>Andon Blackboard / Mission Control hybrid.</strong> This is the most operationally useful pattern for coding and long-running tool work: specialization, typed handoffs, local stop authority, and limited context sharing.</li>
+</ol>
+<p>Prototype <strong>Registered Replication</strong> next for high-stakes paths. Delay a full <strong>Forecast Market</strong> until there is a stream of resolvable tasks and enough outcome history to calibrate agents. Delay <strong>Silent Minute</strong> and <strong>Two-Fire Council</strong> until the product genuinely needs governance or multi-stakeholder legitimacy; agents must not impersonate absent stakeholders.</p>
+<p>Naive free-form debate should be a control condition, not the default architecture. Original debate work reported gains on several reasoning tasks, but later work shows degradation and conformity in some settings and finds that pre-debate majority voting explains much of the improvement.<a href="#fn42" class="footnote-ref" id="fnref42" role="doc-noteref"><sup>42</sup></a><a href="#fn43" class="footnote-ref" id="fnref43" role="doc-noteref"><sup>43</sup></a><a href="#fn44" class="footnote-ref" id="fnref44" role="doc-noteref"><sup>44</sup></a></p>
+</section>
+</section></div></details>
+<details class="research-part"><summary>8. A modular meta-harness: MOSAIC</summary><div class="research-body"><section id="a-modular-meta-harness-mosaic" class="level2">
+<h2>8. A modular meta-harness: MOSAIC</h2>
+<p><strong>MOSAIC - Mechanism-Oriented Selection, Adjudication, Isolation, and Control</strong> treats coordination patterns as composable operators.</p>
+<section id="intake-profiler" class="level3">
+<h3>8.1 Intake profiler</h3>
+<p>For each task, estimate:</p>
+<ul>
+<li><strong>Verifiability:</strong> external tests/source checks available?</li>
+<li><strong>Decomposability:</strong> separable subtasks with typed interfaces?</li>
+<li><strong>Answer topology:</strong> one correct answer, ranked options, coherent artifact, or value tradeoff?</li>
+<li><strong>Adversarial exposure:</strong> deception, exploit, opponent, or distribution shift?</li>
+<li><strong>Uncertainty horizon:</strong> will outcomes resolve and support calibration?</li>
+<li><strong>Stakes/reversibility:</strong> cost of false positive/negative and action rollback?</li>
+<li><strong>Diversity need:</strong> likelihood that one framing misses decisive information?</li>
+<li><strong>Time pressure:</strong> hard latency and token budgets?</li>
+<li><strong>Human standing:</strong> does the decision require affected people or legal authority?</li>
+</ul>
+<p>The profiler returns scores and a confidence. Low-confidence routing uses the cheapest diversity-preserving baseline rather than pretending precision.</p>
+</section>
+<section id="pattern-router" class="level3">
+<h3>8.2 Pattern router</h3>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table"><table>
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr>
+<th>Task signature</th>
+<th>Primary mechanism</th>
+<th>Optional overlay</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bounded + verifiable</td>
+<td>Sealed Jury</td>
+<td>Registered Replication for high stakes</td>
+</tr>
+<tr>
+<td>ambiguous diagnosis</td>
+<td>ACH Matrix</td>
+<td>Red–Blue falsifier</td>
+</tr>
+<tr>
+<td>adversarial plan</td>
+<td>Red–Blue–Umpire</td>
+<td>War-game branches + Failure-First</td>
+</tr>
+<tr>
+<td>large + decomposable</td>
+<td>Mission Control Cells</td>
+<td>Andon Blackboard</td>
+</tr>
+<tr>
+<td>open-ended coherent artifact</td>
+<td>Charrette-style parallel sketches</td>
+<td>Stepladder synthesis + red review</td>
+</tr>
+<tr>
+<td>repeated resolvable uncertainty</td>
+<td>Forecast Market or calibrated pool</td>
+<td>Delphi rationale rounds</td>
+</tr>
+<tr>
+<td>standards/API</td>
+<td>Rough Consensus, Running Tests</td>
+<td>Sealed initial proposals</td>
+</tr>
+<tr>
+<td>urgent incident</td>
+<td>Incident Command / Mission Control</td>
+<td>safety veto + fixed operational periods</td>
+</tr>
+<tr>
+<td>value conflict / legitimacy</td>
+<td>real human deliberative process</td>
+<td>agents may brief evidence, not replace stakeholders</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section id="execution-pipeline" class="level3">
+<h3>8.3 Execution pipeline</h3>
+<ol class="pipeline">
+<li>
+<strong>PROFILE</strong>classify task; define truth/utility target; set risk and budget
+</li>
+<li>
+<strong>REGISTER</strong>freeze rubric, evidence policy, allowed tools, stopping rule, and decision rights
+</li>
+<li>
+<strong>DIVERSIFY</strong>choose models/prompts/tools/corpora; estimate expected channel overlap
+</li>
+<li>
+<strong>GENERATE SEALED</strong>collect independent candidates, hypotheses, forecasts, or decomposition plans
+</li>
+<li>
+<strong>NORMALIZE</strong>extract atomic claims, evidence, assumptions, confidence, falsifiers, dependencies
+</li>
+<li>
+<strong>ROUTE AND FUSE</strong>select/compose one or more patterns based on the profile
+</li>
+<li>
+<strong>CHALLENGE</strong>invoke critics only on disputed, high-impact, low-evidence items
+</li>
+<li>
+<strong>VERIFY</strong>prefer executable tests and source checks over more discussion
+</li>
+<li>
+<strong>DECIDE</strong>mechanical aggregate, accountable judge, commander, or human authority
+</li>
+<li>
+<strong>RECORD</strong>final artifact, provenance, confidence, rejected options, minority report, residual risks
+</li>
+<li>
+<strong>LEARN</strong>on resolution, score agents and the routing decision; run an AAR on material failures
+</li>
+</ol>
+</section>
+<section id="enforced-protocol-objects" class="level3">
+<h3>8.4 Enforced protocol objects</h3>
+<p>Every agent message should be typed rather than an unrestricted chat blob:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">claim_id</span><span class="kw">:</span><span class="at"> C17</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">claim</span><span class="kw">:</span><span class="at"> </span><span class="st">"..."</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">status</span><span class="kw">:</span><span class="at"> observed | documented | inferred | unknown</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">confidence</span><span class="kw">:</span><span class="at"> 0.0-1.0</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">evidence</span><span class="kw">:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">source_or_test</span><span class="kw">:</span><span class="at"> </span><span class="st">"..."</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">supports</span><span class="kw">:</span><span class="at"> </span><span class="st">"..."</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">assumptions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">"..."</span><span class="kw">]</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">falsifier</span><span class="kw">:</span><span class="at"> </span><span class="st">"What result would change this claim"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">dependencies</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">C3</span><span class="kw">,</span><span class="at"> C8</span><span class="kw">]</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">novelty</span><span class="kw">:</span><span class="at"> new | confirms | contradicts | duplicates</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">requested_action</span><span class="kw">:</span><span class="at"> accept | test | revise | escalate | abstain</span></span></code></pre></div>
+<p>The harness, not the agent, supplies immutable author/configuration provenance. Agents see only the fields their role requires.</p>
+</section>
+<section id="stopping-controller" class="level3">
+<h3>8.5 Stopping controller</h3>
+<p>Stop or escalate when the first applicable condition fires:</p>
+<ol type="1">
+<li>objective tests pass and no high-severity failure remains;</li>
+<li>two iterations add no new diagnostic evidence, executable test, or material alternative;</li>
+<li>candidate ranking is stable under judge-order swaps and plausible weighting changes;</li>
+<li>posterior/forecast interval reaches its predeclared target;</li>
+<li>expected value of another agent call falls below estimated cost;</li>
+<li>time/token budget is reached;</li>
+<li>a safety veto or unresolved material objection requires human authority;</li>
+<li>no pattern has a legitimate decision rule for the value conflict - return the disagreement.</li>
+</ol>
+</section>
+</section></div></details>
+<details class="research-part"><summary>9. Evaluation program: does fusion beat the best individual?</summary><div class="research-body"><section id="evaluation-program-does-fusion-beat-the-best-individual" class="level2">
+<h2>9. Evaluation program: does fusion beat the best individual?</h2>
+<section id="baselines-that-prevent-misleading-wins" class="level3">
+<h3>9.1 Baselines that prevent misleading wins</h3>
+<p>Every experiment should compare the harness against:</p>
+<ul>
+<li>the <strong>best individual model/configuration chosen ex ante</strong>, not the average agent;</li>
+<li>the <strong>same best model with the harness's total token/tool budget</strong>;</li>
+<li><strong>best-of-N with an identical candidate pool</strong>;</li>
+<li><strong>sealed majority/self-consistency</strong> with no discussion;</li>
+<li><strong>naive debate + judge</strong>;</li>
+<li>an <strong>oracle selector</strong> that chooses the best generated candidate, measuring how much value fusion leaves on the table.</li>
+</ul>
+<p>The primary estimand is <code>harness quality − best-individual quality</code> at matched total cost. Secondary estimands separate <strong>generation gain</strong> (did the pool contain a better answer?) from <strong>selection gain</strong> (did fusion find it?) and <strong>refinement gain</strong> (did interaction improve it?).</p>
+</section>
+<section id="task-strata" class="level3">
+<h3>9.2 Task strata</h3>
+<p>Use tasks with different coordination demands:</p>
+<ol type="1">
+<li>canonical-answer reasoning and math;</li>
+<li>closed-book and source-grounded factual QA;</li>
+<li>coding with hidden tests and repository-scale integration;</li>
+<li>diagnosis with planted competing causes;</li>
+<li>forecasting with historical cutoff and eventual resolution;</li>
+<li>adversarial safety/security cases;</li>
+<li>open-ended design scored by blinded humans plus constraint checks;</li>
+<li>time-critical incident simulations;</li>
+<li>multi-stakeholder cases where outcome is a disagreement map, not a fake objective answer.</li>
+</ol>
+</section>
+<section id="metrics" class="level3">
+<h3>9.3 Metrics</h3>
+<p><strong>Outcome:</strong> exact accuracy, hidden-test pass rate, grounded-claim precision/recall, factual error severity, forecast Brier/log score, human utility, safety violations, and robustness under perturbation.</p>
+<p><strong>Fusion-specific:</strong> oracle gap, minority-correct recovery, harmful flip rate, answer correlation, effective channel count, unique-evidence recall, contradiction resolution, calibration, abstention quality, and common-mode failure rate.</p>
+<p><strong>Cost:</strong> tokens, tool calls, wall time, critical-path latency, dollar cost, context bytes disclosed, and coordinator-to-worker overhead.</p>
+<p><strong>Process integrity:</strong> independence violations, authorship leakage, judge order sensitivity, unsupported claim rate, unclosed <code>NO-GO</code>/andon alerts, and decision-record completeness.</p>
+</section>
+<section id="testable-hypotheses" class="level3">
+<h3>9.4 Testable hypotheses</h3>
+<ol type="1">
+<li><strong>Isolation hypothesis.</strong> Sealed first passes increase oracle coverage and reduce harmful convergence relative to agents that share rationales from the start.</li>
+<li><strong>Effective-channel hypothesis.</strong> At fixed cost, heterogeneity in model family/tool/source produces more gain than additional homogeneous copies once output correlation crosses a task-specific threshold.</li>
+<li><strong>Debate-conditionality hypothesis.</strong> Debate improves results only when agents begin with material disagreement and can exchange checkable evidence; it harms recall-heavy tasks dominated by a wrong majority.</li>
+<li><strong>Evidence-over-confidence hypothesis.</strong> Weighting by source/test support and historical calibration beats raw self-confidence and rhetorical judge scores.</li>
+<li><strong>Replication-independence hypothesis.</strong> Replication catches materially more faults only when the replicator differs in model, tool chain, or problem representation; same-context replication mostly repeats errors.</li>
+<li><strong>Specialization hypothesis.</strong> Division of labor improves decomposable tasks but underperforms redundancy when interface uncertainty exceeds a measurable threshold.</li>
+<li><strong>Minority-vault hypothesis.</strong> Preserving and re-testing the strongest minority claim improves robustness under seeded majority error with little average-case cost.</li>
+<li><strong>Adaptive-stopping hypothesis.</strong> Evidence-saturation stopping matches or beats fixed-round quality at lower token cost and reduces late-round harmful flips.</li>
+<li><strong>External-adjudication hypothesis.</strong> Executable tests and primary-source checks capture more red-team value than an LLM judge reading adversarial prose.</li>
+<li><strong>Routing hypothesis.</strong> MOSAIC's task-conditioned routing beats any single pattern across a mixed benchmark, but only after routing overhead and profiler mistakes are counted.</li>
+</ol>
+</section>
+<section id="experiments" class="level3">
+<h3>9.5 Experiments</h3>
+<p><strong>Experiment A - Independence factorial.</strong> Cross sealed/shared initial context × hidden/visible answer frequencies × same/heterogeneous models. Measure initial correlation, oracle coverage, harmful flips, and final accuracy.</p>
+<p><strong>Experiment B - Debate decomposition.</strong> Hold the candidate pool constant. Compare pre-debate vote, reasons-only exchange, cross-examination, free debate, and no-change judge selection. This isolates the value of communication from sampling.</p>
+<p><strong>Experiment C - Planted minority truth.</strong> Construct cases where one agent receives decisive valid evidence and the majority receives a plausible distractor. Measure whether each pattern recovers or suppresses the minority and whether it can distinguish a correct dissenter from a malicious one.</p>
+<p><strong>Experiment D - Common-mode injection.</strong> Seed the same false premise into all default contexts but give one configuration an independent corpus/tool. Test whether the router detects low effective diversity and whether the common-mode critic finds the shared premise.</p>
+<p><strong>Experiment E - Judge audit.</strong> Shuffle candidate order, strip style, equalize length, hide model identity, and cross judge families. Compare LLM verdicts with executable or human labels and quantify position/self-preference sensitivity.</p>
+<p><strong>Experiment F - Handoff stress.</strong> On repository tasks, vary subtask coupling and interface completeness. Compare one strong agent, Mission Control, and Andon Blackboard; measure duplicated edits, integration failures, and critical-path latency.</p>
+<p><strong>Experiment G - Replication ablation.</strong> Same-model/same-tool vs same-model/different-tool vs different-model/same-tool vs different-model/different-tool replication. Estimate which independence source buys the most defect detection per token.</p>
+<p><strong>Experiment H - Forecast backtest.</strong> Use historical questions with information cutoffs. Compare equal mean, median, Delphi, market scoring, and calibration-weighted aggregation on Brier score, calibration, and resolution.</p>
+<p><strong>Experiment I - Stopping policy trial.</strong> Fixed 1/2/4 rounds versus evidence-saturation and value-of-information stopping. Measure quality-cost Pareto frontiers and late-round regression.</p>
+<p><strong>Experiment J - Router trial.</strong> Train/select routing rules on one task set; lock them; evaluate on shifted task distributions. Report both task performance and regret versus the best per-task pattern.</p>
+</section>
+<section id="minimum-viable-success-criterion" class="level3">
+<h3>9.6 Minimum viable success criterion</h3>
+<p>Do not call fusion successful merely because it beats the average worker. A credible first milestone is:</p>
+<blockquote>
+<p>On at least three distinct task strata, a preregistered harness beats the best ex-ante individual agent at matched total cost, with statistically bounded improvement, no material increase in severe errors, and positive results on a held-out task distribution.</p>
+</blockquote>
+<p>Also report negative results. A router that reliably recognizes when <strong>not</strong> to invoke multiple agents may create more value than a universally active swarm.</p>
+</section>
+</section></div></details>
+<details class="research-part"><summary>10. Practical principles</summary><div class="research-body"><section id="practical-principles" class="level2">
+<h2>10. Practical principles</h2>
+<ol type="1">
+<li>Buy independent channels before buying more conversation.</li>
+<li>Preserve first answers and minority evidence; never overwrite them with consensus.</li>
+<li>Exchange claims, tests, and falsifiers rather than whole persuasive transcripts.</li>
+<li>Use redundancy for uncertainty and specialization for scale; do not confuse them.</li>
+<li>Let external reality - tests, sources, resolved outcomes - outvote eloquence.</li>
+<li>Make proposal, synthesis, adjudication, and execution separate permissions.</li>
+<li>Give local agents stop authority but global agents explicit decision accountability.</li>
+<li>Calibrate influence on held-out performance, not self-confidence or model prestige.</li>
+<li>Stop on evidence saturation or risk closure, not because the debate “feels complete.”</li>
+<li>Treat disagreement as an output when the task has no legitimate machine decision rule.</li>
+</ol>
+</section></div></details>
+<details class="research-part"><summary>Sources</summary><div class="research-body"><section id="sources" class="level2">
+<h2>Sources</h2>
+</section></div></details>
+<details class="research-part"><summary>Source notes</summary><div class="research-body"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Jan Lorenz, Heiko Rauhut, Frank Schweitzer, and Dirk Helbing, “<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3107299/">How Social Influence Can Undermine the Wisdom of Crowd Effect</a>,” <em>PNAS</em> 108(22), 2011.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Andrea Wynn, Harsh Satija, and Gillian Hadfield, “<a href="https://arxiv.org/abs/2509.05396">Talk Isn't Always Cheap: Understanding Failure Modes in Multi-Agent Debate</a>,” arXiv:2509.05396, 2025.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Hyeong Kyu Choi, Xiaojin Zhu, and Yixuan Li, “<span>Debate or Vote: Which Yields Better Decisions in Multi-Agent Large Language Models?</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://openreview.net/pdf?id=iUjGNJzrF1]</span>,” 2025/2026 conference manuscript.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Lianmin Zheng et al., “<a href="https://proceedings.neurips.cc/paper_files/paper/2023/file/91f18a1287b398d378ef22505bf41832-Paper-Datasets_and_Benchmarks.pdf">Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena</a>,” NeurIPS 2023.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Arjun Panickssery, Samuel R. Bowman, and Shi Feng, “<a href="https://papers.neurips.cc/paper_files/paper/2024/file/7f1f0218e45f5414c79c0679633e47bc-Paper-Conference.pdf">LLM Evaluators Recognize and Favor Their Own Generations</a>,” NeurIPS 2024.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Xuezhi Wang et al., “<a href="https://arxiv.org/abs/2203.11171">Self-Consistency Improves Chain of Thought Reasoning in Language Models</a>,” ICLR 2023.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Yingxuan Yang et al., “<a href="https://arxiv.org/abs/2602.03794">Understanding Agent Scaling in LLM-Based Multi-Agent Systems via Diversity</a>,” arXiv:2602.03794, 2026. Recent preprint; independent replication not established here.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Mrinank Sharma et al., “<a href="https://www.anthropic.com/news/towards-understanding-sycophancy-in-language-models">Towards Understanding Sycophancy in Language Models</a>,” Anthropic research, 2023.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>Jan Lorenz, Heiko Rauhut, Frank Schweitzer, and Dirk Helbing, “<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3107299/">How Social Influence Can Undermine the Wisdom of Crowd Effect</a>,” <em>PNAS</em> 108(22), 2011.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>Sushil Bikhchandani, David Hirshleifer, and Ivo Welch, “<span>A Theory of Fads, Fashion, Custom, and Cultural Change as Informational Cascades</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.journals.uchicago.edu/doi/10.1086/261849]</span>,” <em>Journal of Political Economy</em> 100(5), 1992.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>Andrew H. Van de Ven and André L. Delbecq, “<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC1530096/">The Nominal Group as a Research Instrument for Exploratory Health Studies</a>,” <em>American Journal of Public Health</em> 62(3), 1972; see also their 1971 group-process model.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>Steven G. Rogelberg, Janet L. Barnes-Farrell, and Charles A. Lowe, “<span>The Stepladder Technique: An Alternative Group Structure Facilitating Effective Group Decision Making</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.researchgate.net/publication/220027183_The_Stepladder_Technique_An_Alternative_Group_Structure_Facilitating_Effective_Group_Decision_Making]</span>,” <em>Journal of Applied Psychology</em> 77(5), 1992.<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p>Norman C. Dalkey, “<span>The Delphi Method: An Experimental Study of Group Opinion</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.rand.org/pubs/research_memoranda/RM5888.html]</span>,” RAND RM-5888-PR, 1969.<a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p>Legal Information Institute, Cornell Law School, “<a href="https://www.law.cornell.edu/rules/fre/rule_611">Federal Rule of Evidence 611: Mode and Order of Examining Witnesses and Presenting Evidence</a>,” current rule and advisory notes.<a href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>U.S. Army Center for Army Lessons Learned, “<span>First 100 Days, XO/S3 Handbook</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://api.army.mil/e2/c/downloads/2025/08/27/bdbd82e4/no-25-13-786-first-100-days-xo-s3-handbook.pdf]</span>,” No. 25-13 (786), 2025, section on red-teaming and war-gaming.<a href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>U.S. Army Center for Army Lessons Learned, “<span>First 100 Days, XO/S3 Handbook</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://api.army.mil/e2/c/downloads/2025/08/27/bdbd82e4/no-25-13-786-first-100-days-xo-s3-handbook.pdf]</span>,” No. 25-13 (786), 2025, section on red-teaming and war-gaming.<a href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p>U.S. National Park Service, “<a href="https://www.nps.gov/orgs/1804/upload/CatalogofProducts_MAY2016_smallfile.pdf">Planning Catalog of Products &amp; Services</a>,” 2016, “Design Charrette.”<a href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p>World Health Organization, “<a href="https://www.who.int/teams/integrated-health-services/quality-of-care-and-patient-safety/patient-safety-guidance-and-tools/safe-surgery/tool-and-resources">Safe Surgery Tools and Resources</a>,” Surgical Safety Checklist guidance.<a href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn19"><p>Alex B. Haynes et al., “<span>A Surgical Safety Checklist to Reduce Morbidity and Mortality in a Global Population</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.nejm.org/doi/abs/10.1056/NEJMsa0810119]</span>,” <em>New England Journal of Medicine</em> 360, 2009.<a href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn20"><p>Center for Open Science, “<a href="https://www.cos.io/initiatives/registered-reports">Registered Reports</a>,” workflow and minimum features.<a href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn21"><p>Open Science Collaboration, “<a href="https://pubmed.ncbi.nlm.nih.gov/26315443/">Estimating the Reproducibility of Psychological Science</a>,” <em>Science</em> 349(6251), 2015.<a href="#fnref21" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn22"><p>NASA Goddard Space Flight Center, “<a href="https://standards.nasa.gov/node/12367">Guideline for Failure Modes and Effects Analysis and Risk Assessment</a>,” GSFC-HDBK-8004, 2024.<a href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn23"><p>U.S. Army, “<span>Chaplain Corps ARNG Handbook 205</span> <span class="provenance">[URL retained as text; returned 404: https://tjaglcs.army.mil/Portals/1003/TD%20Courses/c4rc/Chaplain%20Corps%20ARNG%20%20Handbook.pdf?ver=fHEnJa40wgv2zNc-SeujGg%3D%3D]</span>,” Appendix G, After-Action Review.<a href="#fnref23" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn24"><p>AHRQ Patient Safety Network, “<a href="https://psnet.ahrq.gov/issue/descriptive-study-morbidity-and-mortality-conferences-and-their-conformity-medical-incident">A Descriptive Study of Morbidity and Mortality Conferences and Their Conformity to Medical Incident Analysis Models</a>,” 2010 study summary.<a href="#fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn25"><p>NASA, “<a href="https://www.nasa.gov/johnson/jsc-mission-control-center/">JSC Mission Control Center</a>” and “<a href="https://www.nasa.gov/missions/artemis/orion/artemis-i-mission-teams-the-crew-behind-the-uncrewed-mission/">Artemis I Mission Teams</a>,” role descriptions and decision polls.<a href="#fnref25" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn26"><p>Federal Aviation Administration, “<a href="https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_120-51C.pdf">Crew Resource Management Training</a>,” AC 120-51C, 1998; NASA, “<a href="https://ntrs.nasa.gov/api/citations/19850009714/downloads/19850009714.pdf">Cockpit Resource Management Training</a>,” 1984.<a href="#fnref26" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn27"><p>U.S. Court of Appeals for the Ninth Circuit, “<span>Model Jury Instruction 6.19: Duty to Deliberate</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www3.ce9.uscourts.gov/jury-instructions/node/898]</span>,” revised March 2024.<a href="#fnref27" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn28"><p>Garold Stasser and William Titus, “<a href="https://cir.nii.ac.jp/crid/1360292619755398656">Pooling of Unshared Information in Group Decision Making: Biased Information Sampling During Discussion</a>,” <em>Journal of Personality and Social Psychology</em> 48(6), 1985.<a href="#fnref28" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn29"><p>Pete Resnick, “<a href="https://datatracker.ietf.org/doc/rfc7282/">RFC 7282: On Consensus and Humming in the IETF</a>,” IETF, 2014.<a href="#fnref29" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn30"><p>Quaker.org, “<span>What Is a Quaker Meeting for Business?</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://quaker.org/meeting-for-business/]</span>” and “<span>Communal Discernment in Decision Making</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://quaker.org/decision-making/]</span>,” accessed 2026.<a href="#fnref30" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn31"><p>Haudenosaunee Confederacy, “<span>Government</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.haudenosauneeconfederacy.com/government/]</span>” and “<span>Who We Are</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.haudenosauneeconfederacy.com/who-we-are/]</span>,” descriptions of the living Confederacy's governance.<a href="#fnref31" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn32"><p>Order of Saint Benedict, “<a href="https://www.archive.osb.org/rb/text/index.html">Rule of Benedict, Chapter 3: On Calling the Brethren for Counsel</a>,” Leonard Doyle translation.<a href="#fnref32" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn33"><p>Stanford Deliberative Democracy Lab, “<a href="https://deliberation.stanford.edu/what-deliberative-pollingr">What Is Deliberative Polling?</a>,” process description.<a href="#fnref33" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn34"><p>Citizens' Assembly of Ireland, “<a href="https://citizensassembly.ie/about/faq/">Frequently Asked Questions</a>,” selection, evidence, deliberation, and voting process.<a href="#fnref34" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn35"><p>Robin Hanson, “<a href="https://hanson.gmu.edu/mktscore.pdf">Logarithmic Market Scoring Rules for Modular Combinatorial Information Aggregation</a>,” 2002 manuscript.<a href="#fnref35" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn36"><p>Glenn W. Brier, “<span>Verification of Forecasts Expressed in Terms of Probability</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://journals.ametsoc.org/view/journals/mwre/78/1/1520-0493_1950_078_0001_vofeit_2_0_co_2.xml]</span>,” <em>Monthly Weather Review</em> 78, 1950.<a href="#fnref36" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn37"><p>Roger Cooke, Max Mendel, and Wim Thijs, “<span>Calibration and Information in Expert Resolution: A Classical Approach</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://www.sciencedirect.com/science/article/pii/0005109888900118]</span>,” <em>Automatica</em> 24(1), 1988; Abigail Colson and Roger Cooke, “<span>Cross Validation for the Classical Model of Structured Expert Judgment</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://strathprints.strath.ac.uk/60136/]</span>,” 2017.<a href="#fnref37" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn38"><p>Barbara Mellers et al., “<span>Psychological Strategies for Winning a Geopolitical Forecasting Tournament</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://journals.sagepub.com/doi/10.1177/0956797614524255]</span>,” <em>Psychological Science</em> 25(5), 2014.<a href="#fnref38" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn39"><p>Federal Emergency Management Agency, “<a href="https://training.fema.gov/programs/independent-study/coursematerials.aspx?code=IS-700.b">National Incident Management System</a>,” 3rd ed., 2017; U.S. Fire Administration, “<a href="https://www.usfa.fema.gov/a-z/nims/command-and-coordination.html">NIMS Command and Coordination</a>,” 2026.<a href="#fnref39" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn40"><p>Toyota Motor Corporation, “<a href="https://www.toyota-global.com/company/history_of_toyota/75years/text/entering_the_automotive_business/chapter1/section4/item4.html">Development and Deployment of the Toyota Production System</a>” and “<a href="https://www.toyota-global.com/company/history_of_toyota/75years/common/pdf/production_system.pdf">Toyota Production System Timeline</a>,” 75-year history.<a href="#fnref40" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn41"><p>Richards J. Heuer Jr., “<a href="https://www.cia.gov/resources/csi/books-monographs/psychology-of-intelligence-analysis-2/">Psychology of Intelligence Analysis</a>,” CIA Center for the Study of Intelligence, 1999, chapter on Analysis of Competing Hypotheses.<a href="#fnref41" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn42"><p>Andrea Wynn, Harsh Satija, and Gillian Hadfield, “<a href="https://arxiv.org/abs/2509.05396">Talk Isn't Always Cheap: Understanding Failure Modes in Multi-Agent Debate</a>,” arXiv:2509.05396, 2025.<a href="#fnref42" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn43"><p>Hyeong Kyu Choi, Xiaojin Zhu, and Yixuan Li, “<span>Debate or Vote: Which Yields Better Decisions in Multi-Agent Large Language Models?</span> <span class="provenance">[URL retained as text; automated link check unavailable: https://openreview.net/pdf?id=iUjGNJzrF1]</span>,” 2025/2026 conference manuscript.<a href="#fnref43" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn44"><p>Yilun Du et al., “<a href="https://arxiv.org/abs/2305.14325">Improving Factuality and Reasoning in Language Models through Multiagent Debate</a>,” ICML 2024.<a href="#fnref44" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></details></section><footer>Research imported from the original Air report. Current composition preserves version 3 additions. Proposed architectures and analytical scores require implementation and empirical validation.</footer>
+</main><script>
+document.querySelectorAll('[data-compose]').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('[data-compose]').forEach(b=>{const active=b===button;b.setAttribute('aria-pressed',String(active));document.getElementById(b.dataset.compose).hidden=!active;});}));
+const routeSelect=document.getElementById('task-route');
+routeSelect.addEventListener('change',()=>{document.querySelectorAll('.route-panel').forEach((p,i)=>{p.hidden=String(i)!==routeSelect.value;});});
+function matrix(starters){document.querySelectorAll('#comparison tbody tr').forEach(r=>{r.hidden=starters&&![0,2,3,5,8].includes(Number(r.dataset.pattern));});document.getElementById('show-all').setAttribute('aria-pressed',String(!starters));document.getElementById('show-starters').setAttribute('aria-pressed',String(starters));document.getElementById('matrix-count').textContent=starters?'5 patterns in the first prototype combinations':'12 patterns';}
+document.getElementById('show-all').addEventListener('click',()=>matrix(false));document.getElementById('show-starters').addEventListener('click',()=>matrix(true));
+document.getElementById('expand-research').addEventListener('click',()=>document.querySelectorAll('.research-part').forEach(d=>{d.open=true;}));document.getElementById('collapse-research').addEventListener('click',()=>document.querySelectorAll('.research-part').forEach(d=>{d.open=false;}));
+function reveal(hash){let id;try{id=decodeURIComponent(hash.slice(1));}catch{return;}const target=document.getElementById(id);if(!target)return;for(let n=target.parentElement;n;n=n.parentElement){if(n.tagName==='DETAILS')n.open=true;}requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'auto'}));}
+document.addEventListener('click',event=>{const a=event.target.closest?.('a[href]');if(a&&a.hash&&(a.getAttribute('href').startsWith('#')||a.href.startsWith('about:srcdoc#')||a.href.split('#')[0]===location.href.split('#')[0]))reveal(a.hash);},true);window.addEventListener('hashchange',()=>reveal(location.hash));if(location.hash)reveal(location.hash);
+</script></body></html>
