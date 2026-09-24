@@ -358,7 +358,7 @@ Each entry marks historical description as **documented** and the proposed AI pr
 | Context leakage | Error, anchor, or prompt injection crosses agents | least-privilege context; typed messages; sanitize retrieved text; separate executor context |
 | False confidence | Agreement or fluent rationale is mistaken for calibration | probability forecasts; calibration histories; answer-changing reasons; abstention |
 
-## 5. Twelve concrete fusion-harness patterns
+## 5. Twelve concrete fusion-panel patterns
 
 ### Pattern 1 — Sealed Jury
 

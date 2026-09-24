@@ -15,7 +15,7 @@ Agent sessions that need independent judgment from multiple models have no tool 
 
 ## Introduction
 
-The design space is mapped in `fusion-harness-design-space.md` (this repo). Its central finding: a roomful of nominally different agents that share a model, prompt, and transcript converge through persuasion, and consensus is not evidence of independent agreement unless the harness proves the independence of the paths that produced it.
+The design space is mapped in `fusion-panel-design-space.md` (this repo). Its central finding: a roomful of nominally different agents that share a model, prompt, and transcript converge through persuasion, and consensus is not evidence of independent agreement unless the harness proves the independence of the paths that produced it.
 
 `fusion` implements that finding as a CLI. It is NOT a harness. A harness owns an agent's loop: context, tools, permissions. The six harnesses hcn drives (claude, codex, pi, muse, cursor, antigravity) own loops. `fusion` composes runs of harnesses. It is a harness at the pattern level only.
 
@@ -182,10 +182,10 @@ npm publication remains a future product decision, outside this RFC's scope.
 
 Normative:
 
-- `fusion-harness-design-space.md` (this repo) - the design space: mechanisms, control surfaces, the 8.4 protocol object this schema adapts, MOSAIC, prototype order.
+- `fusion-panel-design-space.md` (this repo) - the design space: mechanisms, control surfaces, the 8.4 protocol object this schema adapts, MOSAIC, prototype order.
 - hcn skill (`~/.agents/skills/hcn/SKILL.md`) and its reference - the invocation layer: normalized flags, event schema, exit contract, question escalation.
 
 Informative:
 
-- Decision map: dungle-scrubs/fusion-harness#1 and its closed tickets #2-#9 - each decision with its reasons and rejected alternatives.
+- Decision map: dungle-scrubs/fusion-panel#1 and its closed tickets #2-#9 - each decision with its reasons and rejected alternatives.
 - Research: `research/execution-backends.md` (branch `research/execution-backends`) - backend evidence, token-metering spike, identity provenance finding.

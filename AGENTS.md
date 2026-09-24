@@ -1,4 +1,4 @@
-# fusion-harness
+# fusion-panel
 
 `fusion` is a composition layer over agent harnesses, per
 [docs/rfc/01_fusion-a-composable-fusion-layer-over-agent-harnesses.rfc.md](docs/rfc/01_fusion-a-composable-fusion-layer-over-agent-harnesses.rfc.md).

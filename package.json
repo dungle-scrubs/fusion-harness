@@ -1,5 +1,5 @@
 {
-  "name": "@dungle-scrubs/fusion",
+  "name": "@dungle-scrubs/fusion-panel",
   "version": "0.2.0",
   "description": "A composable fusion layer over agent harnesses: consensus you can audit.",
   "type": "module",
@@ -30,7 +30,7 @@
   "author": "Kevin Frilot",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dungle-scrubs/fusion-harness.git"
+    "url": "git+https://github.com/dungle-scrubs/fusion-panel.git"
   },
   "files": [
     "dist",
