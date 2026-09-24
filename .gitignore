@@ -2,3 +2,13 @@
 .fusion/
 dist/
 node_modules/
+
+# secrets and credentials
+.env*
+*.pem
+*.key
+credentials.json
+
+# agent-local instructions
+AGENTS.local.md
+CLAUDE.local.md
