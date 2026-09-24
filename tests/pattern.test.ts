@@ -140,4 +140,16 @@ describe("skill text covers every pattern command", () => {
     expect(text).toContain("fusion red-blue");
     expect(text).toContain("fusion ach");
   });
+
+  it("carries a selection rule and a counter-rule per pattern", () => {
+    const text = readFileSync(new URL("../src/skill.ts", import.meta.url), "utf8");
+    expect(text).toContain("-> jury");
+    expect(text).toContain("Do NOT use jury");
+    expect(text).toContain("-> red-blue");
+    expect(text).toContain("Do NOT use it when nobody");
+    expect(text).toContain("-> ach");
+    expect(text).toContain("Do NOT use it to choose between proposals");
+    expect(text).toContain("tier 1 directly. A pattern run adds isolation you do not need.");
+    expect(text).toContain("do not call fusion at all");
+  });
 });
