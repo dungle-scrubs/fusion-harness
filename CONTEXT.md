@@ -1,4 +1,4 @@
-# fusion-harness - domain glossary
+# fusion-panel - domain glossary
 
 Canonical terms for this repository. Source of naming: RFC-01
 (docs/rfc/01_fusion-a-composable-fusion-layer-over-agent-harnesses.rfc.md).

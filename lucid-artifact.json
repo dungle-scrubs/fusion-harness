@@ -2,8 +2,8 @@
   "conversationId": "fusion-harness",
   "artifactId": "fusion-harness-design-space",
   "url": "http://127.0.0.1:17454/c/fusion-harness/fusion-harness-design-space?conversation-panel=closed",
-  "source": "fusion-harness-design-space.md",
-  "html": "fusion-harness-design-space.html",
+  "source": "fusion-panel-design-space.md",
+  "html": "fusion-panel-design-space.html",
   "sourceMachine": "air",
   "sourceSha256": "cad1fb9419ce902e8eb9ab9d2a1a3e58151ae20e199b440547c3e422722276f8",
   "version": 4
