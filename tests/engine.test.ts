@@ -409,10 +409,9 @@ describe("executeRun with a fake spawner", () => {
       (e) => e.kind === "claim" && !(e.payload as Record<string, unknown>)["rejected"],
     );
     expect(claims).toHaveLength(2);
-    const first = (claims[0]?.payload as Record<string, unknown>)["claim"] as Record<
-      string,
-      unknown
-    >;
+    const first = ((claims[0] as (typeof claims)[number]).payload as Record<string, unknown>)[
+      "claim"
+    ] as Record<string, unknown>;
     expect(first["claim_id"]).toBe("w1:C1");
     expect(first["dependencies"]).toEqual(["w-red:C1"]);
   });
@@ -441,10 +440,9 @@ describe("executeRun with a fake spawner", () => {
       (e) => e.kind === "claim" && !(e.payload as Record<string, unknown>)["rejected"],
     );
     expect(claims).toHaveLength(2);
-    const stored = (claims[0]?.payload as Record<string, unknown>)["claim"] as Record<
-      string,
-      unknown
-    >;
+    const stored = ((claims[0] as (typeof claims)[number]).payload as Record<string, unknown>)[
+      "claim"
+    ] as Record<string, unknown>;
     expect(stored["dependencies"]).toEqual(["w-red:C2"]);
   });
 
