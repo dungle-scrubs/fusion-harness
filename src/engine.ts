@@ -182,9 +182,15 @@ export type WorkerStage = "challenge" | "generate" | "verify";
 
 export type FuseFn = (accepted: readonly AcceptedClaim[]) => FusedOutput;
 
-/** Later-stage workers see prior claims without provenance (blind). */
+/**
+ * Later-stage workers see prior claims without provenance (blind to
+ * identity and model). `byWorker` groups the same claims per worker for
+ * patterns whose later wave needs each worker's own prior output (Delphi
+ * revision) while staying blind to the others' identities.
+ */
 export interface StageInput {
   readonly anonymizedClaims: readonly Record<string, unknown>[];
+  readonly byWorker: ReadonlyMap<string, readonly Record<string, unknown>[]>;
 }
 
 export interface StageBuilders {
@@ -440,6 +446,20 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
       return rest;
     });
 
+  const byWorker = (): ReadonlyMap<string, readonly Record<string, unknown>[]> => {
+    const grouped = new Map<string, Record<string, unknown>[]>();
+    for (const entry of accepted) {
+      const { provenance: _provenance, ...rest } = entry.claim;
+      const existing = grouped.get(entry.workerId);
+      if (existing === undefined) {
+        grouped.set(entry.workerId, [rest]);
+      } else {
+        existing.push(rest);
+      }
+    }
+    return grouped;
+  };
+
   enter("GENERATING");
   runWorkers(reg.workers, "generate");
 
@@ -488,11 +508,17 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
   enter("NORMALIZING");
   if (options.stages?.challenge !== undefined) {
     enter("CHALLENGING");
-    runWorkers(options.stages.challenge({ anonymizedClaims: anonymized() }), "challenge");
+    runWorkers(
+      options.stages.challenge({ anonymizedClaims: anonymized(), byWorker: byWorker() }),
+      "challenge",
+    );
   }
   if (options.stages?.verify !== undefined) {
     enter("VERIFYING");
-    runWorkers(options.stages.verify({ anonymizedClaims: anonymized() }), "verify");
+    runWorkers(
+      options.stages.verify({ anonymizedClaims: anonymized(), byWorker: byWorker() }),
+      "verify",
+    );
   }
   const fused = fuse(accepted);
   emit(makeEvent(reg.runId, "fusion", fused.fusion, now()));

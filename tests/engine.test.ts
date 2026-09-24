@@ -55,6 +55,7 @@ describe("state machine", () => {
     ["NORMALIZING", "CHALLENGING"],
     ["NORMALIZING", "DECIDING"],
     ["CHALLENGING", "VERIFYING"],
+    ["CHALLENGING", "DECIDING"],
     ["VERIFYING", "DECIDING"],
     ["DECIDING", "DONE"],
     ["GENERATING", "FAILED"],
