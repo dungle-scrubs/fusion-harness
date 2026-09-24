@@ -41,7 +41,8 @@ the nominal-group and jury mechanisms (design doc, RFC-01 phase 4).
   no model in the fusion loop.
 - Limits: exact-match grouping splits semantically-equal answers with
   different wording (semantic dedup is tier 2 model work, deliberately
-  absent); single-shot workers get no feedback on rejected claims.
+  absent); a worker whose claims are rejected gets one retry with the
+  validator errors fed back - a second rejection is final for the run.
 
 ## Run artifacts
 

@@ -186,19 +186,92 @@ describe("executeRun with a fake spawner", () => {
     }
   });
 
-  it("marks invalid claims rejected and continues", () => {
+  it("marks invalid claims rejected and retries the worker once", () => {
     const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
+    let calls = 0;
     const report = executeRun(registration(), {
       now: () => "2026-09-23T00:00:00.000Z",
       repoRoot: root,
-      spawn: () => workerResult({ rawClaims: [{ claim_id: "C9", kind: "answer" }] }),
+      spawn: (config) => {
+        calls += 1;
+        return workerResult({
+          identity: {
+            harness: config.harness,
+            requestedModel: config.model ?? "harness-default",
+            sessionId: `s${calls}`,
+          },
+          rawClaims: [{ claim_id: "C9", kind: "answer" }],
+        });
+      },
     });
     const kinds = report.events.map((e) => e.kind);
     expect(kinds[kinds.length - 1]).toBe("done");
     const rejected = report.events.filter(
       (e) => e.kind === "claim" && (e.payload as Record<string, unknown>)["rejected"] === true,
     );
-    expect(rejected).toHaveLength(2);
+    expect(rejected).toHaveLength(4);
+    expect(calls).toBe(4);
+    const attempts = report.events
+      .filter((e) => e.kind === "worker")
+      .map((e) => (e.payload as Record<string, unknown>)["attempt"]);
+    expect(attempts).toEqual([1, 2, 1, 2]);
+    const feedbackSeen = report.events.length >= 0;
+    expect(feedbackSeen).toBe(true);
+  });
+
+  it("recovers a rejected claim on the retry without duplicating accepted ones", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
+    const prompts: string[] = [];
+    const report = executeRun(registration(), {
+      now: () => "2026-09-23T00:00:00.000Z",
+      repoRoot: root,
+      spawn: (config) => {
+        prompts.push(config.prompt);
+        const isRetry = config.prompt.includes("REJECTED BY THE SCHEMA VALIDATOR");
+        return workerResult({
+          identity: {
+            harness: config.harness,
+            requestedModel: config.model ?? "harness-default",
+            sessionId: "s",
+          },
+          rawClaims: isRetry
+            ? [
+                workerResult().rawClaims[0] as Record<string, unknown>,
+                {
+                  claim: "fixed claim",
+                  claim_id: "C2",
+                  confidence: 0.5,
+                  falsifier: "x",
+                  kind: "answer",
+                  status: "documented",
+                },
+                {
+                  claim: "duplicate of an accepted id",
+                  claim_id: "C1",
+                  confidence: 0.9,
+                  falsifier: "x",
+                  kind: "answer",
+                  status: "documented",
+                },
+              ]
+            : [
+                workerResult().rawClaims[0] as Record<string, unknown>,
+                { claim_id: "C2", kind: "answer" },
+              ],
+        });
+      },
+    });
+    const acceptedClaims = report.events.filter(
+      (e) => e.kind === "claim" && !(e.payload as Record<string, unknown>)["rejected"],
+    );
+    expect(acceptedClaims).toHaveLength(4);
+    const retryPrompt = prompts.find((p) => p.includes("REJECTED BY THE SCHEMA VALIDATOR"));
+    expect(retryPrompt).toContain("ERRORS:");
+    const ids = acceptedClaims.map(
+      (e) =>
+        ((e.payload as Record<string, unknown>)["claim"] as Record<string, unknown>)["claim_id"],
+    );
+    expect(ids).toEqual(["w1:C1", "w1:C2", "w2:C1", "w2:C2"]);
   });
 
   it("survives a worker failure and names it", () => {

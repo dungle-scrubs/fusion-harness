@@ -45,7 +45,8 @@ Budgets are symmetric: every role gets the same `--timeout`.
   the run while survivors remain.
 - Limits: one judge, no appeal path; id references across roles resolve
   through run-scoped ids (`w-red:C1`), so a worker's own claim ids stay
-  worker-scoped; single-shot roles get no feedback on rejected claims.
+  worker-scoped; a role whose claims are rejected gets one retry with the
+  validator errors fed back - a second rejection is final for the run.
 
 ## Run artifacts
 

@@ -302,95 +302,135 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
     return claim;
   };
 
-  const runWorkers = (workers: readonly WorkerConfig[], claimStage: WorkerStage): void => {
-    for (const worker of workers) {
-      const result = spawn({
-        harness: worker.harness,
-        model: worker.model,
-        prompt: worker.prompt,
-        timeoutSec: worker.timeoutSec,
-      });
+  const runWorkerTurn = (
+    worker: WorkerConfig,
+    claimStage: WorkerStage,
+    prompt: string,
+    attempt: number,
+    acceptedLocalIds: Set<string>,
+  ): readonly { errors: readonly string[]; raw: unknown }[] => {
+    const result = spawn({
+      harness: worker.harness,
+      model: worker.model,
+      prompt,
+      timeoutSec: worker.timeoutSec,
+    });
+    emit(
+      makeEvent(
+        reg.runId,
+        "worker",
+        {
+          attempt,
+          exitCode: result.exitCode,
+          harness: worker.harness,
+          model: worker.model ?? "harness-default",
+          sessionId: result.identity?.sessionId ?? null,
+          stage: claimStage,
+          workerId: worker.workerId,
+        },
+        now(),
+      ),
+    );
+    if (result.exitCode !== 0 || result.identity === null) {
       emit(
         makeEvent(
           reg.runId,
-          "worker",
+          "failure",
           {
+            class: result.failureClass ?? "spawn-failed",
             exitCode: result.exitCode,
-            harness: worker.harness,
-            model: worker.model ?? "harness-default",
-            sessionId: result.identity?.sessionId ?? null,
-            stage: claimStage,
             workerId: worker.workerId,
           },
           now(),
         ),
       );
-      if (result.exitCode !== 0 || result.identity === null) {
+      failures.push({ class: result.failureClass ?? "spawn-failed", workerId: worker.workerId });
+      return [];
+    }
+    survivors += 1;
+    const localIds = localIdsOf(result.rawClaims);
+    const rejected: { errors: readonly string[]; raw: unknown }[] = [];
+    for (const raw of result.rawClaims) {
+      const localId =
+        typeof (raw as Record<string, unknown>)["claim_id"] === "string"
+          ? String((raw as Record<string, unknown>)["claim_id"]).replace(/^[a-z0-9-]+:/, "")
+          : null;
+      if (localId !== null && acceptedLocalIds.has(localId)) {
+        continue;
+      }
+      const verdict = validateClaim(bareIds(raw));
+      if (!verdict.valid) {
         emit(
           makeEvent(
             reg.runId,
-            "failure",
+            "claim",
             {
-              class: result.failureClass ?? "spawn-failed",
-              exitCode: result.exitCode,
+              attempt,
+              errors: verdict.errors,
+              rejected: true,
+              stage: claimStage,
               workerId: worker.workerId,
             },
             now(),
           ),
         );
-        failures.push({ class: result.failureClass ?? "spawn-failed", workerId: worker.workerId });
+        rejected.push({ errors: verdict.errors, raw });
         continue;
       }
-      survivors += 1;
-      const localIds = localIdsOf(result.rawClaims);
-      for (const raw of result.rawClaims) {
-        const verdict = validateClaim(bareIds(raw));
-        if (!verdict.valid) {
-          emit(
-            makeEvent(
-              reg.runId,
-              "claim",
-              {
-                errors: verdict.errors,
-                rejected: true,
-                stage: claimStage,
-                workerId: worker.workerId,
-              },
-              now(),
-            ),
-          );
-          continue;
-        }
-        const stampedLocal = remapOne(raw, worker.workerId, localIds);
-        const provenance: StampedProvenance = stampProvenance({
-          harness: result.identity.harness,
-          model: result.identity.requestedModel,
-          runId: reg.runId,
-          sessionId: result.identity.sessionId,
-          stampedAt: now(),
+      const stampedLocal = remapOne(raw, worker.workerId, localIds);
+      const provenance: StampedProvenance = stampProvenance({
+        harness: result.identity.harness,
+        model: result.identity.requestedModel,
+        runId: reg.runId,
+        sessionId: result.identity.sessionId,
+        stampedAt: now(),
+        workerId: worker.workerId,
+      });
+      const stamped = { ...stampedLocal, provenance };
+      emit(
+        makeEvent(
+          reg.runId,
+          "claim",
+          { attempt, claim: stamped, stage: claimStage, workerId: worker.workerId },
+          now(),
+        ),
+      );
+      accepted.push({ claim: stamped, stage: claimStage, workerId: worker.workerId });
+      if (localId !== null) {
+        acceptedLocalIds.add(localId);
+      }
+    }
+    if (result.question !== null) {
+      emit(
+        makeEvent(reg.runId, "question", {
+          ...result.question,
           workerId: worker.workerId,
-        });
-        const stamped = { ...stampedLocal, provenance };
-        emit(
-          makeEvent(
-            reg.runId,
-            "claim",
-            { claim: stamped, stage: claimStage, workerId: worker.workerId },
-            now(),
-          ),
-        );
-        accepted.push({ claim: stamped, stage: claimStage, workerId: worker.workerId });
+        }),
+      );
+    }
+    return rejected;
+  };
+
+  const runWorkers = (workers: readonly WorkerConfig[], claimStage: WorkerStage): void => {
+    for (const worker of workers) {
+      const acceptedLocalIds = new Set<string>();
+      const rejected = runWorkerTurn(worker, claimStage, worker.prompt, 1, acceptedLocalIds);
+      if (rejected.length === 0) {
+        continue;
       }
-      if (result.question !== null) {
-        emit(
-          makeEvent(
-            reg.runId,
-            "question",
-            { ...result.question, workerId: worker.workerId },
-            now(),
-          ),
-        );
-      }
+      const feedback = [
+        "",
+        "YOUR PREVIOUS SUBMISSION HAD CLAIMS REJECTED BY THE SCHEMA VALIDATOR:",
+        ...rejected.flatMap((entry) => [
+          "",
+          `REJECTED CLAIM: ${JSON.stringify(entry.raw)}`,
+          `ERRORS: ${entry.errors.join("; ")}`,
+        ]),
+        "",
+        "Resubmit ONLY the rejected claims, corrected, one JSON object per line.",
+        "Do not resubmit claims that were accepted; do not add new claims.",
+      ].join("\n");
+      runWorkerTurn(worker, claimStage, `${worker.prompt}\n${feedback}`, 2, acceptedLocalIds);
     }
   };
 
