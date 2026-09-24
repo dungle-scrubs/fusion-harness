@@ -166,11 +166,15 @@ export const juryDefinition: PatternDefinition = {
     if (task.trim().length === 0) {
       return { error: "--task must be non-empty" };
     }
-    const workers = positiveInt(String(options["workers"] ?? ""), JURY_MIN_WORKERS, "workers");
+    const workers = positiveInt(
+      String(options["workers"] ?? JURY_DEFAULT_WORKERS),
+      JURY_MIN_WORKERS,
+      "workers",
+    );
     if (typeof workers === "string") {
       return { error: workers };
     }
-    const timeout = Number(options["timeout"] ?? "");
+    const timeout = Number(options["timeout"] ?? 180);
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }

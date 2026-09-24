@@ -174,20 +174,20 @@ export function redblueFuse(accepted: readonly AcceptedClaim[]): FusedOutput {
   }
 
   const sustainedTargets = new Set<string>();
-  const rejectedClaims: { claimId: string; reason: string }[] = [];
+  const rejectedOptions: { claimId: string; reason: string }[] = [];
   for (const outcome of rulingsByObjection.values()) {
     if (outcome.ruling === "sustained" && outcome.targetId !== null) {
       sustainedTargets.add(outcome.targetId);
       const target = base.find((b) => claimIdOf(b.claim) === outcome.targetId);
       if (target !== undefined) {
-        rejectedClaims.push({
+        rejectedOptions.push({
           claimId: outcome.targetId,
           reason: `objection ${outcome.objectionId} sustained`,
         });
       }
     }
     if (outcome.ruling === "unresolved") {
-      rejectedClaims.push({
+      rejectedOptions.push({
         claimId: outcome.objectionId,
         reason: "objection unresolved: check inconclusive or no ruling",
       });
@@ -204,7 +204,7 @@ export function redblueFuse(accepted: readonly AcceptedClaim[]): FusedOutput {
       decision: judge ? String(judge.claim["claim"]) : null,
       judgeVerdict: judge ? String(judge.claim["requested_action"]) : null,
       pattern: "red-blue",
-      rejectedClaims,
+      rejectedOptions,
       residualRisks: unresolvedObjections.map((o) => ({
         objectionId: o.objectionId,
         targetId: o.targetId,
@@ -226,7 +226,7 @@ export const redblueDefinition: PatternDefinition = {
     if (task.trim().length === 0 || burden.trim().length === 0) {
       return { error: "--task and --burden must be non-empty" };
     }
-    const timeout = Number(options["timeout"] ?? "");
+    const timeout = Number(options["timeout"] ?? 300);
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }

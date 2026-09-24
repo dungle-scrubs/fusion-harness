@@ -143,8 +143,17 @@ describe("aggregate", () => {
   it("rejects empty input, non-numeric median/weighted, and zero total weight", () => {
     expect(() => aggregate("plurality", [])).toThrow("at least one vote");
     expect(() => aggregate("median", [{ confidence: 1, value: "yes" }])).toThrow(
-      "requires numeric values",
+      "requires finite numeric values",
     );
+    expect(() => aggregate("median", [{ confidence: 1, value: "Infinity" }])).toThrow(
+      "requires finite numeric values",
+    );
+    expect(() =>
+      aggregate("weighted", [
+        { confidence: -0.5, value: "1" },
+        { confidence: 0.5, value: "2" },
+      ]),
+    ).toThrow("confidences in [0,1]");
     expect(() =>
       aggregate("weighted", [
         { confidence: 0, value: "1" },

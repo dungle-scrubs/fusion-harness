@@ -27,7 +27,11 @@ function claimsBlock(claims: readonly Record<string, unknown>[]): string {
   return claims.map((c) => JSON.stringify(c)).join("\n");
 }
 
-export function delphiRound2Prompt(task: string, own: readonly Record<string, unknown>[]): string {
+export function delphiRound2Prompt(
+  task: string,
+  own: readonly Record<string, unknown>[],
+  panel: readonly Record<string, unknown>[],
+): string {
   return [
     "You are one member of a Delphi panel, round 2 (final).",
     `TASK: ${task}`,
@@ -50,6 +54,7 @@ export function delphiRound2Prompt(task: string, own: readonly Record<string, un
     "Do NOT include a provenance field.",
     "",
     "PANEL RECORD (anonymized, one JSON per line):",
+    claimsBlock(panel),
   ].join("\n");
 }
 
@@ -74,6 +79,12 @@ export function delphiFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
 } {
   const round1 = accepted.filter((a) => a.stage === "generate" && a.claim["kind"] === "answer");
   const round2 = accepted.filter((a) => a.stage === "challenge" && a.claim["kind"] === "answer");
+  const rejectedOptions = accepted
+    .filter((a) => a.claim["kind"] !== "answer")
+    .map((a) => ({
+      claimId: String(a.claim["claim_id"] ?? "unknown"),
+      reason: `delphi requires kind=answer, got ${String(a.claim["kind"] ?? "none")}`,
+    }));
 
   type Group = { canonical: string; members: AcceptedClaim[] };
   const groupsOf = (entries: readonly AcceptedClaim[]): Map<string, Group> => {
@@ -150,7 +161,7 @@ export function delphiFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
         votes: g.members.length,
       })),
       pattern: "delphi",
-      rejectedOptions: [],
+      rejectedOptions,
       residualRisks,
     },
     fusion: {
@@ -168,11 +179,11 @@ export const delphiDefinition: PatternDefinition = {
     if (task.trim().length === 0) {
       return { error: "--task must be non-empty" };
     }
-    const workers = Number(options["workers"] ?? "");
+    const workers = Number(options["workers"] ?? DELPHI_DEFAULT_WORKERS);
     if (!Number.isInteger(workers) || workers < DELPHI_MIN_WORKERS) {
       return { error: `--workers must be an integer >= ${DELPHI_MIN_WORKERS}` };
     }
-    const timeout = Number(options["timeout"] ?? "");
+    const timeout = Number(options["timeout"] ?? 300);
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
@@ -189,7 +200,11 @@ export const delphiDefinition: PatternDefinition = {
         challenge: (input: StageInput) =>
           Array.from({ length: workers }, (_, index) => ({
             ...base,
-            prompt: delphiRound2Prompt(task, input.byWorker.get(`w${index + 1}`) ?? []),
+            prompt: delphiRound2Prompt(
+              task,
+              input.byWorker.get(`w${index + 1}`) ?? [],
+              input.anonymizedClaims,
+            ),
             workerId: `w${index + 1}-r2`,
           })),
       },

@@ -34,11 +34,20 @@ describe("delphi prompts", () => {
     expect(prompt).toContain("Do NOT include a provenance field");
   });
 
-  it("round 2 shows the worker its own answer and the anonymized panel record", () => {
-    const prompt = delphiRound2Prompt("ship or hold?", [{ claim: "hold", claim_id: "C1" }]);
+  it("round 2 shows the worker its own answer AND the panel record claims", () => {
+    const prompt = delphiRound2Prompt(
+      "ship or hold?",
+      [{ claim: "hold", claim_id: "C1" }],
+      [
+        { claim: "ship now", claim_id: "w1:C1" },
+        { claim: "hold for tests", claim_id: "w2:C1" },
+      ],
+    );
     expect(prompt).toContain("YOUR ROUND-1 ANSWER:");
     expect(prompt).toContain('"claim":"hold"');
     expect(prompt).toContain("PANEL RECORD (anonymized");
+    expect(prompt).toContain('"claim":"ship now"');
+    expect(prompt).toContain('"claim":"hold for tests"');
     expect(prompt).toContain("novelty:");
   });
 });

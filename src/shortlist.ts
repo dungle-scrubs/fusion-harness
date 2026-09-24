@@ -222,15 +222,15 @@ export const shortlistDefinition: PatternDefinition = {
     if (task.trim().length === 0 || rubric.trim().length === 0) {
       return { error: "--task and --rubric must be non-empty" };
     }
-    const generators = Number(options["generators"] ?? "");
-    const judges = Number(options["judges"] ?? "");
+    const generators = Number(options["generators"] ?? SHORTLIST_DEFAULT_GENERATORS);
+    const judges = Number(options["judges"] ?? SHORTLIST_DEFAULT_JUDGES);
     if (!Number.isInteger(generators) || generators < SHORTLIST_MIN_WORKERS) {
       return { error: `--generators must be an integer >= ${SHORTLIST_MIN_WORKERS}` };
     }
     if (!Number.isInteger(judges) || judges < SHORTLIST_MIN_WORKERS) {
       return { error: `--judges must be an integer >= ${SHORTLIST_MIN_WORKERS}` };
     }
-    const timeout = Number(options["timeout"] ?? "");
+    const timeout = Number(options["timeout"] ?? 300);
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }

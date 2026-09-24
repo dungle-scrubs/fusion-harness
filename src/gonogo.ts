@@ -104,11 +104,11 @@ export const gonogoDefinition: PatternDefinition = {
     if (task.trim().length === 0) {
       return { error: "--task must be non-empty" };
     }
-    const reviewers = Number(options["reviewers"] ?? "");
+    const reviewers = Number(options["reviewers"] ?? GONOGO_DEFAULT_REVIEWERS);
     if (!Number.isInteger(reviewers) || reviewers < GONOGO_MIN_REVIEWERS) {
       return { error: `--reviewers must be an integer >= ${GONOGO_MIN_REVIEWERS}` };
     }
-    const timeout = Number(options["timeout"] ?? "");
+    const timeout = Number(options["timeout"] ?? 300);
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
@@ -131,7 +131,7 @@ export const gonogoDefinition: PatternDefinition = {
   description:
     "Go/No-Go gate: independent reviewers each return GO, GO WITH CONSTRAINT, or " +
     "NO-GO; the mechanical veto rule is that any NO-GO blocks - no outvoting. " +
-    "Writes .fusion/runs/<runId>/. Exits 0 clean, 1 run failure, 2 invalid invocation.",
+    "Writes .fusion/runs/<runId>/.",
   options: [
     {
       default: String(GONOGO_DEFAULT_REVIEWERS),

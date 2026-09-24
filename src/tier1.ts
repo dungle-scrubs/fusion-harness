@@ -16,7 +16,7 @@ export function canonicalize(text: string): string {
     .trim()
     .toLowerCase()
     .replace(/(\d),(\d)/g, "$1$2")
-    .replace(/(\d)\.0+(?=\D|$)/g, "$1");
+    .replace(/(^|\s)(\d+)\.0+(?=\s|$)/g, "$1$2");
 }
 
 export interface NormalizableClaim {
@@ -107,8 +107,16 @@ export function aggregate(
   }
   const numeric = votes.map((vote) => {
     const n = Number(vote.value);
-    if (vote.value.trim() === "" || Number.isNaN(n)) {
-      throw new Error(`aggregate ${method} requires numeric values, got "${vote.value}"`);
+    if (vote.value.trim() === "" || !Number.isFinite(n)) {
+      throw new Error(`aggregate ${method} requires finite numeric values, got "${vote.value}"`);
+    }
+    if (
+      typeof vote.confidence !== "number" ||
+      Number.isNaN(vote.confidence) ||
+      vote.confidence < 0 ||
+      vote.confidence > 1
+    ) {
+      throw new Error(`aggregate requires confidences in [0,1], got ${String(vote.confidence)}`);
     }
     return { confidence: vote.confidence, value: n };
   });
@@ -160,6 +168,9 @@ export function scoreForecasts(outcomes: readonly ScoredOutcome[]): ScoreResult 
       item.confidence > 1
     ) {
       throw new Error(`score requires confidences in [0,1], got ${String(item.confidence)}`);
+    }
+    if (typeof item.outcome !== "boolean") {
+      throw new Error(`score requires boolean outcomes, got ${String(item.outcome)}`);
     }
     const actual = item.outcome ? 1 : 0;
     brierSum += (item.confidence - actual) ** 2;

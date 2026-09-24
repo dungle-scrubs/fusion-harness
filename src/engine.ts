@@ -353,7 +353,6 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
       failures.push({ class: result.failureClass ?? "spawn-failed", workerId: worker.workerId });
       return [];
     }
-    survivors += 1;
     const localIds = localIdsOf(result.rawClaims);
     const rejected: { errors: readonly string[]; raw: unknown }[] = [];
     for (const raw of result.rawClaims) {
@@ -402,6 +401,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
         ),
       );
       accepted.push({ claim: stamped, stage: claimStage, workerId: worker.workerId });
+      survivors += 1;
       if (localId !== null) {
         acceptedLocalIds.add(localId);
       }
