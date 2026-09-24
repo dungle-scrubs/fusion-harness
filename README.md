@@ -16,7 +16,7 @@ votes    3 answers, 3 groups, duplicate rate 0.00
 Requires Node 22+ and the `hcn` CLI (`npm install -g @dungle-scrubs/harness-cli-normalizer`) - every worker runs through it.
 
 ```console
-npm install -g @dungle-scrubs/fusion
+npm install -g @dungle-scrubs/fusion-panel
 ```
 
 ## Use it: run a sealed jury
