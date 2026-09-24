@@ -47,7 +47,9 @@ favorite explanation.
 ## Guarantees and limits
 
 - Guaranteed: the matrix is mechanical - no model scores consistency;
-  run-scoped ids keep sealed analysts' same-numbered claims apart.
+  run-scoped ids keep sealed analysts' same-numbered claims apart; a
+  worker whose claims are rejected gets one retry with the validator
+  errors fed back - a second rejection is final for the run.
 - Limits: sealed analysts cannot cross-cite, so with N workers the merged
   matrix is block-diagonal - each analyst's evidence bears only on their
   own hypotheses, and every item is "diagnostic" against the union. Cross-
