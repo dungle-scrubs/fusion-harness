@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1](https://github.com/dungle-scrubs/fusion-panel/compare/fusion-panel-v0.2.0...fusion-panel-v0.2.1) (2026-09-24)
+
+
+### Fixed
+
+* correct install command to @dungle-scrubs/fusion-panel ([#48](https://github.com/dungle-scrubs/fusion-panel/issues/48)) ([502b0a3](https://github.com/dungle-scrubs/fusion-panel/commit/502b0a362385a44b095a55618efcd10d6dea9889))
+* strip ./ prefix from bin path ([#47](https://github.com/dungle-scrubs/fusion-panel/issues/47)) ([a0040d3](https://github.com/dungle-scrubs/fusion-panel/commit/a0040d3eda7e22cdb60099b4035fe75f5a5703db))
+
+
+### Changed
+
+* one doc per method ([#24](https://github.com/dungle-scrubs/fusion-panel/issues/24)) ([a29e4d6](https://github.com/dungle-scrubs/fusion-panel/commit/a29e4d653a6c68a2dedbe9a50ffb5f09d2dc97d0))
+* PatternDefinition owns each pattern; dispatcher is generic ([#22](https://github.com/dungle-scrubs/fusion-panel/issues/22)) ([d2893cf](https://github.com/dungle-scrubs/fusion-panel/commit/d2893cfdba1cbae4ea847de227f700f3d34094c0))
+* public release readiness ([#37](https://github.com/dungle-scrubs/fusion-panel/issues/37)) ([12ffbc3](https://github.com/dungle-scrubs/fusion-panel/commit/12ffbc30567da96e78ab5026a1cda4e8ed81f0c5))
+* rename fusion-harness to fusion-panel ([#46](https://github.com/dungle-scrubs/fusion-panel/issues/46)) ([7374c0c](https://github.com/dungle-scrubs/fusion-panel/commit/7374c0c500dce67e603cdbea20d7ada6df993705))
+* trigger release-please after workflow permission fix ([#49](https://github.com/dungle-scrubs/fusion-panel/issues/49)) ([e468c8a](https://github.com/dungle-scrubs/fusion-panel/commit/e468c8a6ed358228f5fdf767c0350a0105e52b03))
+
 ## [Unreleased]
 
 ### Added
