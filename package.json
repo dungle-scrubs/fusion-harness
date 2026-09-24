@@ -1,1 +1,41 @@
-{"name": "@dungle-scrubs/fusion", "version": "0.1.0", "description": "fusion: a composable fusion layer over agent harnesses (RFC-01)", "type": "module", "bin": {"fusion": "./dist/cli.js"}, "scripts": {"build": "esbuild src/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.js && chmod +x dist/cli.js", "typecheck": "tsc --noEmit", "lint": "biome check src tests", "test": "vitest run", "validate:samples": "node dist/cli.js validate --json tests/fixtures/valid-jury.jsonl"}, "dependencies": {"commander": "^15.0.0"}, "devDependencies": {"@types/node": "^24.0.0", "esbuild": "^0.27.0", "typescript": "^5.9.0", "vitest": "^4.0.0"}, "packageManager": "pnpm@11.9.0", "engines": {"node": ">=22"}}
+{
+  "name": "@dungle-scrubs/fusion",
+  "version": "0.2.0",
+  "description": "A composable fusion layer over agent harnesses: consensus you can audit.",
+  "type": "module",
+  "bin": {
+    "fusion": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.js && chmod +x dist/cli.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src tests",
+    "test": "vitest run",
+    "validate:samples": "node dist/cli.js validate --json tests/fixtures/valid-jury.jsonl"
+  },
+  "dependencies": {
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  },
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "author": "Kevin Frilot",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dungle-scrubs/fusion-harness.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
+}
