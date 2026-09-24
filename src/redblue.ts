@@ -1,5 +1,11 @@
 import type { AcceptedClaim, FusedOutput, RunReport, StageInput } from "./engine";
-import type { PatternDefinition, PatternOptions } from "./pattern";
+import {
+  diversityCounts,
+  type PatternDefinition,
+  type PatternOptions,
+  resolveRoster,
+  ROSTER_OPTION,
+} from "./pattern";
 import type { WorkerConfig } from "./run";
 
 export interface RedBlueOptions {
@@ -8,6 +14,13 @@ export interface RedBlueOptions {
   readonly model?: string;
   readonly task: string;
   readonly timeoutSec: number;
+}
+
+export interface RedBlueRoster {
+  readonly blue: { harness: string; model?: string };
+  readonly judge: { harness: string; model?: string };
+  readonly red: { harness: string; model?: string };
+  readonly umpire: { harness: string; model?: string };
 }
 
 export function claimantPrompt(task: string): string {
@@ -106,18 +119,27 @@ export function redblueWorkers(
   options: RedBlueOptions,
   input: StageInput,
   phase: "challenge" | "verify",
+  roster?: RedBlueRoster,
 ): readonly WorkerConfig[] {
-  const base = {
-    harness: options.harness,
-    ...(options.model !== undefined ? { model: options.model } : {}),
-    timeoutSec: options.timeoutSec,
+  const slot = (role: keyof RedBlueRoster): { harness: string; model?: string } => {
+    if (roster !== undefined) {
+      return roster[role];
+    }
+    return {
+      harness: options.harness,
+      ...(options.model !== undefined ? { model: options.model } : {}),
+    };
   };
+  const base = (role: keyof RedBlueRoster): { harness: string; model?: string; timeoutSec: number } => ({
+    ...slot(role),
+    timeoutSec: options.timeoutSec,
+  });
   if (phase === "challenge") {
-    return [{ ...base, prompt: opponentPrompt(input), workerId: "w-blue" }];
+    return [{ ...base("blue"), prompt: opponentPrompt(input), workerId: "w-blue" }];
   }
   return [
-    { ...base, prompt: umpirePrompt(input), workerId: "w-umpire" },
-    { ...base, prompt: judgePrompt(options.burden, input), workerId: "w-judge" },
+    { ...base("umpire"), prompt: umpirePrompt(input), workerId: "w-umpire" },
+    { ...base("judge"), prompt: judgePrompt(options.burden, input), workerId: "w-judge" },
   ];
 }
 
@@ -202,6 +224,7 @@ export function redblueFuse(accepted: readonly AcceptedClaim[]): FusedOutput {
   return {
     decision: {
       decision: judge ? String(judge.claim["claim"]) : null,
+      diversity: diversityCounts(accepted.map((a) => a.claim)),
       judgeVerdict: judge ? String(judge.claim["requested_action"]) : null,
       pattern: "red-blue",
       rejectedOptions,
@@ -232,6 +255,22 @@ export const redblueDefinition: PatternDefinition = {
     }
     const harness = String(options["harness"] ?? "pi");
     const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rostered = resolveRoster(options, 4);
+    if ("error" in rostered) {
+      return { error: rostered.error };
+    }
+    const [red, blue, umpire, judge] = rostered.roster as [
+      { harness: string; model?: string },
+      { harness: string; model?: string },
+      { harness: string; model?: string },
+      { harness: string; model?: string },
+    ];
+    const roleRoster: RedBlueRoster = {
+      blue: blue ?? { harness: "pi" },
+      judge: judge ?? { harness: "pi" },
+      red: red ?? { harness: "pi" },
+      umpire: umpire ?? { harness: "pi" },
+    };
     const patternOptions: RedBlueOptions = {
       burden,
       harness,
@@ -243,15 +282,15 @@ export const redblueDefinition: PatternDefinition = {
       fuse: redblueFuse,
       rubric: burden,
       stages: {
-        challenge: (input) => redblueWorkers(patternOptions, input, "challenge"),
-        verify: (input) => redblueWorkers(patternOptions, input, "verify"),
+        challenge: (input) => redblueWorkers(patternOptions, input, "challenge", roleRoster),
+        verify: (input) => redblueWorkers(patternOptions, input, "verify", roleRoster),
       },
       stoppingRule: "claimant files claims; opponent files objections; umpire rules; judge scores",
       task,
       workers: [
         {
-          harness,
-          ...(model !== undefined ? { model } : {}),
+          harness: roleRoster.red.harness,
+          ...(roleRoster.red.model !== undefined ? { model: roleRoster.red.model } : {}),
           prompt: claimantPrompt(task),
           timeoutSec: timeout,
           workerId: "w-red",
@@ -274,6 +313,11 @@ export const redblueDefinition: PatternDefinition = {
       default: "300",
       description: "per-role wall-clock budget in seconds (symmetric)",
       name: "timeout",
+    },
+    {
+      ...ROSTER_OPTION,
+      description:
+        "per-role harness[:model] in red,blue,umpire,judge order; repeatable, all four required when set",
     },
     {
       description: "the question the claimant must answer with claims",

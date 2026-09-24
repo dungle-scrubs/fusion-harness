@@ -1,5 +1,11 @@
 import type { AcceptedClaim, FusedOutput, RunReport, StageInput } from "./engine";
-import type { PatternDefinition, PatternOptions } from "./pattern";
+import {
+  diversityCounts,
+  type PatternDefinition,
+  type PatternOptions,
+  resolveRoster,
+  ROSTER_OPTION,
+} from "./pattern";
 import { canonicalize } from "./tier1";
 
 export const SHORTLIST_MIN_WORKERS = 2;
@@ -199,6 +205,7 @@ export function shortlistFuse(accepted: readonly AcceptedClaim[]): FusedOutput &
   return {
     decision: {
       decision: shortlist[0]?.canonical ?? null,
+      diversity: diversityCounts(accepted.map((a) => a.claim)),
       dropped: dropped.map((d) => ({ canonical: d.canonical, reason: d.reason, tally: d.tally })),
       pattern: "shortlist",
       rejectedOptions: [],
@@ -234,12 +241,20 @@ export const shortlistDefinition: PatternDefinition = {
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
-    const harness = String(options["harness"] ?? "pi");
-    const model = options["model"] === undefined ? undefined : String(options["model"]);
-    const base = {
-      harness,
-      ...(model !== undefined ? { model } : {}),
-      timeoutSec: timeout,
+    const rostered = resolveRoster(options, generators + judges);
+    if ("error" in rostered) {
+      return { error: rostered.error };
+    }
+    const roster = rostered.roster;
+    const slotOf = (index: number): { harness: string; model?: string } =>
+      roster[index] ?? { harness: "pi" };
+    const base = (index: number): { harness: string; model?: string; timeoutSec: number } => {
+      const slot = slotOf(index);
+      return {
+        harness: slot.harness,
+        ...(slot.model !== undefined ? { model: slot.model } : {}),
+        timeoutSec: timeout,
+      };
     };
     return {
       fuse: shortlistFuse,
@@ -247,7 +262,7 @@ export const shortlistDefinition: PatternDefinition = {
       stages: {
         challenge: (input: StageInput) =>
           Array.from({ length: judges }, (_, index) => ({
-            ...base,
+            ...base(generators + index),
             prompt: judgePrompt(task, rubric)(input),
             workerId: `w-judge-${index + 1}`,
           })),
@@ -255,7 +270,7 @@ export const shortlistDefinition: PatternDefinition = {
       stoppingRule: "proposers file options; every judge scores every option against the rubric",
       task,
       workers: Array.from({ length: generators }, (_, index) => ({
-        ...base,
+        ...base(index),
         prompt: generatorPrompt(task),
         workerId: `w-prop-${index + 1}`,
       })),
@@ -281,6 +296,7 @@ export const shortlistDefinition: PatternDefinition = {
     { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
     { description: "model id passed to every worker", name: "model" },
     { default: "300", description: "per-worker wall-clock budget in seconds", name: "timeout" },
+    ROSTER_OPTION,
     { description: "the standard every option is scored against", name: "rubric", required: true },
     {
       description: "the open problem proposers generate options for",

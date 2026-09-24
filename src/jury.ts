@@ -1,5 +1,12 @@
 import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
-import type { PatternDefinition, PatternOptions } from "./pattern";
+import {
+  diversityCounts,
+  type DiversityCounts,
+  type PatternDefinition,
+  type PatternOptions,
+  resolveRoster,
+  ROSTER_OPTION,
+} from "./pattern";
 import { canonicalize } from "./tier1";
 
 export const JURY_MIN_WORKERS = 2;
@@ -77,6 +84,7 @@ export interface JuryGroup {
 export interface JuryDecision extends FusedOutput {
   readonly decision: {
     readonly decision: string | null;
+    readonly diversity: DiversityCounts;
     readonly independence: {
       readonly acceptedAnswers: number;
       readonly duplicateRate: number;
@@ -175,10 +183,12 @@ export function juryFuse(
   );
 
   const duplicateRate = answers.length === 0 ? 0 : 1 - juryGroups.length / answers.length;
+  const diversity = diversityCounts(accepted.map((a) => a.claim));
 
   return {
     decision: {
       decision: winner?.canonical ?? null,
+      diversity,
       ...(vocabulary === undefined ? {} : { vocabulary: [...vocabulary] }),
       independence: {
         acceptedAnswers: answers.length,
@@ -225,8 +235,11 @@ export const juryDefinition: PatternDefinition = {
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
-    const harness = String(options["harness"] ?? "pi");
-    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rostered = resolveRoster(options, workers);
+    if ("error" in rostered) {
+      return { error: rostered.error };
+    }
+    const roster = rostered.roster;
     const rawVocabulary = options["vocabulary"];
     let vocabulary: string[] | undefined;
     if (rawVocabulary !== undefined) {
@@ -240,13 +253,16 @@ export const juryDefinition: PatternDefinition = {
       fuse: vocabulary === undefined ? juryFuse : (accepted) => juryFuse(accepted, vocabulary),
       stoppingRule: "every worker submits one answer claim or times out",
       task,
-      workers: Array.from({ length: workers }, (_, index) => ({
-        harness,
-        ...(model !== undefined ? { model } : {}),
-        prompt: juryWorkerPrompt(task, vocabulary),
-        timeoutSec: timeout,
-        workerId: `w${index + 1}`,
-      })),
+      workers: Array.from({ length: workers }, (_, index) => {
+        const slot = roster[index] ?? { harness: "pi" };
+        return {
+          harness: slot.harness,
+          ...(slot.model !== undefined ? { model: slot.model } : {}),
+          prompt: juryWorkerPrompt(task, vocabulary),
+          timeoutSec: timeout,
+          workerId: `w${index + 1}`,
+        };
+      }),
     };
   },
   command: "jury",
@@ -263,6 +279,7 @@ export const juryDefinition: PatternDefinition = {
     { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
     { description: "model id passed to every worker", name: "model" },
     { default: "180", description: "per-worker wall-clock budget in seconds", name: "timeout" },
+    ROSTER_OPTION,
     {
       description: "closed answer set, comma-separated (e.g. ship,hold)",
       name: "vocabulary",
@@ -281,6 +298,12 @@ export const juryDefinition: PatternDefinition = {
       lines.push(
         `votes    ${independence.acceptedAnswers} answers, ${independence.groups} groups, duplicate rate ${independence.duplicateRate.toFixed(2)}`,
       );
+    }
+    const diversity = decision["diversity"] as
+      | { harnesses: number; models: number }
+      | undefined;
+    if (diversity !== undefined) {
+      lines.push(`roster   ${diversity.harnesses} harnesses, ${diversity.models} models`);
     }
     const failures = decision["failures"] as { class: string; workerId: string }[] | undefined;
     if ((failures?.length ?? 0) > 0) {

@@ -1,5 +1,11 @@
 import type { AcceptedClaim, FusedOutput, RunReport, StageInput } from "./engine";
-import type { PatternDefinition, PatternOptions } from "./pattern";
+import {
+  diversityCounts,
+  type PatternDefinition,
+  type PatternOptions,
+  resolveRoster,
+  ROSTER_OPTION,
+} from "./pattern";
 import { canonicalize } from "./tier1";
 import { parseVocabulary } from "./jury";
 
@@ -186,11 +192,13 @@ export function delphiFuse(
     round2: { answers: round2Keeps.length, groups: round2Groups.size },
     stabilityRate,
   };
+  const diversity = diversityCounts(accepted.map((a) => a.claim));
 
   return {
     decision: {
       decision: winner?.canonical ?? null,
       delphi: stats,
+      diversity,
       ...(vocabulary === undefined ? {} : { vocabulary: [...vocabulary] }),
       minorityReport: minority.map((g) => ({
         canonical: g.canonical,
@@ -229,8 +237,13 @@ export const delphiDefinition: PatternDefinition = {
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
-    const harness = String(options["harness"] ?? "pi");
-    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rostered = resolveRoster(options, workers);
+    if ("error" in rostered) {
+      return { error: rostered.error };
+    }
+    const roster = rostered.roster;
+    const slotOf = (index: number): { harness: string; model?: string } =>
+      roster[index] ?? { harness: "pi" };
     const rawVocabulary = options["vocabulary"];
     let vocabulary: string[] | undefined;
     if (rawVocabulary !== undefined) {
@@ -240,17 +253,20 @@ export const delphiDefinition: PatternDefinition = {
       }
       vocabulary = parsed.members;
     }
-    const base = {
-      harness,
-      ...(model !== undefined ? { model } : {}),
-      timeoutSec: timeout,
+    const base = (index: number): { harness: string; model?: string; timeoutSec: number } => {
+      const slot = slotOf(index);
+      return {
+        harness: slot.harness,
+        ...(slot.model !== undefined ? { model: slot.model } : {}),
+        timeoutSec: timeout,
+      };
     };
     return {
       fuse: vocabulary === undefined ? delphiFuse : (accepted) => delphiFuse(accepted, vocabulary),
       stages: {
         challenge: (input: StageInput) =>
           Array.from({ length: workers }, (_, index) => ({
-            ...base,
+            ...base(index),
             prompt: delphiRound2Prompt(
               task,
               input.byWorker.get(`w${index + 1}`) ?? [],
@@ -263,7 +279,7 @@ export const delphiDefinition: PatternDefinition = {
       stoppingRule: "every worker answers round 1 and revises in round 2, or times out",
       task,
       workers: Array.from({ length: workers }, (_, index) => ({
-        ...base,
+        ...base(index),
         prompt: delphiRound1Prompt(task, vocabulary),
         workerId: `w${index + 1}`,
       })),
@@ -288,6 +304,7 @@ export const delphiDefinition: PatternDefinition = {
       description: "closed answer set for round 1, comma-separated; round 2 must stay inside it",
       name: "vocabulary",
     },
+    ROSTER_OPTION,
     { description: "the question the panel answers", name: "task", required: true },
   ],
   summarize(decision, report: RunReport): readonly string[] {

@@ -1,5 +1,12 @@
 import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
-import type { PatternDefinition, PatternOptions } from "./pattern";
+import {
+  diversityCounts,
+  type DiversityCounts,
+  type PatternDefinition,
+  type PatternOptions,
+  resolveRoster,
+  ROSTER_OPTION,
+} from "./pattern";
 
 export const ACH_MIN_WORKERS = 2;
 export const ACH_DEFAULT_WORKERS = 3;
@@ -43,6 +50,7 @@ export interface AchDecision extends FusedOutput {
   readonly decision: {
     readonly consistentWithAll: readonly string[];
     readonly diagnosticEvidence: readonly string[];
+    readonly diversity: DiversityCounts;
     readonly hypotheses: readonly string[];
     readonly leastDisconfirmed: string | null;
     readonly matrix: readonly MatrixCell[];
@@ -177,6 +185,7 @@ export function achFuse(accepted: readonly AcceptedClaim[]): AchDecision {
     decision: {
       consistentWithAll,
       diagnosticEvidence,
+      diversity: diversityCounts(accepted.map((a) => a.claim)),
       hypotheses: hypothesisIds,
       leastDisconfirmed,
       matrix,
@@ -207,19 +216,25 @@ export const achDefinition: PatternDefinition = {
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
-    const harness = String(options["harness"] ?? "pi");
-    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rostered = resolveRoster(options, workers);
+    if ("error" in rostered) {
+      return { error: rostered.error };
+    }
+    const roster = rostered.roster;
     return {
       fuse: achFuse,
       stoppingRule: "every worker submits hypotheses and evidence or times out",
       task,
-      workers: Array.from({ length: workers }, (_, index) => ({
-        harness,
-        ...(model !== undefined ? { model } : {}),
-        prompt: achWorkerPrompt(task),
-        timeoutSec: timeout,
-        workerId: `w${index + 1}`,
-      })),
+      workers: Array.from({ length: workers }, (_, index) => {
+        const slot = roster[index] ?? { harness: "pi" };
+        return {
+          harness: slot.harness,
+          ...(slot.model !== undefined ? { model: slot.model } : {}),
+          prompt: achWorkerPrompt(task),
+          timeoutSec: timeout,
+          workerId: `w${index + 1}`,
+        };
+      }),
     };
   },
   command: "ach",
@@ -237,6 +252,7 @@ export const achDefinition: PatternDefinition = {
     { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
     { description: "model id passed to every worker", name: "model" },
     { default: "300", description: "per-worker wall-clock budget in seconds", name: "timeout" },
+    ROSTER_OPTION,
     { description: "the question the analysts hypothesize about", name: "task", required: true },
   ],
   summarize(decision, report: RunReport): readonly string[] {

@@ -79,7 +79,7 @@ Composition recipes:
     mechanical vote/median. No model in the loop.
 
 Tier 2 (pattern runs - the tool owns the run):
-  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--vocabulary a,b]
+  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--vocabulary a,b] [--roster h[:m]]
     Sealed parallel generation: every worker answers the task as one
     claim (kind=answer), unseen by the others; equivalent answers are
     normalized; plurality fusion decides mechanically. With --vocabulary,
@@ -87,8 +87,8 @@ Tier 2 (pattern runs - the tool owns the run):
     answers are rejected with a reason after one E001 retry. The decision
     record carries the winning answer, minority report, rejected
     options, residual risks, the vocabulary when set, and an independence
-    signal (answers, groups, duplicate rate) - read it before trusting
-    consensus.
+    signal (answers, groups, duplicate rate) plus roster diversity
+    (distinct harnesses, models) - read both before trusting consensus.
     Workers are separate processes with no shared transcript. A worker
     that asks a genuine blocking question emits a question event with
     the run id; other workers continue.
@@ -180,7 +180,9 @@ What counts as a bug - file only these, nothing else:
     schema rejections - the error line names the field; E202/E203
     unfusable input - check method/enum and non-empty input; E301 a
     pattern run lost all workers - check the failed worker classes in
-    the run's events.ndjson and rerun; E302 nothing on input.
+    the run's events.ndjson and rerun; E302 nothing on input. Repeat
+    --roster per worker for mixed rosters; secret material routes to
+    local-only harnesses in every slot.
 
 Rules that bind every caller:
   - Never call the tool a harness. That word means loop-owners

@@ -1,9 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { achDefinition } from "../src/ach";
-import type { RunReport } from "../src/engine";
-import { juryDefinition } from "../src/jury";
+import type { AcceptedClaim, RunReport } from "../src/engine";
+import { gonogoDefinition } from "../src/gonogo";
+import { juryDefinition, juryFuse } from "../src/jury";
+import { diversityCounts, resolveRoster } from "../src/pattern";
 import { redblueDefinition } from "../src/redblue";
+import { shortlistDefinition } from "../src/shortlist";
 
 function reportOf(overrides: Partial<RunReport> = {}): RunReport {
   return {
@@ -15,6 +18,113 @@ function reportOf(overrides: Partial<RunReport> = {}): RunReport {
     ...overrides,
   };
 }
+
+describe("resolveRoster", () => {
+  it("fans the fallback pair out to every worker without --roster", () => {
+    const resolved = resolveRoster({ harness: "muse", model: "m1", task: "t" }, 2);
+    expect(resolved).toEqual({
+      roster: [
+        { harness: "muse", model: "m1" },
+        { harness: "muse", model: "m1" },
+      ],
+    });
+  });
+
+  it("parses harness and harness:model entries positionally", () => {
+    const resolved = resolveRoster({ roster: "pi,codex:gpt" }, 2);
+    expect(resolved).toEqual({ roster: [{ harness: "pi" }, { harness: "codex", model: "gpt" }] });
+  });
+
+  it("rejects a roster whose length misses the worker count", () => {
+    expect(resolveRoster({ roster: "pi" }, 2)).toEqual({
+      error: "--roster expects 2 entries (one per worker), got 1",
+    });
+  });
+});
+
+describe("diversityCounts", () => {
+  it("counts distinct harnesses and models from stamped provenance", () => {
+    expect(
+      diversityCounts([
+        { provenance: { harness: "pi", model: "m1" } },
+        { provenance: { harness: "codex", model: "m1" } },
+        {},
+      ]),
+    ).toEqual({ harnesses: 2, models: 1 });
+  });
+});
+
+describe("roster wiring", () => {
+  it("jury maps roster slots to workers and reports diversity", () => {
+    const build = juryDefinition.build({ roster: "pi,codex:m1", task: "t", workers: "2" });
+    expect("error" in build).toBe(false);
+    if ("error" in build) {
+      return;
+    }
+    expect(build.workers.map((w) => w.harness)).toEqual(["pi", "codex"]);
+    expect(build.workers[1]?.model).toBe("m1");
+    const fused = juryFuse(
+      [
+        {
+          claim: {
+            claim: "ship",
+            claim_id: "C1",
+            confidence: 0.8,
+            falsifier: "f",
+            kind: "answer",
+            provenance: { harness: "pi", model: "m1" },
+            status: "documented",
+          },
+          stage: "generate",
+          workerId: "w1",
+        } as AcceptedClaim,
+      ],
+      undefined,
+    );
+    expect(fused.decision.diversity).toEqual({ harnesses: 1, models: 1 });
+  });
+
+  it("shortlist maps the first G slots to proposers and the rest to judges", () => {
+    const build = shortlistDefinition.build({
+      generators: "2",
+      judges: "2",
+      roster: "pi,pi,codex,codex",
+      rubric: "r",
+      task: "t",
+    });
+    expect("error" in build).toBe(false);
+    if ("error" in build) {
+      return;
+    }
+    expect(build.workers.map((w) => w.harness)).toEqual(["pi", "pi"]);
+    const staged = build.stages?.challenge?.({ anonymizedClaims: [], byWorker: new Map() });
+    expect(staged?.map((w) => w.harness)).toEqual(["codex", "codex"]);
+  });
+
+  it("gonogo rejects a short roster before any spawn", () => {
+    expect(gonogoDefinition.build({ reviewers: "3", roster: "pi,pi", task: "t" })).toEqual({
+      error: "--roster expects 3 entries (one per worker), got 2",
+    });
+  });
+
+  it("red-blue expects four role slots in red,blue,umpire,judge order", () => {
+    const build = redblueDefinition.build({
+      burden: "b",
+      roster: "pi,pi,codex,codex",
+      task: "t",
+    });
+    expect("error" in build).toBe(false);
+    if ("error" in build) {
+      return;
+    }
+    expect(build.workers[0]?.harness).toBe("pi");
+    const staged = build.stages?.verify?.({ anonymizedClaims: [], byWorker: new Map() });
+    expect(staged?.map((w) => w.harness)).toEqual(["codex", "codex"]);
+    expect(redblueDefinition.build({ burden: "b", roster: "pi", task: "t" })).toEqual({
+      error: "--roster expects 4 entries (one per worker), got 1",
+    });
+  });
+});
 
 describe("jury definition", () => {
   it("builds N sealed workers with the juror prompt", () => {

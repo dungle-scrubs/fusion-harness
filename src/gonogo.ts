@@ -1,5 +1,11 @@
 import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
-import type { PatternDefinition, PatternOptions } from "./pattern";
+import {
+  diversityCounts,
+  type PatternDefinition,
+  type PatternOptions,
+  resolveRoster,
+  ROSTER_OPTION,
+} from "./pattern";
 
 export const GONOGO_MIN_REVIEWERS = 2;
 export const GONOGO_DEFAULT_REVIEWERS = 3;
@@ -81,6 +87,7 @@ export function gonogoFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
       })),
       constraints: constrained.map((c) => ({ constraint: c.note, workerId: c.workerId })),
       decision: verdict,
+      diversity: diversityCounts(accepted.map((a) => a.claim)),
       pattern: "gonogo",
       positions: positions.map((p) => ({ ...p, workerId: p.workerId })),
       rejectedOptions: [],
@@ -112,19 +119,25 @@ export const gonogoDefinition: PatternDefinition = {
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
-    const harness = String(options["harness"] ?? "pi");
-    const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rostered = resolveRoster(options, reviewers);
+    if ("error" in rostered) {
+      return { error: rostered.error };
+    }
+    const roster = rostered.roster;
     return {
       fuse: gonogoFuse,
       stoppingRule: "every reviewer returns one position or times out",
       task,
-      workers: Array.from({ length: reviewers }, (_, index) => ({
-        harness,
-        ...(model !== undefined ? { model } : {}),
-        prompt: gonogoPrompt(task),
-        timeoutSec: timeout,
-        workerId: `w-gate-${index + 1}`,
-      })),
+      workers: Array.from({ length: reviewers }, (_, index) => {
+        const slot = roster[index] ?? { harness: "pi" };
+        return {
+          harness: slot.harness,
+          ...(slot.model !== undefined ? { model: slot.model } : {}),
+          prompt: gonogoPrompt(task),
+          timeoutSec: timeout,
+          workerId: `w-gate-${index + 1}`,
+        };
+      }),
     };
   },
   command: "gonogo",
@@ -141,6 +154,7 @@ export const gonogoDefinition: PatternDefinition = {
     { default: "pi", description: "harness for every reviewer (hcn name)", name: "harness" },
     { description: "model id passed to every reviewer", name: "model" },
     { default: "300", description: "per-reviewer wall-clock budget in seconds", name: "timeout" },
+    ROSTER_OPTION,
     { description: "the decision or artifact being gated", name: "task", required: true },
   ],
   summarize(decision, report: RunReport): readonly string[] {
