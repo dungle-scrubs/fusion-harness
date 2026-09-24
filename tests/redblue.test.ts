@@ -34,7 +34,10 @@ describe("prompts", () => {
   });
 
   it("judge prompt carries the burden and the blindness rule", () => {
-    const prompt = judgePrompt("two independent sources", { anonymizedClaims: [] });
+    const prompt = judgePrompt("two independent sources", {
+      anonymizedClaims: [],
+      byWorker: new Map(),
+    });
     expect(prompt).toContain("BURDEN: two independent sources");
     expect(prompt).toContain("hidden from you");
   });
@@ -42,6 +45,7 @@ describe("prompts", () => {
   it("judge prompt receives claims without provenance", () => {
     const prompt = judgePrompt("b", {
       anonymizedClaims: [{ claim: "x", claim_id: "C1", provenance: undefined }],
+      byWorker: new Map(),
     });
     expect(prompt).toContain('"claim":"x"');
   });

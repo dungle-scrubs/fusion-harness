@@ -10,6 +10,7 @@ import { stdin, stdout } from "node:process";
 import { Command } from "commander";
 import { achDefinition } from "./ach";
 import { type ClaimVerdict, validateClaim } from "./claim";
+import { delphiDefinition } from "./delphi";
 import { executeRun } from "./engine";
 import { juryDefinition } from "./jury";
 import { type PatternDefinition, type PatternOptions, toRegistration } from "./pattern";
@@ -274,7 +275,12 @@ program
     await runJsonCommand(file, parseOutcomeArray, (outcomes) => scoreForecasts(outcomes));
   });
 
-const PATTERNS: readonly PatternDefinition[] = [juryDefinition, redblueDefinition, achDefinition];
+const PATTERNS: readonly PatternDefinition[] = [
+  juryDefinition,
+  redblueDefinition,
+  achDefinition,
+  delphiDefinition,
+];
 
 for (const definition of PATTERNS) {
   const command = program

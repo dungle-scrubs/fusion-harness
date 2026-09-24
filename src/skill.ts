@@ -20,6 +20,12 @@ Choosing a method - match the problem shape, not the habit:
     independently; mechanical plurality fuses. Do NOT use jury for open
     generation (there is no comparable answer to vote on) or when you
     already hold sealed judgments - pipe normalize | aggregate instead.
+  - A bounded question where independent answers help AND one round of
+    peer exposure should improve them (estimation, forecast-style panels)
+    -> delphi. Sealed round 1, anonymized revision round 2, mechanical
+    convergence vs stability signals. Do NOT use it when anchoring is the
+    main risk and any exposure would herd the panel -> jury instead; and
+    not with more than one revision round in mind.
   - A claim set whose failure costs more than challenging it, and you
     can state the standard up front -> red-blue. It buys objection-only
     challenge, fact resolution with executable checks, and a judge blind
@@ -82,6 +88,12 @@ Tier 2 (pattern runs - the tool owns the run):
     burden. Budgets are symmetric across roles. The decision names each
     surviving claim, each rejected claim with its ruling, and unresolved
     objections as residual risks.
+  fusion delphi --task <t> [--workers N] [--harness] [--timeout]
+    Sealed panel, two rounds: round 1 answers independently; round 2
+    revises seeing its own answer plus the anonymized panel record.
+    The decision record reports convergence (did groups collapse?) and
+    stability (did workers hold position?) mechanically - read both
+    before trusting the round-2 winner.
   fusion ach --task <t> [--workers N] [--harness] [--timeout]
     Analysis of Competing Hypotheses: sealed analysts submit hypotheses
     and evidence as linked claims (evidence links hypotheses via
