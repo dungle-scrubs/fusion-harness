@@ -46,8 +46,11 @@ grouping is exact by construction.
   tool-stamped provenance, replayable event stream, mechanical fusion -
   no model in the fusion loop.
 - Limits: exact-match grouping splits semantically-equal answers with
-  different wording (semantic dedup is tier 2 model work, deliberately
-  absent); a worker whose claims are rejected gets one retry with the
+  different wording. Pass `--merge` for a blind merge worker that clusters
+  paraphrases before tallying (the record keeps pre-merge groups and the
+  mapping); without it the tool refuses to pretend splintered groups were
+  one answer. Semantic dedup stays tier 2 model work, deliberately absent
+  from tier 1; a worker whose claims are rejected gets one retry with the
   validator errors fed back - a second rejection is final for the run.
 
 ## Run artifacts

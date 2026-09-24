@@ -79,12 +79,16 @@ Composition recipes:
     mechanical vote/median. No model in the loop.
 
 Tier 2 (pattern runs - the tool owns the run):
-  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--vocabulary a,b] [--roster h[:m]]
+  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--vocabulary a,b] [--roster h[:m]] [--merge]
     Sealed parallel generation: every worker answers the task as one
     claim (kind=answer), unseen by the others; equivalent answers are
     normalized; plurality fusion decides mechanically. With --vocabulary,
     workers answer with exactly one member verbatim and off-vocabulary
-    answers are rejected with a reason after one E001 retry. The decision
+    answers are rejected with a reason after one E001 retry. With --merge,
+    a blind merge worker clusters paraphrased answers by meaning and the
+    tally runs over clusters; the record carries pre-merge groups and the
+    mapping, and a failed merge falls back to the unmerged tally.
+    The decision
     record carries the winning answer, minority report, rejected
     options, residual risks, the vocabulary when set, and an independence
     signal (answers, groups, duplicate rate) plus roster diversity

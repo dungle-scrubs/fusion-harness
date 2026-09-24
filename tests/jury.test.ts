@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { type AcceptedClaim, executeRun } from "../src/engine";
-import { juryFuse, juryWorkerPrompt } from "../src/jury";
+import { juryDefinition, juryFuse, juryWorkerPrompt } from "../src/jury";
 
 function answer(
   workerId: string,
@@ -181,5 +181,84 @@ describe("jury through the engine", () => {
     const done = report.events[report.events.length - 1];
     expect(done?.kind).toBe("done");
     expect(done?.payload["cause"]).toBe("clean");
+  });
+});
+
+describe("jury merge", () => {
+  const member = (workerId: string, text: string): AcceptedClaim => ({
+    claim: {
+      claim: text,
+      claim_id: `C${workerId.slice(1)}`,
+      confidence: 0.8,
+      falsifier: `f ${workerId}`,
+      kind: "answer",
+      status: "documented",
+    },
+    stage: "generate",
+    workerId,
+  });
+  const mergeClaim = (deps: number[], label: string): AcceptedClaim => ({
+    claim: {
+      claim: label,
+      claim_id: "C1",
+      confidence: 0.9,
+      dependencies: deps,
+      falsifier: "split on scope",
+      kind: "answer",
+      status: "inferred",
+    },
+    stage: "verify",
+    workerId: "w-merge",
+  });
+
+  it("tallies paraphrased answers as separate groups without merge", () => {
+    const result = juryFuse(
+      [member("w1", "Ship the release"), member("w2", "Release it now"), member("w3", "Hold")],
+      undefined,
+    );
+    expect(result.decision.decision).toBe("ship the release");
+    expect(result.fusion.merged).toBe(false);
+  });
+
+  it("applies a valid merge mapping mechanically", () => {
+    const result = juryFuse(
+      [
+        member("w1", "Ship the release"),
+        member("w2", "Release it now"),
+        member("w3", "Hold everything"),
+        mergeClaim([1, 2], "Ship the release"),
+      ],
+      undefined,
+    );
+    expect(result.decision.decision).toBe("Ship the release");
+    expect(result.fusion.merged).toBe(true);
+    expect(result.decision.mergeClusters).toEqual([
+      { label: "Ship the release", members: ["ship the release", "release it now"] },
+      { label: "hold everything", members: ["hold everything"] },
+    ]);
+  });
+
+  it("falls back to the unmerged tally when the merge is unusable", () => {
+    const result = juryFuse(
+      [member("w1", "Ship"), member("w2", "Hold"), mergeClaim([99], "Nonsense")],
+      undefined,
+    );
+    expect(result.fusion.merged).toBe(true);
+    expect(result.decision.decision).toBe("ship");
+  });
+
+  it("builds a blind merge worker with --merge", () => {
+    const build = juryDefinition.build({ merge: true, task: "t", workers: "2" });
+    expect("error" in build).toBe(false);
+    if ("error" in build) {
+      return;
+    }
+    expect(build.stages?.verify).toBeTypeOf("function");
+    const staged = build.stages?.verify?.({ anonymizedClaims: [], byWorker: new Map() });
+    expect(staged?.[0]?.workerId).toBe("w-merge");
+    expect(staged?.[0]?.prompt).toContain("merge judge");
+    expect(juryDefinition.build({ "merge-harness": "codex", task: "t" })).toEqual({
+      error: "--merge-harness requires --merge",
+    });
   });
 });

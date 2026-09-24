@@ -60,6 +60,7 @@ describe("state machine", () => {
     ["SPAWNING", "GENERATING"],
     ["GENERATING", "NORMALIZING"],
     ["NORMALIZING", "CHALLENGING"],
+    ["NORMALIZING", "VERIFYING"],
     ["NORMALIZING", "DECIDING"],
     ["CHALLENGING", "VERIFYING"],
     ["CHALLENGING", "DECIDING"],

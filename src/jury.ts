@@ -1,4 +1,4 @@
-import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
+import type { AcceptedClaim, FuseFn, FusedOutput, RunReport, StageBuilders, StageInput } from "./engine";
 import {
   diversityCounts,
   type DiversityCounts,
@@ -69,6 +69,90 @@ export function juryWorkerPrompt(task: string, vocabulary?: readonly string[]): 
   ].join("\n");
 }
 
+export function juryMergePrompt(canonicals: readonly string[]): string {
+  return [
+    "You are the merge judge in a sealed jury.",
+    "You see only anonymized canonical answers: no worker ids, no harness or model names,",
+    "no confidences. Judge meaning only.",
+    "",
+    "ANSWERS (one per line):",
+    ...canonicals.map((c, index) => `${index + 1}. ${c}`),
+    "",
+    "Cluster answers that mean the same thing despite different wording. Reply with one",
+    "JSON object per cluster and nothing else, with these fields:",
+    '- claim_id: "C1", "C2", ... (your own cluster ids, one per cluster)',
+    '- kind: "answer"',
+    "- claim: the cluster label (the clearest member wording, verbatim)",
+    '- status: "inferred", confidence [0,1] (your confidence the members mean the same thing),',
+    "- falsifier: what distinction would split this cluster",
+    "- dependencies: the 1-based line numbers of the member answers (e.g. [1, 3])",
+    "",
+    "Every answer line belongs in exactly one cluster. A line that means nothing like",
+    "any other is a cluster of one. Do NOT include a provenance field.",
+  ].join("\n");
+}
+
+export interface JuryMember {
+  readonly claimId: string;
+  readonly confidence: number;
+  readonly falsifier: string;
+  readonly requestedAction: string | null;
+  readonly workerId: string;
+}
+
+export interface JuryCluster {
+  readonly label: string;
+  readonly members: readonly string[];
+}
+
+/**
+ * Build clusters from merge-stage claims. Each merge claim links member
+ * canonicals by line number in dependencies; the label is the claim text.
+ * Returns null when no usable merge claim exists, in which case fusion
+ * falls back to the unmerged tally.
+ */
+export function juryClustersFromMerge(
+  mergeClaims: readonly Record<string, unknown>[],
+  canonicals: readonly string[],
+): { clusters: JuryCluster[] } | null {
+  if (mergeClaims.length === 0) {
+    return null;
+  }
+  const clusters: JuryCluster[] = [];
+  const covered = new Set<number>();
+  for (const raw of mergeClaims) {
+    if (raw["kind"] !== "answer") {
+      continue;
+    }
+    const deps = raw["dependencies"];
+    if (!Array.isArray(deps)) {
+      continue;
+    }
+    const members: string[] = [];
+    for (const dep of deps) {
+      const index = typeof dep === "number" ? dep : Number(dep);
+      if (!Number.isInteger(index) || index < 1 || index > canonicals.length) {
+        continue;
+      }
+      const canonical = canonicals[index - 1];
+      if (canonical !== undefined && !covered.has(index)) {
+        covered.add(index);
+        members.push(canonical);
+      }
+    }
+    if (members.length === 0) {
+      continue;
+    }
+    clusters.push({ label: String(raw["claim"] ?? members[0]), members });
+  }
+  for (const [index, canonical] of canonicals.entries()) {
+    if (!covered.has(index + 1)) {
+      clusters.push({ label: canonical, members: [canonical] });
+    }
+  }
+  return clusters.length === 0 ? null : { clusters };
+}
+
 export interface JuryMember {
   readonly claimId: string;
   readonly confidence: number;
@@ -83,8 +167,14 @@ export interface JuryGroup {
   readonly votes: number;
 }
 
+export interface JuryTallyGroup {
+  readonly canonical: string;
+  readonly members: readonly JuryMember[];
+  readonly votes: number;
+}
+
 export interface JuryDecision extends FusedOutput {
-  readonly decision: {
+  readonly decision: Record<string, unknown> & {
     readonly decision: string | null;
     readonly diversity: DiversityCounts;
     readonly independence: {
@@ -92,7 +182,9 @@ export interface JuryDecision extends FusedOutput {
       readonly duplicateRate: number;
       readonly groups: number;
     };
-    readonly minorityReport: readonly JuryGroup[];
+    readonly mergeClusters?: readonly { label: string; members: readonly string[] }[];
+    readonly mergeFallback?: string;
+    readonly minorityReport: readonly JuryTallyGroup[];
     readonly pattern: "jury";
     readonly rejectedOptions: readonly { claimId: string; reason: string }[];
     readonly residualRisks: readonly { claimId: string; confidence: number; falsifier: string }[];
@@ -117,10 +209,12 @@ function memberOf(claim: Record<string, unknown>, workerId: string): JuryMember 
 /**
  * Mechanical jury fusion. Pattern strictness first (kind=answer only,
  * plus vocabulary membership when the run declares one), then canonical
- * grouping, then plurality with first-seen tiebreak.
+ * grouping, then cluster application when a merge stage ran, then
+ * plurality with first-seen tiebreak.
  * A minority claim becomes a residual risk when its own confidence is
  * >= 0.6 or its own requested_action is escalate/revise. Returns a
- * null decision when no answer survives.
+ * null decision when no answer survives. A merge that yields nothing
+ * usable falls back to the unmerged tally with the failure named.
  */
 export function juryFuse(
   accepted: readonly AcceptedClaim[],
@@ -129,7 +223,12 @@ export function juryFuse(
   const vocabKeys = vocabulary === undefined ? null : new Set(vocabulary.map(canonicalize));
   const rejectedOptions: { claimId: string; reason: string }[] = [];
   const answers: { claim: Record<string, unknown>; workerId: string }[] = [];
+  const mergeClaims: Record<string, unknown>[] = [];
   for (const entry of accepted) {
+    if (entry.stage === "verify") {
+      mergeClaims.push(entry.claim);
+      continue;
+    }
     if (!isAnswerClaim(entry.claim)) {
       rejectedOptions.push({
         claimId: String(entry.claim["claim_id"] ?? "unknown"),
@@ -167,14 +266,23 @@ export function juryFuse(
     votes: (groups.get(canonical) ?? []).length,
   }));
 
-  let winner: JuryGroup | null = null;
-  for (const group of juryGroups) {
+  const merged = juryClustersFromMerge(mergeClaims, order);
+  const tallyGroups: JuryTallyGroup[] =
+    merged === null
+      ? juryGroups.map((g) => ({ canonical: g.canonical, members: [...g.members], votes: g.votes }))
+      : merged.clusters.map((c) => {
+          const members = c.members.flatMap((m) => groups.get(m) ?? []);
+          return { canonical: c.label, members, votes: members.length };
+        });
+
+  let winner: JuryTallyGroup | null = null;
+  for (const group of tallyGroups) {
     if (winner === null || group.votes > winner.votes) {
       winner = group;
     }
   }
 
-  const minority = juryGroups.filter((group) => group !== winner);
+  const minority = tallyGroups.filter((group) => group !== winner);
   const residualRisks = minority.flatMap((group) =>
     group.members
       .filter(
@@ -192,6 +300,10 @@ export function juryFuse(
       decision: winner?.canonical ?? null,
       diversity,
       ...(vocabulary === undefined ? {} : { vocabulary: [...vocabulary] }),
+      ...(merged === null && mergeClaims.length > 0 ? { mergeFallback: "merge produced no usable clusters; unmerged tally stands" } : {}),
+      ...(merged !== null
+        ? { mergeClusters: merged.clusters.map((c) => ({ label: c.label, members: c.members })) }
+        : {}),
       independence: {
         acceptedAnswers: answers.length,
         duplicateRate,
@@ -204,8 +316,10 @@ export function juryFuse(
     },
     fusion: {
       duplicateRate,
-      groups: juryGroups.map((g) => ({ canonical: g.canonical, votes: g.votes })),
+      groups: tallyGroups.map((g) => ({ canonical: g.canonical, votes: g.votes })),
+      merged: merged !== null,
       method: "plurality",
+      unmergedGroups: juryGroups.map((g) => ({ canonical: g.canonical, votes: g.votes })),
       winner: winner?.canonical ?? null,
     },
   };
@@ -251,8 +365,44 @@ export const juryDefinition: PatternDefinition = {
       }
       vocabulary = parsed.members;
     }
+    const merge = options["merge"] === true || options["merge"] === "true";
+    const mergeHarness =
+      options["merge-harness"] === undefined ? undefined : String(options["merge-harness"]);
+    if (mergeHarness !== undefined && !merge) {
+      return { error: "--merge-harness requires --merge" };
+    }
+    const fuse: FuseFn = (accepted: readonly AcceptedClaim[]) =>
+      (vocabulary === undefined ? juryFuse(accepted) : juryFuse(accepted, vocabulary));
+    const stages: StageBuilders | undefined = merge
+      ? {
+          verify: (input: StageInput) => {
+            const seen: string[] = [];
+            for (const claim of input.anonymizedClaims) {
+              const canonical = canonicalize(String(claim["claim"] ?? ""));
+              if (!seen.includes(canonical)) {
+                seen.push(canonical);
+              }
+            }
+            const slot = roster[0] ?? { harness: "pi" };
+            return [
+              {
+                harness: mergeHarness ?? slot.harness,
+                ...(mergeHarness !== undefined
+                  ? {}
+                  : slot.model !== undefined
+                    ? { model: slot.model }
+                    : {}),
+                prompt: juryMergePrompt(seen),
+                timeoutSec: timeout,
+                workerId: "w-merge",
+              },
+            ];
+          },
+        }
+      : undefined;
     return {
-      fuse: vocabulary === undefined ? juryFuse : (accepted) => juryFuse(accepted, vocabulary),
+      fuse,
+      ...(stages !== undefined ? { stages } : {}),
       stoppingRule: "every worker submits one answer claim or times out",
       task,
       workers: Array.from({ length: workers }, (_, index) => {
@@ -288,6 +438,12 @@ export const juryDefinition: PatternDefinition = {
       description: "closed answer set, comma-separated (e.g. ship,hold)",
       name: "vocabulary",
     },
+    {
+      description: "cluster paraphrased answers with a blind merge worker before tallying",
+      flag: "boolean",
+      name: "merge",
+    },
+    { description: "harness for the merge worker (default: first roster slot)", name: "merge-harness" },
     { description: "the question every sealed juror answers", name: "task", required: true },
   ],
   summarize(decision, report: RunReport): readonly string[] {
@@ -308,6 +464,17 @@ export const juryDefinition: PatternDefinition = {
       | undefined;
     if (diversity !== undefined) {
       lines.push(`roster   ${diversity.harnesses} harnesses, ${diversity.models} models`);
+    }
+    const clusters = decision["mergeClusters"] as
+      | { label: string; members: string[] }[]
+      | undefined;
+    if (clusters !== undefined) {
+      for (const cluster of clusters) {
+        lines.push(`merged   ${cluster.label} <- ${cluster.members.join(" | ").slice(0, 90)}`);
+      }
+    }
+    if (typeof decision["mergeFallback"] === "string") {
+      lines.push(`merged   fallback: unmerged tally stands`);
     }
     const failures = decision["failures"] as { class: string; workerId: string }[] | undefined;
     if ((failures?.length ?? 0) > 0) {
