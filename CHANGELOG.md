@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2](https://github.com/dungle-scrubs/fusion-panel/compare/fusion-panel-v0.2.1...fusion-panel-v0.2.2) (2026-09-24)
+
+
+### Added
+
+* TypeScript 7.0.2 with explicit node types ([#51](https://github.com/dungle-scrubs/fusion-panel/issues/51)) ([27d7f95](https://github.com/dungle-scrubs/fusion-panel/commit/27d7f95af3a3f2fbe1e482f053ec54568950d17c))
+
 ## [0.2.1](https://github.com/dungle-scrubs/fusion-panel/compare/fusion-panel-v0.2.0...fusion-panel-v0.2.1) (2026-09-24)
 
 
