@@ -4,6 +4,8 @@ import {
   type PatternDefinition,
   type PatternOptions,
   resolveRoster,
+  WAIT_OPTION,
+  WAIT_SEC_OPTION,
   ROSTER_OPTION,
 } from "./pattern";
 import { canonicalize } from "./tier1";
@@ -292,6 +294,8 @@ export const delphiDefinition: PatternDefinition = {
     "convergence vs stability mechanically. Writes .fusion/runs/<runId>/. " +
     "Exits 0 clean, 1 run failure, 2 invalid invocation.",
   options: [
+    WAIT_OPTION,
+    WAIT_SEC_OPTION,
     { default: String(DELPHI_DEFAULT_WORKERS), description: "panel size", name: "workers" },
     { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
     { description: "model id passed to every worker", name: "model" },

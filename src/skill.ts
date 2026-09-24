@@ -91,7 +91,10 @@ Tier 2 (pattern runs - the tool owns the run):
     (distinct harnesses, models) - read both before trusting consensus.
     Workers are separate processes with no shared transcript. A worker
     that asks a genuine blocking question emits a question event with
-    the run id; other workers continue.
+    the run id; other workers continue. With --wait, the run suspends
+    instead (E303) and 'fusion resume --run <id> --worker <w> --answer
+    <text>' answers one question and continues; --abort fails it.
+    --wait-sec sets the hold deadline.
   fusion red-blue --task <t> --burden <b> [--harness] [--timeout]
     Adversarial pattern: a claimant files atomic claims (named executable
     checks go in falsifier/evidence backticks); an opponent must challenge

@@ -5,6 +5,8 @@ import {
   type PatternDefinition,
   type PatternOptions,
   resolveRoster,
+  WAIT_OPTION,
+  WAIT_SEC_OPTION,
   ROSTER_OPTION,
 } from "./pattern";
 import { canonicalize } from "./tier1";
@@ -271,6 +273,8 @@ export const juryDefinition: PatternDefinition = {
     "are normalized; plurality fusion decides mechanically. Writes .fusion/runs/<runId>/. " +
     "Exits 0 clean, 1 run failure, 2 invalid invocation.",
   options: [
+    WAIT_OPTION,
+    WAIT_SEC_OPTION,
     {
       default: String(JURY_DEFAULT_WORKERS),
       description: "number of sealed workers",

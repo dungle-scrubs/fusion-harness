@@ -5,6 +5,8 @@ import {
   type PatternOptions,
   resolveRoster,
   ROSTER_OPTION,
+  WAIT_OPTION,
+  WAIT_SEC_OPTION,
 } from "./pattern";
 import type { WorkerConfig } from "./run";
 
@@ -306,6 +308,8 @@ export const redblueDefinition: PatternDefinition = {
     "surviving record against the burden. Writes .fusion/runs/<runId>/. " +
     "Exits 0 clean, 1 run failure, 2 invalid invocation.",
   options: [
+    WAIT_OPTION,
+    WAIT_SEC_OPTION,
     { description: "the standard the surviving record must meet", name: "burden", required: true },
     { default: "pi", description: "harness for every role (hcn name)", name: "harness" },
     { description: "model id passed to every role", name: "model" },

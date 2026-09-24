@@ -5,6 +5,8 @@ import {
   type PatternDefinition,
   type PatternOptions,
   resolveRoster,
+  WAIT_OPTION,
+  WAIT_SEC_OPTION,
   ROSTER_OPTION,
 } from "./pattern";
 
@@ -244,6 +246,8 @@ export const achDefinition: PatternDefinition = {
     "reports which evidence discriminates and which is consistent with everything. " +
     "Writes .fusion/runs/<runId>/.",
   options: [
+    WAIT_OPTION,
+    WAIT_SEC_OPTION,
     {
       default: String(ACH_DEFAULT_WORKERS),
       description: "number of sealed analysts",

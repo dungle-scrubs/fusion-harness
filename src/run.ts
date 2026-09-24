@@ -23,27 +23,23 @@ export type RunStage = (typeof RUN_STAGES)[number];
 
 /**
  * Legal transitions the engine enforces. Stages run in order, once each.
- * AWAITING-INPUT stays in the stage union for the caller-resume path
- * (pattern runs, ticket #13+): this engine carries worker questions
- * through as events with the run id and continues with survivors, but
- * does not suspend, so no resume edge is enforced here. FAILED is
+ * AWAITING-INPUT suspends a --wait run at a wave end while a worker
+ * question stands; fusion resume re-enters the suspended stage. FAILED is
  * reachable from any non-terminal stage; FAILED retains partial events.
  */
-const TRANSITIONS: Record<
-  Exclude<RunStage, "DONE" | "FAILED" | "AWAITING-INPUT">,
-  readonly RunStage[]
-> = {
+const TRANSITIONS: Record<Exclude<RunStage, "DONE" | "FAILED">, readonly RunStage[]> = {
   REGISTERED: ["SPAWNING"],
   SPAWNING: ["GENERATING"],
-  GENERATING: ["NORMALIZING"],
+  GENERATING: ["NORMALIZING", "AWAITING-INPUT"],
   NORMALIZING: ["CHALLENGING", "DECIDING"],
-  CHALLENGING: ["DECIDING", "VERIFYING"],
-  VERIFYING: ["DECIDING"],
+  CHALLENGING: ["DECIDING", "VERIFYING", "AWAITING-INPUT"],
+  VERIFYING: ["DECIDING", "AWAITING-INPUT"],
   DECIDING: ["DONE"],
+  "AWAITING-INPUT": ["GENERATING", "CHALLENGING", "VERIFYING"],
 };
 
 export function nextStages(from: RunStage): readonly RunStage[] {
-  if (from === "DONE" || from === "FAILED" || from === "AWAITING-INPUT") {
+  if (from === "DONE" || from === "FAILED") {
     return [];
   }
   return TRANSITIONS[from];
@@ -79,6 +75,25 @@ export interface RunRegistration {
   readonly stoppingRule: string;
   readonly workers: readonly WorkerConfig[];
   readonly registeredAt: string;
+  /** Opt-in caller wait: suspend at wave ends while a question stands. */
+  readonly wait?: boolean;
+  /** Hold deadline for a suspended run, ISO time. */
+  readonly waitUntil?: string;
+  /** Original pattern flags, for rebuild on resume. */
+  readonly patternOptions?: Record<string, string | boolean>;
+}
+
+export interface PendingQuestion {
+  readonly question: Record<string, unknown>;
+  readonly sessionId: string;
+  readonly workerId: string;
+}
+
+export interface SuspendedState {
+  readonly pendingQuestions: readonly PendingQuestion[];
+  readonly resumeStage: RunStage;
+  readonly suspendedAt: string;
+  readonly waitUntil?: string;
 }
 
 export type FusionEventKind =

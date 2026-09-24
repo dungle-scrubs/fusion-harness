@@ -4,6 +4,8 @@ import {
   type PatternDefinition,
   type PatternOptions,
   resolveRoster,
+  WAIT_OPTION,
+  WAIT_SEC_OPTION,
   ROSTER_OPTION,
 } from "./pattern";
 
@@ -146,6 +148,8 @@ export const gonogoDefinition: PatternDefinition = {
     "NO-GO; the mechanical veto rule is that any NO-GO blocks - no outvoting. " +
     "Writes .fusion/runs/<runId>/.",
   options: [
+    WAIT_OPTION,
+    WAIT_SEC_OPTION,
     {
       default: String(GONOGO_DEFAULT_REVIEWERS),
       description: "number of independent reviewers",

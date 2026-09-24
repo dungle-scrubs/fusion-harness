@@ -4,6 +4,7 @@ import type { RunRegistration, WorkerConfig } from "./run";
 export interface OptionSpec {
   readonly default?: string;
   readonly description: string;
+  readonly flag?: "boolean";
   readonly name: string;
   readonly required?: boolean;
 }
@@ -115,7 +116,10 @@ export interface PatternDefinition {
 
 export interface RegistrationContext {
   readonly now: () => string;
+  readonly patternOptions?: Record<string, string | boolean>;
   readonly runId: string;
+  readonly wait?: boolean;
+  readonly waitUntil?: string;
 }
 
 export function toRegistration(
@@ -125,11 +129,48 @@ export function toRegistration(
 ): RunRegistration {
   return {
     pattern,
+    ...(context.patternOptions !== undefined ? { patternOptions: context.patternOptions } : {}),
     registeredAt: context.now(),
     runId: context.runId,
     rubric: build.rubric,
     stoppingRule: build.stoppingRule,
     task: build.task,
+    ...(context.wait === true ? { wait: true as const } : {}),
+    ...(context.waitUntil !== undefined ? { waitUntil: context.waitUntil } : {}),
     workers: build.workers,
   };
+}
+
+export const WAIT_OPTION: OptionSpec = {
+  description: "suspend at wave ends while a worker question stands; resume with fusion resume",
+  flag: "boolean",
+  name: "wait",
+};
+
+export const WAIT_SEC_OPTION: OptionSpec = {
+  default: "3600",
+  description: "hold deadline in seconds for a --wait suspension",
+  name: "wait-sec",
+};
+
+/**
+ * Resolve --wait/--wait-sec into registration fields. --wait-sec without
+ * --wait is E102: a deadline with no suspension is a silent no-op.
+ */
+export function resolveWait(options: PatternOptions, now: () => string):
+  | { error: string }
+  | { wait?: boolean; waitUntil?: string } {
+  const wait = options["wait"] === true || options["wait"] === "true";
+  const rawSec = options["wait-sec"];
+  if (!wait) {
+    if (rawSec !== undefined) {
+      return { error: "--wait-sec requires --wait" };
+    }
+    return {};
+  }
+  const seconds = rawSec === undefined ? 3600 : Number(rawSec);
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return { error: "--wait-sec must be positive seconds" };
+  }
+  return { wait: true, waitUntil: new Date(Date.parse(now()) + seconds * 1000).toISOString() };
 }

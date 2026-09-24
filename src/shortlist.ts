@@ -4,6 +4,8 @@ import {
   type PatternDefinition,
   type PatternOptions,
   resolveRoster,
+  WAIT_OPTION,
+  WAIT_SEC_OPTION,
   ROSTER_OPTION,
 } from "./pattern";
 import { canonicalize } from "./tier1";
@@ -283,6 +285,8 @@ export const shortlistDefinition: PatternDefinition = {
     "mechanically and ranks the majority-accept shortlist. Writes .fusion/runs/<runId>/. " +
     "Exits 0 clean, 1 run failure, 2 invalid invocation.",
   options: [
+    WAIT_OPTION,
+    WAIT_SEC_OPTION,
     {
       default: String(SHORTLIST_DEFAULT_GENERATORS),
       description: "number of sealed proposers",

@@ -2,7 +2,14 @@ import { mkdtempSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { executeRun, extractJsonObjects, type WorkerResult } from "../src/engine";
+import {
+  continueRun,
+  executeRun,
+  extractJsonObjects,
+  replayEvents,
+  resumeRun,
+  type WorkerResult,
+} from "../src/engine";
 import {
   isLegalTransition,
   type RunRegistration,
@@ -60,6 +67,12 @@ describe("state machine", () => {
     ["DECIDING", "DONE"],
     ["GENERATING", "FAILED"],
     ["DECIDING", "FAILED"],
+    ["GENERATING", "AWAITING-INPUT"],
+    ["CHALLENGING", "AWAITING-INPUT"],
+    ["VERIFYING", "AWAITING-INPUT"],
+    ["AWAITING-INPUT", "GENERATING"],
+    ["AWAITING-INPUT", "CHALLENGING"],
+    ["AWAITING-INPUT", "VERIFYING"],
   ];
   for (const [from, to] of legal) {
     it(`allows ${from} -> ${to}`, () => {
@@ -76,8 +89,6 @@ describe("state machine", () => {
     ["FAILED", "GENERATING"],
     ["GENERATING", "GENERATING"],
     ["VERIFYING", "CHALLENGING"],
-    ["GENERATING", "AWAITING-INPUT"],
-    ["AWAITING-INPUT", "GENERATING"],
   ];
   for (const [from, to] of illegal) {
     it(`rejects ${from} -> ${to}`, () => {
@@ -491,5 +502,129 @@ describe("survivor accounting", () => {
     expect(done?.payload["cause"]).toBe("failed");
     expect(done?.payload["survivors"]).toBe(0);
     expect(report.cause).toBe("failed");
+  });
+});
+
+describe("suspend and resume", () => {
+  const askingSpawn = () => workerResult({ question: { question: "which file?" }, rawClaims: [] });
+
+  it("suspends a --wait run at the generate end with pending questions", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-wait-"));
+    const report = executeRun(registration({ wait: true }), {
+      now: () => "2026-09-24T00:00:00.000Z",
+      repoRoot: root,
+      spawn: askingSpawn,
+    });
+    expect(report.cause).toBe("suspended");
+    expect(report.decision["resumeStage"]).toBe("GENERATING");
+    const pending = report.decision["pendingQuestions"] as { workerId: string }[];
+    expect(pending.map((p) => p.workerId).sort()).toEqual(["w1", "w2"]);
+    const frozen = JSON.parse(readFileSync(join(report.runDir, "run.json"), "utf8")) as Record<
+      string,
+      unknown
+    >;
+    expect((frozen["suspended"] as { resumeStage: string }).resumeStage).toBe("GENERATING");
+  });
+
+  it("continues without --wait despite questions", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-nowrap-"));
+    const report = executeRun(registration(), {
+      now: () => "2026-09-24T00:00:00.000Z",
+      repoRoot: root,
+      spawn: askingSpawn,
+    });
+    expect(report.cause).toBe("failed");
+    expect(report.decision["survivors"]).toBe(0);
+  });
+
+  it("resume answers one question, validates the resumed claims, and clears suspension", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-resume-"));
+    const suspended = executeRun(registration({ wait: true }), {
+      now: () => "2026-09-24T00:00:00.000Z",
+      repoRoot: root,
+      spawn: askingSpawn,
+    });
+    expect(suspended.cause).toBe("suspended");
+    const resumed = resumeRun(root, "ra1b2c3d4", "w1", "the README", {
+      now: () => "2026-09-24T00:01:00.000Z",
+      spawn: (config) => {
+        expect(config.resumeSessionId).toBe("s1");
+        expect(config.prompt).toBe("the README");
+        return workerResult({ rawClaims: [validClaim("C1")] });
+      },
+    });
+    expect("error" in resumed).toBe(false);
+    if ("error" in resumed) {
+      return;
+    }
+    expect(resumed.resumed.remaining).toBe(1);
+    expect(resumed.resumed.acceptedClaims).toBe(1);
+    expect(resumed.resumed.askedAgain).toBe(false);
+    const frozen = JSON.parse(
+      readFileSync(join(suspended.runDir, "run.json"), "utf8"),
+    ) as Record<string, unknown>;
+    expect(
+      ((frozen["suspended"] as { pendingQuestions: { workerId: string }[] }).pendingQuestions).map(
+        (p) => p.workerId,
+      ),
+    ).toEqual(["w2"]);
+  });
+
+  it("resume rejects unknown runs, settled runs, and unknown workers", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-resume-err-"));
+    expect(resumeRun(root, "r00000000", "w1", "a", {}).hasOwnProperty("error")).toBe(true);
+    const suspended = executeRun(registration({ wait: true }), {
+      now: () => "2026-09-24T00:00:00.000Z",
+      repoRoot: root,
+      spawn: askingSpawn,
+    });
+    expect(suspended.cause).toBe("suspended");
+    const badWorker = resumeRun(root, "ra1b2c3d4", "w9", "a", {});
+    expect("error" in badWorker && badWorker.error).toContain('no pending question for worker "w9"');
+  });
+
+  it("continueRun replays the stream and decides without re-running finished waves", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-continue-"));
+    const suspended = executeRun(registration({ wait: true }), {
+      now: () => "2026-09-24T00:00:00.000Z",
+      repoRoot: root,
+      spawn: askingSpawn,
+    });
+    expect(suspended.cause).toBe("suspended");
+    for (const workerId of ["w1", "w2"]) {
+      const resumed = resumeRun(root, "ra1b2c3d4", workerId, "answer", {
+        now: () => "2026-09-24T00:01:00.000Z",
+        spawn: () => workerResult({ rawClaims: [validClaim("C1")] }),
+      });
+      expect("error" in resumed).toBe(false);
+    }
+    const continued = continueRun(root, "ra1b2c3d4", {
+      fuse: () => ({ decision: { decision: "done" }, fusion: {} }),
+      now: () => "2026-09-24T00:02:00.000Z",
+      repoRoot: root,
+      spawn: () => {
+        throw new Error("no further spawns expected");
+      },
+    });
+    expect("error" in continued).toBe(false);
+    if ("error" in continued) {
+      return;
+    }
+    expect(continued.report.cause).toBe("clean");
+    expect(continued.report.decision["decision"]).toBe("done");
+    expect(continued.report.decision["survivors"]).toBe(2);
+  });
+
+  it("replayEvents rebuilds accepted claims, failures, and the last stage", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-replay-"));
+    const report = executeRun(registration(), {
+      now: () => "2026-09-24T00:00:00.000Z",
+      repoRoot: root,
+      spawn: () => workerResult({ rawClaims: [validClaim("C1")] }),
+    });
+    const replayed = replayEvents(report.events);
+    expect(replayed.accepted).toHaveLength(2);
+    expect(replayed.survivors).toBe(2);
+    expect(replayed.lastStage).toBe("DONE");
   });
 });
