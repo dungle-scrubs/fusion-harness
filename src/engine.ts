@@ -255,14 +255,41 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
         .filter((id): id is string => id !== null),
     );
 
+  /**
+   * Run-scoped refs (`w1:C1`) are legal at the pattern boundary: later-stage
+   * workers see prefixed ids in the anonymized record and echo them, both in
+   * dependencies (correct - they target record claims) and sometimes as
+   * their own claim_id (a copy of the record's id). The schema check runs
+   * against bare ids; dependencies keep their prefixed form in storage
+   * (they reference stamped claims), while a copied prefixed claim_id is
+   * normalized to its local form so the worker prefix it receives is its
+   * own.
+   */
+  const bareIds = (raw: unknown): unknown => {
+    if (typeof raw !== "object" || raw === null) {
+      return raw;
+    }
+    const claim = { ...(raw as Record<string, unknown>) };
+    if (typeof claim["claim_id"] === "string") {
+      claim["claim_id"] = claim["claim_id"].replace(/^[a-z0-9-]+:/, "");
+    }
+    if (Array.isArray(claim["dependencies"])) {
+      claim["dependencies"] = claim["dependencies"].map((dep: unknown) =>
+        typeof dep === "string" ? dep.replace(/^[a-z0-9-]+:/, "") : dep,
+      );
+    }
+    return claim;
+  };
+
   const remapOne = (
     raw: unknown,
     workerId: string,
     localIds: ReadonlySet<string>,
   ): Record<string, unknown> => {
     const claim = { ...(raw as Record<string, unknown>) };
-    const localId = typeof claim["claim_id"] === "string" ? claim["claim_id"] : null;
-    if (localId !== null && !localId.includes(":")) {
+    const localId =
+      typeof claim["claim_id"] === "string" ? claim["claim_id"].replace(/^[a-z0-9-]+:/, "") : null;
+    if (localId !== null && localId !== "") {
       claim["claim_id"] = `${workerId}:${localId}`;
     }
     if (Array.isArray(claim["dependencies"])) {
@@ -317,7 +344,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
       survivors += 1;
       const localIds = localIdsOf(result.rawClaims);
       for (const raw of result.rawClaims) {
-        const verdict = validateClaim(raw);
+        const verdict = validateClaim(bareIds(raw));
         if (!verdict.valid) {
           emit(
             makeEvent(

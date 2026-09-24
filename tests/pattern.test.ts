@@ -18,7 +18,12 @@ function reportOf(overrides: Partial<RunReport> = {}): RunReport {
 
 describe("jury definition", () => {
   it("builds N sealed workers with the juror prompt", () => {
-    const build = juryDefinition.build({ harness: "pi", task: "ship or hold?", timeout: "60", workers: "2" });
+    const build = juryDefinition.build({
+      harness: "pi",
+      task: "ship or hold?",
+      timeout: "60",
+      workers: "2",
+    });
     expect("error" in build).toBe(false);
     if ("error" in build) {
       return;
@@ -30,12 +35,16 @@ describe("jury definition", () => {
   });
 
   it("rejects empty task, too few workers, and bad timeout", () => {
-    expect(juryDefinition.build({ harness: "pi", task: "  ", timeout: "60", workers: "3" })).toEqual({
+    expect(
+      juryDefinition.build({ harness: "pi", task: "  ", timeout: "60", workers: "3" }),
+    ).toEqual({
       error: "--task must be non-empty",
     });
-    expect(juryDefinition.build({ harness: "pi", task: "t", timeout: "60", workers: "1" })).toEqual({
-      error: "--workers must be an integer >= 2",
-    });
+    expect(juryDefinition.build({ harness: "pi", task: "t", timeout: "60", workers: "1" })).toEqual(
+      {
+        error: "--workers must be an integer >= 2",
+      },
+    );
     expect(juryDefinition.build({ harness: "pi", task: "t", timeout: "0", workers: "2" })).toEqual({
       error: "--timeout must be positive seconds",
     });
@@ -68,7 +77,12 @@ describe("red-blue definition", () => {
       return;
     }
     expect(build.workers).toEqual([
-      { harness: "pi", prompt: expect.stringContaining("claimant"), timeoutSec: 120, workerId: "w-red" },
+      {
+        harness: "pi",
+        prompt: expect.stringContaining("claimant"),
+        timeoutSec: 120,
+        workerId: "w-red",
+      },
     ]);
     expect(build.rubric).toBe("two sources");
     expect(build.stages?.challenge).toBeTypeOf("function");
@@ -97,7 +111,12 @@ describe("red-blue definition", () => {
 
 describe("ach definition", () => {
   it("builds N analysts with the ACH prompt", () => {
-    const build = achDefinition.build({ harness: "muse", task: "why did it fail?", timeout: "60", workers: "2" });
+    const build = achDefinition.build({
+      harness: "muse",
+      task: "why did it fail?",
+      timeout: "60",
+      workers: "2",
+    });
     expect("error" in build).toBe(false);
     if ("error" in build) {
       return;

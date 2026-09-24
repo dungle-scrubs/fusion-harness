@@ -306,6 +306,74 @@ describe("executeRun with a fake spawner", () => {
     expect(third["dependencies"]).toEqual(["w2:C1"]);
   });
 
+  it("accepts run-scoped dependency refs and copied prefixed ids at the boundary", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
+    const report = executeRun(registration(), {
+      now: () => "2026-09-23T00:00:00.000Z",
+      repoRoot: root,
+      spawn: (config) =>
+        workerResult({
+          identity: {
+            harness: config.harness,
+            requestedModel: config.model ?? "harness-default",
+            sessionId: "s",
+          },
+          rawClaims: [
+            {
+              claim: "copied a record id as its own",
+              claim_id: "w-red:C1",
+              confidence: 0.8,
+              dependencies: ["w-red:C1"],
+              falsifier: "x",
+              kind: "objection",
+              status: "documented",
+            },
+          ],
+        }),
+    });
+    const claims = report.events.filter(
+      (e) => e.kind === "claim" && !(e.payload as Record<string, unknown>)["rejected"],
+    );
+    expect(claims).toHaveLength(2);
+    const first = (claims[0]?.payload as Record<string, unknown>)["claim"] as Record<
+      string,
+      unknown
+    >;
+    expect(first["claim_id"]).toBe("w1:C1");
+    expect(first["dependencies"]).toEqual(["w-red:C1"]);
+  });
+
+  it("keeps bare dependency refs and stamps the run scope on the claim id", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
+    const report = executeRun(registration(), {
+      now: () => "2026-09-23T00:00:00.000Z",
+      repoRoot: root,
+      spawn: () =>
+        workerResult({
+          rawClaims: [
+            {
+              claim: "targets a run-scoped id",
+              claim_id: "C1",
+              confidence: 0.8,
+              dependencies: ["w-red:C2"],
+              falsifier: "x",
+              kind: "objection",
+              status: "documented",
+            },
+          ],
+        }),
+    });
+    const claims = report.events.filter(
+      (e) => e.kind === "claim" && !(e.payload as Record<string, unknown>)["rejected"],
+    );
+    expect(claims).toHaveLength(2);
+    const stored = (claims[0]?.payload as Record<string, unknown>)["claim"] as Record<
+      string,
+      unknown
+    >;
+    expect(stored["dependencies"]).toEqual(["w-red:C2"]);
+  });
+
   it("rejects bad registrations before spawning", () => {
     const root = mkdtempSync(join(tmpdir(), "fusion-12-"));
     let spawned = 0;
