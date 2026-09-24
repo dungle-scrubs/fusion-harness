@@ -58,9 +58,8 @@ Choosing a method - match the problem shape, not the habit:
 
 Tier 1 (model-free, deterministic, pipe freely - JSON in, JSON out):
   fusion validate [--json] <claims.jsonl>  Validate a JSONL stream of claims
-    against the claim schema. Per-claim accept/reject verdicts with the
-    validator's errors. Exit 0 when every claim is valid, 1 otherwise.
-    --json: emit machine-readable verdict objects, one per line.
+    against the claim schema. Per-claim accept/reject verdicts; rejected
+    claims are E201 lines. Exit 0 all valid, 2 any rejected.
   fusion normalize [file]  Group claims by exact match on canonicalized
     text (Unicode NFC, whitespace, casing, number formats). Reads a JSON
     array of {claim_id, claim} from FILE or stdin; prints groups with
@@ -151,6 +150,33 @@ Claim schema (one flat schema for all patterns):
   Unknown fields are rejected, not ignored. \`provenance\` is the ONLY
   tool-stamped block (runId, workerId, harness, model, sessionId,
   stampedAt): the validator rejects any claim where the agent set it.
+
+Error handling and exit contract (ADR-0002):
+  Every command emits {ok, run, step, errors[]} (machine-shaped with
+  --json; without, human output plus E-code error lines) and exits by
+  class: 0 ok, 1 usage, 2 validation/gate, 3 nothing takeable,
+  4 internal. E-codes name class and field, e.g.
+  E201: claims: C3.confidence: Invalid input. Crashes surface as E499
+  envelopes (exit 4), never as usage errors. Worker spawn failures are
+  typed outcomes in the run record - never error paths. Every invocation
+  appends start/end lines to .fusion/commands.jsonl; a start with no end
+  is a hung or killed invocation.
+
+What counts as a bug - file only these, nothing else:
+  - E4xx or E499, a stack trace, or an exit code contradicting the
+    envelope: capture the command line, the envelope, the last 20 lines
+    of .fusion/commands.jsonl, and matching run artifacts; search the
+    repo's open issues for the E-code plus the first error line first -
+    a hit means add your evidence as a comment, not a new issue; then
+    file with gh issue create --label auto.
+  - E1xx (your invocation), E2xx (a gate doing its job), E3xx (nothing
+    takeable) are NOT bugs: fix the invocation or the input. Fix
+    guidance: E101/E106 argument errors - re-read the command help;
+    E103/E104 unreadable or malformed input - fix the input; E201 claim
+    schema rejections - the error line names the field; E202/E203
+    unfusable input - check method/enum and non-empty input; E301 a
+    pattern run lost all workers - check the failed worker classes in
+    the run's events.ndjson and rerun; E302 nothing on input.
 
 Rules that bind every caller:
   - Never call the tool a harness. That word means loop-owners
