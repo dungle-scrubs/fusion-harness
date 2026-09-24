@@ -1,6 +1,6 @@
 # Sealed Jury
 
-`fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--timeout <sec>] [--json]`
+`fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--vocabulary <a,b>] [--timeout <sec>] [--json]`
 
 ## What it is for
 
@@ -8,6 +8,9 @@ A question that benefits from independent judgment: when one model's
 answer might anchor on its own phrasing or prior, N sealed workers answer
 it separately and the tool fuses their answers mechanically. Adapted from
 the nominal-group and jury mechanisms (design doc, RFC-01 phase 4).
+For bounded questions with a known answer set, pass `--vocabulary`
+(e.g. `ship,hold`): workers answer with exactly one member verbatim and
+grouping is exact by construction.
 
 ## Mechanics
 
@@ -20,7 +23,10 @@ the nominal-group and jury mechanisms (design doc, RFC-01 phase 4).
    casing, number formats). Near-misses stay separate - there is no
    semantic dedup in the mechanical stage.
 4. Plurality vote over the groups; ties break by first-seen order and the
-   record shows the tie.
+   record shows the tie. When `--vocabulary` is set, answers outside the
+   set are rejected with a named reason; each rejected worker gets one
+   retry with the validator error fed back, then the rejection stands.
+   The record carries the vocabulary.
 
 ## What the decision record carries
 

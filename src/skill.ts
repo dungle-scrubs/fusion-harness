@@ -79,13 +79,16 @@ Composition recipes:
     mechanical vote/median. No model in the loop.
 
 Tier 2 (pattern runs - the tool owns the run):
-  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>]
+  fusion jury --task <t> [--workers N] [--harness pi] [--model <m>] [--vocabulary a,b]
     Sealed parallel generation: every worker answers the task as one
     claim (kind=answer), unseen by the others; equivalent answers are
-    normalized; plurality fusion decides mechanically. The decision
+    normalized; plurality fusion decides mechanically. With --vocabulary,
+    workers answer with exactly one member verbatim and off-vocabulary
+    answers are rejected with a reason after one E001 retry. The decision
     record carries the winning answer, minority report, rejected
-    options, residual risks, and an independence signal (answers,
-    groups, duplicate rate) - read it before trusting consensus.
+    options, residual risks, the vocabulary when set, and an independence
+    signal (answers, groups, duplicate rate) - read it before trusting
+    consensus.
     Workers are separate processes with no shared transcript. A worker
     that asks a genuine blocking question emits a question event with
     the run id; other workers continue.
@@ -111,12 +114,13 @@ Tier 2 (pattern runs - the tool owns the run):
     abstain | escalate); an option advances only on a strict majority of
     accepts. Duplicate options merge mechanically; unscored options are
     flagged, never silently dropped.
-  fusion delphi --task <t> [--workers N] [--harness] [--timeout]
+  fusion delphi --task <t> [--workers N] [--harness] [--timeout] [--vocabulary a,b]
     Sealed panel, two rounds: round 1 answers independently; round 2
     revises seeing its own answer plus the anonymized panel record.
-    The decision record reports convergence (did groups collapse?) and
-    stability (did workers hold position?) mechanically - read both
-    before trusting the round-2 winner.
+    With --vocabulary, round 1 answers from the set and round-2 revisions
+    must stay inside it. The decision record reports convergence (did
+    groups collapse?) and stability (did workers hold position?)
+    mechanically - read both before trusting the round-2 winner.
   fusion ach --task <t> [--workers N] [--harness] [--timeout]
     Analysis of Competing Hypotheses: sealed analysts submit hypotheses
     and evidence as linked claims (evidence links hypotheses via

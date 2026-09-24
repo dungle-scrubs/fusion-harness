@@ -5,6 +5,7 @@ import {
   delphiRound1Prompt,
   delphiRound2Prompt,
 } from "../src/delphi";
+import { juryFuse, parseVocabulary } from "../src/jury";
 import type { AcceptedClaim, RunReport } from "../src/engine";
 
 function claim(
@@ -49,6 +50,95 @@ describe("delphi prompts", () => {
     expect(prompt).toContain('"claim":"ship now"');
     expect(prompt).toContain('"claim":"hold for tests"');
     expect(prompt).toContain("novelty:");
+  });
+});
+
+describe("parseVocabulary", () => {
+  it("parses members and dedups by canonical form", () => {
+    expect(parseVocabulary("ship,hold")).toEqual({ members: ["ship", "hold"] });
+    expect(parseVocabulary(" Ship , SHIP, hold ")).toEqual({ members: ["Ship", "hold"] });
+  });
+
+  it("rejects fewer than two distinct members", () => {
+    expect(parseVocabulary("ship")).toEqual({
+      error: "--vocabulary must name at least two distinct answers",
+    });
+    expect(parseVocabulary("ship, ship")).toEqual({
+      error: "--vocabulary must name at least two distinct answers",
+    });
+    expect(parseVocabulary(", , ")).toEqual({
+      error: "--vocabulary must name at least two distinct answers",
+    });
+  });
+});
+
+describe("jury vocabulary", () => {
+  const member = (workerId: string, text: string): AcceptedClaim => ({
+    claim: {
+      claim: text,
+      claim_id: `C${workerId.slice(1)}`,
+      confidence: 0.8,
+      falsifier: `f ${workerId}`,
+      kind: "answer",
+      status: "documented",
+    },
+    stage: "generate",
+    workerId,
+  });
+
+  it("accepts in-vocabulary answers verbatim and reports the vocabulary", () => {
+    const result = juryFuse([member("w1", "ship"), member("w2", "HOLD")], ["ship", "hold"]);
+    expect(result.decision.decision).toBe("ship");
+    expect((result.decision as { vocabulary?: string[] }).vocabulary).toEqual(["ship", "hold"]);
+    expect(result.decision.rejectedOptions).toEqual([]);
+  });
+
+  it("rejects off-vocabulary answers with a named reason", () => {
+    const result = juryFuse([member("w1", "ship"), member("w2", "maybe later")], [
+      "ship",
+      "hold",
+    ]);
+    expect(result.decision.decision).toBe("ship");
+    expect(result.decision.rejectedOptions).toEqual([
+      {
+        claimId: "C2",
+        reason: "jury vocabulary violation: answer must be one of ship, hold",
+      },
+    ]);
+  });
+
+  it("rejects bad vocabularies at build time", () => {
+    const build = delphiDefinition.build({ task: "t", vocabulary: "ship" });
+    expect(build).toEqual({ error: "--vocabulary must name at least two distinct answers" });
+  });
+});
+
+describe("delphi vocabulary", () => {
+  it("constrains both rounds and reports the vocabulary", () => {
+    const result = delphiFuse(
+      [
+        claim("generate", "w1", { claim: "ship" }),
+        claim("generate", "w2", { claim: "hold" }),
+        claim("challenge", "w1-r2", { claim: "ship" }),
+        claim("challenge", "w2-r2", { claim: "off script" }),
+      ],
+      ["ship", "hold"],
+    );
+    expect(result.decision["decision"]).toBe("ship");
+    expect(result.decision["vocabulary"]).toEqual(["ship", "hold"]);
+    expect(result.decision["rejectedOptions"]).toEqual([
+      {
+        claimId: "C1",
+        reason: "delphi vocabulary violation: answer must be one of ship, hold",
+      },
+    ]);
+  });
+
+  it("carries the vocabulary in both round prompts", () => {
+    expect(delphiRound1Prompt("t", ["ship", "hold"])).toContain("VOCABULARY");
+    expect(delphiRound2Prompt("t", [], [], ["ship", "hold"])).toContain(
+      "MUST stay inside this set",
+    );
   });
 });
 

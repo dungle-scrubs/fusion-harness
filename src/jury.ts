@@ -5,13 +5,47 @@ import { canonicalize } from "./tier1";
 export const JURY_MIN_WORKERS = 2;
 export const JURY_DEFAULT_WORKERS = 3;
 
-export function juryWorkerPrompt(task: string): string {
+/**
+ * Parse a comma-separated vocabulary into canonical members. Empty
+ * members are dropped; members compare by canonical form so casing and
+ * spacing do not split a bounded vote. Returns an error string when
+ * fewer than two distinct members survive.
+ */
+export function parseVocabulary(raw: string): { error: string } | { members: string[] } {
+  const members: string[] = [];
+  const seen = new Set<string>();
+  for (const part of raw.split(",")) {
+    const member = part.trim();
+    if (member.length === 0) {
+      continue;
+    }
+    const key = canonicalize(member);
+    if (!seen.has(key)) {
+      seen.add(key);
+      members.push(member);
+    }
+  }
+  if (members.length < 2) {
+    return { error: "--vocabulary must name at least two distinct answers" };
+  }
+  return { members };
+}
+
+export function juryWorkerPrompt(task: string, vocabulary?: readonly string[]): string {
+  const vocabBlock =
+    vocabulary === undefined
+      ? []
+      : [
+          "",
+          `VOCABULARY (answer with exactly one of these, verbatim, as the full claim text): ${vocabulary.join(", ")}`,
+        ];
   return [
     "You are one sealed juror in an independent jury.",
     "You cannot see other jurors. Do not discuss, hedge, or ask which answer is popular.",
     "Answer the task on your own evidence and judgment.",
     "",
     `TASK: ${task}`,
+    ...vocabBlock,
     "",
     "Reply with EXACTLY ONE JSON object and nothing else, with these fields:",
     '- claim_id: "C1"',
@@ -71,13 +105,18 @@ function memberOf(claim: Record<string, unknown>, workerId: string): JuryMember 
 }
 
 /**
- * Mechanical jury fusion. Pattern strictness first (kind=answer only),
- * then canonical grouping, then plurality with first-seen tiebreak.
+ * Mechanical jury fusion. Pattern strictness first (kind=answer only,
+ * plus vocabulary membership when the run declares one), then canonical
+ * grouping, then plurality with first-seen tiebreak.
  * A minority claim becomes a residual risk when its own confidence is
  * >= 0.6 or its own requested_action is escalate/revise. Returns a
  * null decision when no answer survives.
  */
-export function juryFuse(accepted: readonly AcceptedClaim[]): JuryDecision {
+export function juryFuse(
+  accepted: readonly AcceptedClaim[],
+  vocabulary?: readonly string[],
+): JuryDecision {
+  const vocabKeys = vocabulary === undefined ? null : new Set(vocabulary.map(canonicalize));
   const rejectedOptions: { claimId: string; reason: string }[] = [];
   const answers: { claim: Record<string, unknown>; workerId: string }[] = [];
   for (const entry of accepted) {
@@ -85,6 +124,13 @@ export function juryFuse(accepted: readonly AcceptedClaim[]): JuryDecision {
       rejectedOptions.push({
         claimId: String(entry.claim["claim_id"] ?? "unknown"),
         reason: `jury requires kind=answer, got ${String(entry.claim["kind"] ?? "none")}`,
+      });
+      continue;
+    }
+    if (vocabKeys !== null && !vocabKeys.has(canonicalize(String(entry.claim["claim"] ?? "")))) {
+      rejectedOptions.push({
+        claimId: String(entry.claim["claim_id"] ?? "unknown"),
+        reason: `jury vocabulary violation: answer must be one of ${(vocabulary ?? []).join(", ")}`,
       });
       continue;
     }
@@ -133,6 +179,7 @@ export function juryFuse(accepted: readonly AcceptedClaim[]): JuryDecision {
   return {
     decision: {
       decision: winner?.canonical ?? null,
+      ...(vocabulary === undefined ? {} : { vocabulary: [...vocabulary] }),
       independence: {
         acceptedAnswers: answers.length,
         duplicateRate,
@@ -180,14 +227,23 @@ export const juryDefinition: PatternDefinition = {
     }
     const harness = String(options["harness"] ?? "pi");
     const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rawVocabulary = options["vocabulary"];
+    let vocabulary: string[] | undefined;
+    if (rawVocabulary !== undefined) {
+      const parsed = parseVocabulary(String(rawVocabulary));
+      if ("error" in parsed) {
+        return { error: parsed.error };
+      }
+      vocabulary = parsed.members;
+    }
     return {
-      fuse: juryFuse,
+      fuse: vocabulary === undefined ? juryFuse : (accepted) => juryFuse(accepted, vocabulary),
       stoppingRule: "every worker submits one answer claim or times out",
       task,
       workers: Array.from({ length: workers }, (_, index) => ({
         harness,
         ...(model !== undefined ? { model } : {}),
-        prompt: juryWorkerPrompt(task),
+        prompt: juryWorkerPrompt(task, vocabulary),
         timeoutSec: timeout,
         workerId: `w${index + 1}`,
       })),
@@ -207,6 +263,10 @@ export const juryDefinition: PatternDefinition = {
     { default: "pi", description: "harness for every worker (hcn name)", name: "harness" },
     { description: "model id passed to every worker", name: "model" },
     { default: "180", description: "per-worker wall-clock budget in seconds", name: "timeout" },
+    {
+      description: "closed answer set, comma-separated (e.g. ship,hold)",
+      name: "vocabulary",
+    },
     { description: "the question every sealed juror answers", name: "task", required: true },
   ],
   summarize(decision, report: RunReport): readonly string[] {

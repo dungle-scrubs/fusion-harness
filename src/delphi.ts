@@ -1,15 +1,24 @@
 import type { AcceptedClaim, FusedOutput, RunReport, StageInput } from "./engine";
 import type { PatternDefinition, PatternOptions } from "./pattern";
 import { canonicalize } from "./tier1";
+import { parseVocabulary } from "./jury";
 
 export const DELPHI_MIN_WORKERS = 2;
 export const DELPHI_DEFAULT_WORKERS = 3;
 
-export function delphiRound1Prompt(task: string): string {
+export function delphiRound1Prompt(task: string, vocabulary?: readonly string[]): string {
+  const vocabBlock =
+    vocabulary === undefined
+      ? []
+      : [
+          "",
+          `VOCABULARY (answer with exactly one of these, verbatim, as the full claim text): ${vocabulary.join(", ")}`,
+        ];
   return [
     "You are one member of a Delphi panel, round 1.",
     "You cannot see the other members. Answer independently.",
     `TASK: ${task}`,
+    ...vocabBlock,
     "",
     "Reply with EXACTLY ONE JSON object and nothing else, with these fields:",
     '- claim_id: "C1"',
@@ -31,10 +40,19 @@ export function delphiRound2Prompt(
   task: string,
   own: readonly Record<string, unknown>[],
   panel: readonly Record<string, unknown>[],
+  vocabulary?: readonly string[],
 ): string {
+  const vocabBlock =
+    vocabulary === undefined
+      ? []
+      : [
+          "",
+          `VOCABULARY (your revision MUST stay inside this set, verbatim): ${vocabulary.join(", ")}`,
+        ];
   return [
     "You are one member of a Delphi panel, round 2 (final).",
     `TASK: ${task}`,
+    ...vocabBlock,
     "",
     "YOUR ROUND-1 ANSWER:",
     claimsBlock(own),
@@ -74,17 +92,40 @@ export interface DelphiStats {
  * decision is the round-2 plurality winner, first-seen tiebreak, with
  * jury-style minority report and residual risks.
  */
-export function delphiFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
+export function delphiFuse(
+  accepted: readonly AcceptedClaim[],
+  vocabulary?: readonly string[],
+): FusedOutput & {
   decision: Record<string, unknown>;
 } {
+  const vocabKeys = vocabulary === undefined ? null : new Set(vocabulary.map(canonicalize));
   const round1 = accepted.filter((a) => a.stage === "generate" && a.claim["kind"] === "answer");
   const round2 = accepted.filter((a) => a.stage === "challenge" && a.claim["kind"] === "answer");
-  const rejectedOptions = accepted
-    .filter((a) => a.claim["kind"] !== "answer")
-    .map((a) => ({
-      claimId: String(a.claim["claim_id"] ?? "unknown"),
-      reason: `delphi requires kind=answer, got ${String(a.claim["kind"] ?? "none")}`,
-    }));
+  const vocabRejects = (entries: readonly AcceptedClaim[]): { claimId: string; reason: string }[] =>
+    vocabKeys === null
+      ? []
+      : entries
+          .filter((a) => !vocabKeys.has(canonicalize(String(a.claim["claim"] ?? ""))))
+          .map((a) => ({
+            claimId: String(a.claim["claim_id"] ?? "unknown"),
+            reason: `delphi vocabulary violation: answer must be one of ${(vocabulary ?? []).join(", ")}`,
+          }));
+  const round1Keeps = round1.filter(
+    (a) => vocabKeys === null || vocabKeys.has(canonicalize(String(a.claim["claim"] ?? ""))),
+  );
+  const round2Keeps = round2.filter(
+    (a) => vocabKeys === null || vocabKeys.has(canonicalize(String(a.claim["claim"] ?? ""))),
+  );
+  const rejectedOptions = [
+    ...accepted
+      .filter((a) => a.claim["kind"] !== "answer")
+      .map((a) => ({
+        claimId: String(a.claim["claim_id"] ?? "unknown"),
+        reason: `delphi requires kind=answer, got ${String(a.claim["kind"] ?? "none")}`,
+      })),
+    ...vocabRejects(round1),
+    ...vocabRejects(round2),
+  ];
 
   type Group = { canonical: string; members: AcceptedClaim[] };
   const groupsOf = (entries: readonly AcceptedClaim[]): Map<string, Group> => {
@@ -101,20 +142,20 @@ export function delphiFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
     return groups;
   };
 
-  const round1Groups = groupsOf(round1);
-  const round2Groups = groupsOf(round2);
+  const round1Groups = groupsOf(round1Keeps);
+  const round2Groups = groupsOf(round2Keeps);
 
   const round1CanonicalByWorker = new Map<string, string>();
-  for (const entry of round1) {
+  for (const entry of round1Keeps) {
     round1CanonicalByWorker.set(entry.workerId, canonicalize(String(entry.claim["claim"] ?? "")));
   }
-  const stableCount = round2.filter((entry) => {
+  const stableCount = round2Keeps.filter((entry) => {
     const origin = round1CanonicalByWorker.get(entry.workerId.replace(/-r2$/, ""));
     return origin !== undefined && origin === canonicalize(String(entry.claim["claim"] ?? ""));
   }).length;
 
-  const stabilityRate = round2.length === 0 ? 0 : stableCount / round2.length;
-  const convergenceRate = round2.length === 0 ? 0 : 1 - round2Groups.size / round2.length;
+  const stabilityRate = round2Keeps.length === 0 ? 0 : stableCount / round2Keeps.length;
+  const convergenceRate = round2Keeps.length === 0 ? 0 : 1 - round2Groups.size / round2Keeps.length;
 
   let winner: Group | null = null;
   for (const group of round2Groups.values()) {
@@ -141,8 +182,8 @@ export function delphiFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
 
   const stats: DelphiStats = {
     convergenceRate,
-    round1: { answers: round1.length, groups: round1Groups.size },
-    round2: { answers: round2.length, groups: round2Groups.size },
+    round1: { answers: round1Keeps.length, groups: round1Groups.size },
+    round2: { answers: round2Keeps.length, groups: round2Groups.size },
     stabilityRate,
   };
 
@@ -150,6 +191,7 @@ export function delphiFuse(accepted: readonly AcceptedClaim[]): FusedOutput & {
     decision: {
       decision: winner?.canonical ?? null,
       delphi: stats,
+      ...(vocabulary === undefined ? {} : { vocabulary: [...vocabulary] }),
       minorityReport: minority.map((g) => ({
         canonical: g.canonical,
         members: g.members.map((m) => ({
@@ -189,13 +231,22 @@ export const delphiDefinition: PatternDefinition = {
     }
     const harness = String(options["harness"] ?? "pi");
     const model = options["model"] === undefined ? undefined : String(options["model"]);
+    const rawVocabulary = options["vocabulary"];
+    let vocabulary: string[] | undefined;
+    if (rawVocabulary !== undefined) {
+      const parsed = parseVocabulary(String(rawVocabulary));
+      if ("error" in parsed) {
+        return { error: parsed.error };
+      }
+      vocabulary = parsed.members;
+    }
     const base = {
       harness,
       ...(model !== undefined ? { model } : {}),
       timeoutSec: timeout,
     };
     return {
-      fuse: delphiFuse,
+      fuse: vocabulary === undefined ? delphiFuse : (accepted) => delphiFuse(accepted, vocabulary),
       stages: {
         challenge: (input: StageInput) =>
           Array.from({ length: workers }, (_, index) => ({
@@ -204,6 +255,7 @@ export const delphiDefinition: PatternDefinition = {
               task,
               input.byWorker.get(`w${index + 1}`) ?? [],
               input.anonymizedClaims,
+              vocabulary,
             ),
             workerId: `w${index + 1}-r2`,
           })),
@@ -212,7 +264,7 @@ export const delphiDefinition: PatternDefinition = {
       task,
       workers: Array.from({ length: workers }, (_, index) => ({
         ...base,
-        prompt: delphiRound1Prompt(task),
+        prompt: delphiRound1Prompt(task, vocabulary),
         workerId: `w${index + 1}`,
       })),
     };
@@ -231,6 +283,10 @@ export const delphiDefinition: PatternDefinition = {
       default: "300",
       description: "per-worker wall-clock budget in seconds, per round",
       name: "timeout",
+    },
+    {
+      description: "closed answer set for round 1, comma-separated; round 2 must stay inside it",
+      name: "vocabulary",
     },
     { description: "the question the panel answers", name: "task", required: true },
   ],
