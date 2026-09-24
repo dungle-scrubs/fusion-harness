@@ -14,6 +14,30 @@ fusion is NOT a harness. A harness owns an agent's loop (context, tools,
 permissions). fusion composes runs of harnesses. All agent execution goes
 through \`hcn run\`.
 
+Choosing a method - match the problem shape, not the habit:
+  - One bounded question, and one model's answer is not trusted on its
+    own (anchoring, herding, prior bias) -> jury. Sealed workers answer
+    independently; mechanical plurality fuses. Do NOT use jury for open
+    generation (there is no comparable answer to vote on) or when you
+    already hold sealed judgments - pipe normalize | aggregate instead.
+  - A claim set whose failure costs more than challenging it, and you
+    can state the standard up front -> red-blue. It buys objection-only
+    challenge, fact resolution with executable checks, and a judge blind
+    to identity scoring against your burden. Do NOT use it when nobody
+    can state the burden - the judge cannot score an unstated standard.
+  - An observed outcome with several plausible causes -> ach. It forces
+    every hypothesis against every evidence item and shows which
+    evidence discriminates. Do NOT use it to choose between proposals -
+    ach explains, it does not rank options.
+  - You already hold claims or sealed votes and only want mechanical
+    work (schema checks, dedup, vote/median, calibration scoring) ->
+    tier 1 directly. A pattern run adds isolation you do not need.
+  - One deep pass by one model is enough -> do not call fusion at all;
+    run that harness. fusion spends N workers to buy independence - pay
+    it only when independence is the missing ingredient.
+  - Secret material in the task or claims -> local models only (see the
+    privacy rule below); never route it to a hosted model through fusion.
+
 Tier 1 (model-free, deterministic, pipe freely - JSON in, JSON out):
   fusion validate [--json] <claims.jsonl>  Validate a JSONL stream of claims
     against the claim schema. Per-claim accept/reject verdicts with the
