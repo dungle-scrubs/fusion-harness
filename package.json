@@ -4,7 +4,7 @@
   "description": "A composable fusion layer over agent harnesses: consensus you can audit.",
   "type": "module",
   "bin": {
-    "fusion": "./dist/cli.js"
+    "fusion": "dist/cli.js"
   },
   "scripts": {
     "build": "esbuild src/cli.ts --bundle --platform=node --format=esm --outfile=dist/cli.js && chmod +x dist/cli.js",
