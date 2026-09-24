@@ -32,8 +32,11 @@ with known outcomes - to calibrate confidences before trusting them.
 
 ## Exit contract
 
-0 clean, 1 well-formed but unfusable/unscorable input, 2 unreadable or
-malformed input (the hcn contract: fusion refused the invocation).
+Per ADR-0002: every command emits an `{ok, run, step, errors[]}`
+envelope and exits by class - 0 ok, 1 usage (unreadable/malformed input,
+E103/E104), 2 validation/gate (rejected claims E201, unfusable input
+E202/E203), 3 nothing takeable (empty input E302), 4 internal. The hcn
+0/1/2 mapping is superseded.
 
 ## Composition
 
