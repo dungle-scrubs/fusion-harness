@@ -255,6 +255,25 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
         .filter((id): id is string => id !== null),
     );
 
+  /**
+   * Run-scoped dependency refs (`w1:C1`) are legal at the pattern boundary:
+   * later-stage workers see prefixed ids in the anonymized record. The
+   * schema check runs against bare refs only, so strip prefixes for
+   * validation; the stored claim keeps the prefixed ref.
+   */
+  const bareDependencies = (raw: unknown): unknown => {
+    if (typeof raw !== "object" || raw === null) {
+      return raw;
+    }
+    const claim = { ...(raw as Record<string, unknown>) };
+    if (Array.isArray(claim["dependencies"])) {
+      claim["dependencies"] = claim["dependencies"].map((dep: unknown) =>
+        typeof dep === "string" ? dep.replace(/^[a-z0-9-]+:/, "") : dep,
+      );
+    }
+    return claim;
+  };
+
   const remapOne = (
     raw: unknown,
     workerId: string,
@@ -317,7 +336,7 @@ export function executeRun(reg: RunRegistration, options: EngineOptions): RunRep
       survivors += 1;
       const localIds = localIdsOf(result.rawClaims);
       for (const raw of result.rawClaims) {
-        const verdict = validateClaim(raw);
+        const verdict = validateClaim(bareDependencies(raw));
         if (!verdict.valid) {
           emit(
             makeEvent(

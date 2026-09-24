@@ -21,7 +21,10 @@ export function claimantPrompt(task: string): string {
     '("observed"|"documented"|"inferred"|"unknown"), confidence [0,1],',
     "falsifier.",
     "If a claim can be checked by running a command, put the exact command",
-    "in its falsifier or in an evidence source_or_test field, in backticks.",
+    'in the falsifier, or in an evidence entry: evidence: [{"source_or_test":',
+    '"the command in backticks", "supports": "what it shows"}] - evidence is',
+    "an array of objects with exactly those two fields (plus optional url);",
+    "source_or_test is never a top-level field.",
     "Do NOT include a provenance field. It is tool-stamped; a claim that sets it is rejected.",
     "Reply with one JSON object per claim, nothing else.",
   ].join("\n");
