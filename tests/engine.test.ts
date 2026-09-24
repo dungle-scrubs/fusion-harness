@@ -466,3 +466,32 @@ describe("executeRun with a fake spawner", () => {
     );
   });
 });
+
+describe("survivor accounting", () => {
+  it("a worker whose claims all fail validation is not a survivor", () => {
+    const root = mkdtempSync(join(tmpdir(), "fusion-rev-"));
+    const report = executeRun(
+      {
+        pattern: "echo",
+        registeredAt: "2026-09-24T00:00:00.000Z",
+        runId: "r4b5c6d7e",
+        stoppingRule: "x",
+        task: "all garbage",
+        workers: [{ harness: "pi", prompt: "p", timeoutSec: 5, workerId: "w1" }],
+      },
+      {
+        now: () => "2026-09-24T00:00:00.000Z",
+        repoRoot: root,
+        spawn: () =>
+          workerResult({
+            rawClaims: [{ claim_id: "C1", kind: "answer" }],
+          }),
+      },
+    );
+    const done = report.events[report.events.length - 1];
+    expect(done?.kind).toBe("done");
+    expect(done?.payload["cause"]).toBe("failed");
+    expect(done?.payload["survivors"]).toBe(0);
+    expect(report.cause).toBe("failed");
+  });
+});

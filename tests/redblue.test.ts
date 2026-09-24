@@ -84,7 +84,7 @@ describe("redblueFuse", () => {
     expect(result.decision["survivingClaims"]).toEqual(["C2"]);
     expect(result.decision["decision"]).toBe("C2 alone meets the burden");
     expect(result.decision["judgeVerdict"]).toBe("accept");
-    expect(result.decision["rejectedClaims"]).toEqual([
+    expect(result.decision["rejectedOptions"]).toEqual([
       { claimId: "C1", reason: "objection C1 sustained" },
     ]);
   });

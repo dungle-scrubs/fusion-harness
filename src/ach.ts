@@ -199,11 +199,11 @@ export const achDefinition: PatternDefinition = {
     if (task.trim().length === 0) {
       return { error: "--task must be non-empty" };
     }
-    const workers = Number(options["workers"] ?? "");
+    const workers = Number(options["workers"] ?? ACH_DEFAULT_WORKERS);
     if (!Number.isInteger(workers) || workers < ACH_MIN_WORKERS) {
       return { error: `--workers must be an integer >= ${ACH_MIN_WORKERS}` };
     }
-    const timeout = Number(options["timeout"] ?? "");
+    const timeout = Number(options["timeout"] ?? 300);
     if (!(timeout > 0)) {
       return { error: "--timeout must be positive seconds" };
     }
@@ -227,7 +227,7 @@ export const achDefinition: PatternDefinition = {
     "ACH Matrix pattern run: sealed analysts submit hypotheses and diagnostic evidence " +
     "as linked claims; the tool builds the hypotheses-x-evidence matrix mechanically and " +
     "reports which evidence discriminates and which is consistent with everything. " +
-    "Writes .fusion/runs/<runId>/. Exits 0 clean, 1 run failure, 2 invalid invocation.",
+    "Writes .fusion/runs/<runId>/.",
   options: [
     {
       default: String(ACH_DEFAULT_WORKERS),

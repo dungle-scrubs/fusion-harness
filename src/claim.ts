@@ -164,8 +164,11 @@ export function validateClaim(input: unknown): ClaimVerdict {
             errors.push(`evidence[${index}] requires non-empty "${field}"`);
           }
         }
-        if (entry["url"] !== undefined && typeof entry["url"] !== "string") {
-          errors.push(`evidence[${index}].url must be a string`);
+        if (
+          entry["url"] !== undefined &&
+          (typeof entry["url"] !== "string" || (entry["url"] as string).trim().length === 0)
+        ) {
+          errors.push(`evidence[${index}].url must be a non-empty string`);
         }
       });
     }
@@ -173,8 +176,11 @@ export function validateClaim(input: unknown): ClaimVerdict {
 
   const assumptions = input["assumptions"];
   if (assumptions !== undefined) {
-    if (!Array.isArray(assumptions) || assumptions.some((a: unknown) => typeof a !== "string")) {
-      errors.push("assumptions must be an array of strings");
+    if (
+      !Array.isArray(assumptions) ||
+      assumptions.some((a: unknown) => typeof a !== "string" || a.trim().length === 0)
+    ) {
+      errors.push("assumptions must be an array of non-empty strings");
     }
   }
 
