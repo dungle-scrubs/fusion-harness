@@ -15,6 +15,7 @@ import { executeRun } from "./engine";
 import { juryDefinition } from "./jury";
 import { type PatternDefinition, type PatternOptions, toRegistration } from "./pattern";
 import { redblueDefinition } from "./redblue";
+import { shortlistDefinition } from "./shortlist";
 import { SKILL_TEXT } from "./skill";
 import { type AggregateMethod, aggregate, normalizeClaims, scoreForecasts } from "./tier1";
 
@@ -280,6 +281,7 @@ const PATTERNS: readonly PatternDefinition[] = [
   redblueDefinition,
   achDefinition,
   delphiDefinition,
+  shortlistDefinition,
 ];
 
 for (const definition of PATTERNS) {
