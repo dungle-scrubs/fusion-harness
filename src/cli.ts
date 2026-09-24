@@ -12,6 +12,7 @@ import { achDefinition } from "./ach";
 import { type ClaimVerdict, validateClaim } from "./claim";
 import { delphiDefinition } from "./delphi";
 import { executeRun } from "./engine";
+import { gonogoDefinition } from "./gonogo";
 import { juryDefinition } from "./jury";
 import { type PatternDefinition, type PatternOptions, toRegistration } from "./pattern";
 import { redblueDefinition } from "./redblue";
@@ -282,6 +283,7 @@ const PATTERNS: readonly PatternDefinition[] = [
   achDefinition,
   delphiDefinition,
   shortlistDefinition,
+  gonogoDefinition,
 ];
 
 for (const definition of PATTERNS) {

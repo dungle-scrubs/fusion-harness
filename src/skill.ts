@@ -20,6 +20,12 @@ Choosing a method - match the problem shape, not the habit:
     independently; mechanical plurality fuses. Do NOT use jury for open
     generation (there is no comparable answer to vote on) or when you
     already hold sealed judgments - pipe normalize | aggregate instead.
+  - A ship/block decision on one artifact, where one dissenter with
+    evidence must be able to stop it -> gonogo. Independent reviewers
+    return GO, GO WITH CONSTRAINT, or NO-GO; the veto rule is mechanical:
+    any NO-GO blocks, no outvoting. Do NOT use it when you want the
+    majority view on an open question -> jury; or when claims must
+    survive adversarial attack -> red-blue.
   - An open-ended problem with many possible answers, and you need a
     ranked few -> shortlist. Sealed proposers generate options; blind
     judges score every option against a rubric you state; the tool
@@ -94,6 +100,12 @@ Tier 2 (pattern runs - the tool owns the run):
     burden. Budgets are symmetric across roles. The decision names each
     surviving claim, each rejected claim with its ruling, and unresolved
     objections as residual risks.
+  fusion gonogo --task <t> [--reviewers N]
+    Ship/block gate: each reviewer returns a position (accept=GO,
+    test=GO WITH CONSTRAINT, escalate=NO-GO with the blocking concern,
+    abstain=NO-GO unverifiable). One NO-GO blocks - mechanically, with no
+    outvoting. The record carries every position and each block's
+    falsifier (what would clear it).
   fusion shortlist --task <t> --rubric <r> [--generators N] [--judges M]
     Open generation, blind judging: proposers submit options sealed;
     judges score every option against the rubric (accept | revise |
