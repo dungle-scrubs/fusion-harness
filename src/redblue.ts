@@ -1,8 +1,11 @@
+import { readFileSync } from "node:fs";
 import type { AcceptedClaim, FusedOutput, RunReport, StageInput } from "./engine";
 import {
   diversityCounts,
+  EVIDENCE_OPTION,
   type PatternDefinition,
   type PatternOptions,
+  resolveEvidence,
   resolveRoster,
   ROSTER_OPTION,
   WAIT_OPTION,
@@ -25,10 +28,13 @@ export interface RedBlueRoster {
   readonly umpire: { harness: string; model?: string };
 }
 
-export function claimantPrompt(task: string): string {
+export function claimantPrompt(task: string, supplied?: string): string {
+  const evidenceBlock =
+    supplied === undefined || supplied.trim().length === 0 ? [] : ["", supplied];
   return [
     "You are the claimant in a red-blue adversarial review.",
     `TASK: ${task}`,
+    ...evidenceBlock,
     "",
     "File 1-4 atomic claims that together answer the task.",
     "Each claim: one JSON object with claim_id (C1, C2, ...), kind",
@@ -273,6 +279,11 @@ export const redblueDefinition: PatternDefinition = {
       red: red ?? { harness: "pi" },
       umpire: umpire ?? { harness: "pi" },
     };
+    const evidenced = resolveEvidence(options, (path) => readFileSync(path, "utf8"));
+    if ("error" in evidenced) {
+      return { error: evidenced.error };
+    }
+    const supplied = evidenced.block;
     const patternOptions: RedBlueOptions = {
       burden,
       harness,
@@ -293,7 +304,7 @@ export const redblueDefinition: PatternDefinition = {
         {
           harness: roleRoster.red.harness,
           ...(roleRoster.red.model !== undefined ? { model: roleRoster.red.model } : {}),
-          prompt: claimantPrompt(task),
+          prompt: claimantPrompt(task, supplied),
           timeoutSec: timeout,
           workerId: "w-red",
         },
@@ -323,6 +334,7 @@ export const redblueDefinition: PatternDefinition = {
       description:
         "per-role harness[:model] in red,blue,umpire,judge order; repeatable, all four required when set",
     },
+    EVIDENCE_OPTION,
     {
       description: "the question the claimant must answer with claims",
       name: "task",

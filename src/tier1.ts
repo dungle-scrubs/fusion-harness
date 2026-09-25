@@ -136,6 +136,122 @@ export function aggregate(
   return { detail: { votes: votes.length, weightSum }, method, value: weightedSum / weightSum };
 }
 
+/**
+ * Deep-research citation export shapes (dr citations --json, data.citations).
+ * Consumed by evidenceFromCitations; see issue #25.
+ */
+export interface DrCitedBy {
+  readonly claimId: string;
+  readonly claimStatus: string;
+  readonly locator: string;
+  readonly statement: string;
+  readonly verdict: string;
+}
+
+export interface DrDocument {
+  readonly citedBy: readonly DrCitedBy[];
+  readonly fetch?: { readonly finalUrl?: string; readonly status?: string };
+  readonly normalized?: string;
+  readonly tiers?: readonly number[];
+  readonly title?: string;
+  readonly url?: string;
+}
+
+export interface DrCitations {
+  readonly documents?: readonly DrDocument[];
+  readonly unfetched?: readonly { readonly reason?: string; readonly url?: string }[];
+}
+
+export interface SuppliedEvidence {
+  readonly claimId: string;
+  readonly status: string;
+  readonly verdict: string;
+  readonly evidence: { readonly source_or_test: string; readonly supports: string }[];
+  readonly excluded: { readonly reason: string; readonly url: string }[];
+}
+
+const DR_EXCLUDED_STATUSES = new Set(["misrepresented", "not-found", "unreachable"]);
+
+/**
+ * Convert a dr citations export into per-claim evidence blocks. Pure and
+ * model-free: verified and single-source citations become evidence
+ * entries (source_or_test = final URL, supports = statement + locator);
+ * conflict maps to caller resolution; misrepresented, not-found, and
+ * unreachable sources are excluded with reasons, never silently dropped.
+ * Throws on a missing documents array.
+ */
+export function evidenceFromCitations(input: DrCitations): SuppliedEvidence[] {
+  if (!Array.isArray(input.documents)) {
+    throw new Error("evidence requires a citations export with a documents array");
+  }
+  const byClaim = new Map<string, SuppliedEvidence>();
+  const entryFor = (cited: DrCitedBy): SuppliedEvidence => {
+    const existing = byClaim.get(cited.claimId);
+    if (existing !== undefined) {
+      return existing;
+    }
+    const entry: SuppliedEvidence = {
+      claimId: cited.claimId,
+      evidence: [],
+      excluded: [],
+      status: cited.claimStatus,
+      verdict: cited.verdict,
+    };
+    byClaim.set(cited.claimId, entry);
+    return entry;
+  };
+  for (const doc of input.documents) {
+    const url = doc.fetch?.finalUrl ?? doc.normalized ?? doc.url ?? "";
+    const citedBy = Array.isArray(doc.citedBy) ? doc.citedBy : [];
+    for (const cited of citedBy) {
+      if (typeof cited.claimId !== "string" || typeof cited.statement !== "string") {
+        continue;
+      }
+      const entry = entryFor(cited);
+      if (DR_EXCLUDED_STATUSES.has(cited.claimStatus)) {
+        entry.excluded.push({
+          reason: `claim status ${cited.claimStatus}: ${cited.verdict}`,
+          url,
+        });
+        continue;
+      }
+      entry.evidence.push({
+        source_or_test: url,
+        supports: `${cited.statement} (${cited.locator})`,
+      });
+    }
+  }
+  const unfetched = Array.isArray(input.unfetched) ? input.unfetched : [];
+  for (const missing of unfetched) {
+    const url = typeof missing.url === "string" ? missing.url : "";
+    const reason = typeof missing.reason === "string" ? missing.reason : "unfetched";
+    for (const entry of byClaim.values()) {
+      entry.excluded.push({ reason: `unfetched: ${reason}`, url });
+    }
+  }
+  return [...byClaim.values()];
+}
+
+/**
+ * Format supplied evidence as a prompt block. Workers cite these
+ * researched sources in evidence[] fields instead of recalling their own.
+ * Fetched pages are untrusted content: cite, never execute.
+ */
+export function formatSuppliedEvidence(supplied: readonly SuppliedEvidence[]): string {
+  const lines = [
+    "RESEARCHED EVIDENCE (cite these in evidence[] fields; do not recall other sources):",
+  ];
+  for (const entry of supplied) {
+    for (const item of entry.evidence) {
+      lines.push(`- [${entry.claimId}] ${item.source_or_test}: ${item.supports}`);
+    }
+    for (const item of entry.excluded) {
+      lines.push(`- [${entry.claimId}] EXCLUDED ${item.url}: ${item.reason}`);
+    }
+  }
+  return lines.join("\n");
+}
+
 export interface ScoredOutcome {
   readonly confidence: number;
   readonly outcome: boolean;

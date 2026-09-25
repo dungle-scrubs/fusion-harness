@@ -1,6 +1,6 @@
 # Red-Blue-Umpire
 
-`fusion red-blue --task <t> --burden <b> [--harness pi] [--model <m>] [--timeout <sec>] [--json]`
+`fusion red-blue --task <t> --burden <b> [--harness pi] [--model <m>] [--timeout <sec>] [--evidence <file>] [--json]`
 
 ## What it is for
 
@@ -17,6 +17,9 @@ CHALLENGING, VERIFYING):
 
 1. **Claimant** (`w-red`) files 1-4 atomic claims. Named executable checks
    go in the falsifier or an `evidence[]` entry (backticked command).
+   With `--evidence`, the prompt carries researched sources from a dr
+   citations export and the claimant cites those instead of recalling
+   its own.
 2. **Opponent** (`w-blue`) sees the claims anonymized - no provenance - and
    must challenge with `kind=objection` claims whose `dependencies` target
    the claim ids. Free-form critique never passes the schema.

@@ -1,5 +1,6 @@
 import type { FuseFn, RunReport, StageBuilders } from "./engine";
 import type { RunRegistration, WorkerConfig } from "./run";
+import { type DrCitations, evidenceFromCitations, formatSuppliedEvidence } from "./tier1";
 
 export interface OptionSpec {
   readonly default?: string;
@@ -152,6 +153,69 @@ export const WAIT_SEC_OPTION: OptionSpec = {
   description: "hold deadline in seconds for a --wait suspension",
   name: "wait-sec",
 };
+
+export const EVIDENCE_OPTION: OptionSpec = {
+  description:
+    "dr citations export file (dr citations --json); researched sources workers must cite",
+  name: "evidence",
+};
+
+/**
+ * Resolve --evidence into a formatted prompt block. Reads the dr
+ * citations export, converts mechanically, formats for prompts. Returns
+ * an error string for unreadable or malformed input (E102 at build).
+ */
+export function resolveEvidence(
+  options: PatternOptions,
+  readFile: (path: string) => string,
+): { error: string } | { block?: string } {
+  const raw = options["evidence"];
+  if (raw === undefined) {
+    return {};
+  }
+  const path = String(raw);
+  if (path.trim().length === 0) {
+    return { error: "--evidence requires a file path" };
+  }
+  let text: string;
+  try {
+    text = readFile(path);
+  } catch (error) {
+    return {
+      error: `--evidence cannot read ${path}: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text) as unknown;
+  } catch {
+    return { error: `--evidence file ${path} is not valid JSON` };
+  }
+  const root =
+    typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  const data =
+    typeof root["data"] === "object" && root["data"] !== null
+      ? (root["data"] as Record<string, unknown>)
+      : {};
+  const citations =
+    typeof data["citations"] === "object" && data["citations"] !== null
+      ? (data["citations"] as { documents?: unknown; unfetched?: unknown })
+      : (root as { documents?: unknown; unfetched?: unknown });
+  if (!Array.isArray(citations.documents)) {
+    return { error: `--evidence file ${path} has no documents array` };
+  }
+  let block: string;
+  try {
+    block = formatSuppliedEvidence(evidenceFromCitations(citations as DrCitations));
+  } catch (error) {
+    return {
+      error: `--evidence file ${path} is not a valid citations export: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
+  return { block };
+}
 
 /**
  * Resolve --wait/--wait-sec into registration fields. --wait-sec without

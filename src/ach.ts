@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import type { AcceptedClaim, FusedOutput, RunReport } from "./engine";
 import {
   diversityCounts,
@@ -7,17 +8,22 @@ import {
   resolveRoster,
   WAIT_OPTION,
   WAIT_SEC_OPTION,
+  EVIDENCE_OPTION,
+  resolveEvidence,
   ROSTER_OPTION,
 } from "./pattern";
 
 export const ACH_MIN_WORKERS = 2;
 export const ACH_DEFAULT_WORKERS = 3;
 
-export function achWorkerPrompt(task: string): string {
+export function achWorkerPrompt(task: string, supplied?: string): string {
+  const evidenceBlock =
+    supplied === undefined || supplied.trim().length === 0 ? [] : ["", supplied];
   return [
     "You are one sealed analyst in an Analysis of Competing Hypotheses run.",
     "You cannot see the other analysts. Work independently.",
     `TASK: ${task}`,
+    ...evidenceBlock,
     "",
     "Submit 1-3 mutually exclusive hypotheses AND 1-3 diagnostic evidence",
     "claims, one JSON object per line, nothing else.",
@@ -223,6 +229,11 @@ export const achDefinition: PatternDefinition = {
       return { error: rostered.error };
     }
     const roster = rostered.roster;
+    const evidenced = resolveEvidence(options, (path) => readFileSync(path, "utf8"));
+    if ("error" in evidenced) {
+      return { error: evidenced.error };
+    }
+    const supplied = evidenced.block;
     return {
       fuse: achFuse,
       stoppingRule: "every worker submits hypotheses and evidence or times out",
@@ -232,7 +243,7 @@ export const achDefinition: PatternDefinition = {
         return {
           harness: slot.harness,
           ...(slot.model !== undefined ? { model: slot.model } : {}),
-          prompt: achWorkerPrompt(task),
+          prompt: achWorkerPrompt(task, supplied),
           timeoutSec: timeout,
           workerId: `w${index + 1}`,
         };
@@ -257,6 +268,7 @@ export const achDefinition: PatternDefinition = {
     { description: "model id passed to every worker", name: "model" },
     { default: "300", description: "per-worker wall-clock budget in seconds", name: "timeout" },
     ROSTER_OPTION,
+    EVIDENCE_OPTION,
     { description: "the question the analysts hypothesize about", name: "task", required: true },
   ],
   summarize(decision, report: RunReport): readonly string[] {

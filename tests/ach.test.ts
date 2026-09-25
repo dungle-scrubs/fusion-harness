@@ -1,5 +1,8 @@
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { achFuse, achWorkerPrompt } from "../src/ach";
+import { achDefinition, achFuse, achWorkerPrompt } from "../src/ach";
 import type { AcceptedClaim } from "../src/engine";
 
 function claim(
@@ -134,5 +137,43 @@ describe("achFuse", () => {
     expect(result.decision.matrix).toEqual([]);
     expect(result.decision.hypotheses).toEqual([]);
     expect(result.decision.leastDisconfirmed).toBeNull();
+  });
+});
+
+describe("evidence supply", () => {
+  it("appends researched sources to the analyst prompt", () => {
+    const prompt = achWorkerPrompt("why?", "RESEARCHED EVIDENCE\n- [c001] https://a.example/: s (p1)");
+    expect(prompt).toContain("TASK: why?");
+    expect(prompt).toContain("RESEARCHED EVIDENCE");
+    expect(achWorkerPrompt("why?")).not.toContain("RESEARCHED EVIDENCE");
+  });
+
+  it("resolves --evidence files at build time and rejects bad ones", () => {
+    const dir = mkdtempSync(join(tmpdir(), "fusion-ev-"));
+    const file = join(dir, "citations.json");
+    writeFileSync(
+      file,
+      JSON.stringify({
+        documents: [
+          {
+            citedBy: [
+              { claimId: "c001", claimStatus: "verified", locator: "p1", statement: "s", verdict: "supported" },
+            ],
+            fetch: { finalUrl: "https://a.example/", status: "ok" },
+          },
+        ],
+        unfetched: [],
+      }),
+    );
+    const build = achDefinition.build({ evidence: file, task: "why?", workers: "2" });
+    expect("error" in build).toBe(false);
+    if ("error" in build) {
+      return;
+    }
+    expect(build.workers[0]?.prompt).toContain("RESEARCHED EVIDENCE");
+    expect(build.workers[0]?.prompt).toContain("https://a.example/");
+    expect(achDefinition.build({ evidence: join(dir, "missing.json"), task: "t" })).toEqual({
+      error: expect.stringContaining("cannot read"),
+    });
   });
 });

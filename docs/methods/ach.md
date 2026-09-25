@@ -1,6 +1,6 @@
 # ACH Matrix
 
-`fusion ach --task <t> [--workers N] [--harness pi] [--model <m>] [--timeout <sec>] [--json]`
+`fusion ach --task <t> [--workers N] [--harness pi] [--model <m>] [--timeout <sec>] [--evidence <file>] [--json]`
 
 ## What it is for
 
@@ -19,7 +19,9 @@ favorite explanation.
 1. Each sealed analyst files hypotheses (`kind=hypothesis`, each citing
    its evidence via `dependencies`) and evidence claims (each linking the
    hypotheses it bears on via `dependencies`, with `novelty`:
-   `confirms` = consistent, `contradicts` = inconsistent). One evidence
+   `confirms` = consistent, `contradicts` = inconsistent). With
+   `--evidence`, the prompt carries researched sources from a dr citations
+   export and analysts cite those instead of recalling their own. One evidence
    claim carries one stance - a mixed stance means two claims.
 2. A matrix cell (hypothesis, evidence) is consistent or inconsistent only
    when the link is bidirectional: the evidence names the hypothesis and

@@ -71,6 +71,10 @@ Tier 1 (model-free, deterministic, pipe freely - JSON in, JSON out):
     outcomes. Reads [{confidence, outcome}] from FILE or stdin. Lower
     is better for both. Score seed questions with known answers to
     calibrate before trusting confidences.
+  fusion evidence [file]  Convert a dr citations export (dr citations
+    --json) into per-claim evidence blocks for claim evidence[] fields.
+    Verified and single-source citations become entries; excluded
+    sources carry reasons, never silent drops.
 
 Composition recipes:
   validate | normalize  Check claims, then group equivalent answers to
@@ -99,16 +103,17 @@ Tier 2 (pattern runs - the tool owns the run):
     instead (E303) and 'fusion resume --run <id> --worker <w> --answer
     <text>' answers one question and continues; --abort fails it.
     --wait-sec sets the hold deadline.
-  fusion red-blue --task <t> --burden <b> [--harness] [--timeout]
+  fusion red-blue --task <t> --burden <b> [--harness] [--timeout] [--evidence f]
     Adversarial pattern: a claimant files atomic claims (named executable
     checks go in falsifier/evidence backticks); an opponent must challenge
     with objection claims - free-form critique is rejected at the schema;
     an umpire resolves each objection (running named checks, reporting
     observed evidence; accept=sustained, revise=overruled); a judge
     blind to worker identity scores the surviving record against the
-    burden. Budgets are symmetric across roles. The decision names each
-    surviving claim, each rejected claim with its ruling, and unresolved
-    objections as residual risks.
+    burden. Budgets are symmetric across roles. With --evidence, the
+    claimant cites the researched sources instead of recalling its own.
+    The decision names each surviving claim, each rejected claim with
+    its ruling, and unresolved objections as residual risks.
   fusion gonogo --task <t> [--reviewers N]
     Ship/block gate: each reviewer returns a position (accept=GO,
     test=GO WITH CONSTRAINT, escalate=NO-GO with the blocking concern,
@@ -128,7 +133,7 @@ Tier 2 (pattern runs - the tool owns the run):
     must stay inside it. The decision record reports convergence (did
     groups collapse?) and stability (did workers hold position?)
     mechanically - read both before trusting the round-2 winner.
-  fusion ach --task <t> [--workers N] [--harness] [--timeout]
+  fusion ach --task <t> [--workers N] [--harness] [--timeout] [--evidence f]
     Analysis of Competing Hypotheses: sealed analysts submit hypotheses
     and evidence as linked claims (evidence links hypotheses via
     dependencies + novelty: confirms = consistent, contradicts =
@@ -136,8 +141,9 @@ Tier 2 (pattern runs - the tool owns the run):
     the hypotheses-x-evidence matrix mechanically, marks evidence that
     discriminates between hypotheses vs evidence consistent with all of
     them, and reports the least-disconfirmed hypothesis with its
-    falsifier as the sensitivity check. Hypotheses without evidence
-    links are rejected at the pattern stage.
+    falsifier as the sensitivity check. With --evidence, analysts cite
+    the researched sources instead of recalling their own. Hypotheses
+    without evidence links are rejected at the pattern stage.
   What a pattern run guarantees: the registration (run.json) is frozen
     before generation; workers are separate hcn processes with no shared
     transcript; every worker output is schema-validated at the boundary;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aggregate, canonicalize, normalizeClaims, scoreForecasts } from "../src/tier1";
+import { aggregate, canonicalize, evidenceFromCitations, normalizeClaims, scoreForecasts } from "../src/tier1";
 
 describe("canonicalize", () => {
   it("collapses whitespace, trims, and lowercases", () => {
@@ -191,5 +191,52 @@ describe("scoreForecasts", () => {
   it("rejects empty input and out-of-range confidences", () => {
     expect(() => scoreForecasts([])).toThrow("at least one resolved outcome");
     expect(() => scoreForecasts([{ confidence: 1.5, outcome: true }])).toThrow("in [0,1]");
+  });
+});
+
+describe("evidenceFromCitations", () => {
+  const doc = (claimId: string, status: string, url: string) => ({
+    citedBy: [
+      {
+        claimId,
+        claimStatus: status,
+        locator: "p1",
+        statement: `statement ${claimId}`,
+        verdict: "supported",
+      },
+    ],
+    fetch: { finalUrl: url, status: "ok" },
+    normalized: url,
+    title: `title ${claimId}`,
+    url,
+  });
+
+  it("maps verified and single-source citations to evidence entries", () => {
+    const supplied = evidenceFromCitations({
+      documents: [doc("c001", "verified", "https://a.example/"), doc("c002", "single-source", "https://b.example/")],
+      unfetched: [],
+    });
+    expect(supplied).toHaveLength(2);
+    expect(supplied[0]).toMatchObject({
+      claimId: "c001",
+      evidence: [{ source_or_test: "https://a.example/", supports: "statement c001 (p1)" }],
+      excluded: [],
+    });
+  });
+
+  it("excludes misrepresented and unreachable sources with reasons", () => {
+    const supplied = evidenceFromCitations({
+      documents: [doc("c001", "misrepresented", "https://a.example/")],
+      unfetched: [{ reason: "fetch failed", url: "https://b.example/" }],
+    });
+    expect(supplied[0]?.evidence).toEqual([]);
+    expect(supplied[0]?.excluded).toEqual([
+      { reason: "claim status misrepresented: supported", url: "https://a.example/" },
+      { reason: "unfetched: fetch failed", url: "https://b.example/" },
+    ]);
+  });
+
+  it("rejects exports without a documents array", () => {
+    expect(() => evidenceFromCitations({})).toThrow("documents array");
   });
 });

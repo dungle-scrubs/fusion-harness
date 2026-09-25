@@ -38,7 +38,7 @@ import { type PatternDefinition, type PatternOptions, resolveWait, toRegistratio
 import { redblueDefinition } from "./redblue";
 import { shortlistDefinition } from "./shortlist";
 import { SKILL_TEXT } from "./skill";
-import { type AggregateMethod, aggregate, normalizeClaims, scoreForecasts } from "./tier1";
+import { type AggregateMethod, aggregate, type DrCitations, evidenceFromCitations, normalizeClaims, scoreForecasts } from "./tier1";
 
 const VERSION = "0.2.2"; // x-release-please-version
 
@@ -342,6 +342,26 @@ program
     });
   });
 
+function parseCitationsExport(text: string): DrCitations {
+  const parsed: unknown = JSON.parse(text) as unknown;
+  const root =
+    typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? (parsed as Record<string, unknown>)
+      : {};
+  const data =
+    typeof root["data"] === "object" && root["data"] !== null
+      ? (root["data"] as Record<string, unknown>)
+      : {};
+  const citations =
+    typeof data["citations"] === "object" && data["citations"] !== null
+      ? (data["citations"] as Record<string, unknown>)
+      : root;
+  return {
+    ...(Array.isArray(citations["documents"]) ? { documents: citations["documents"] } : {}),
+    ...(Array.isArray(citations["unfetched"]) ? { unfetched: citations["unfetched"] } : {}),
+  };
+}
+
 program
   .command("score")
   .description("Proper scoring rules (Brier, log) over resolved outcomes. " + EXIT_HELP_TEXT)
@@ -351,6 +371,29 @@ program
     await runJsonTier1("score", options.json, file, parseOutcomeArray, (outcomes) => {
       const result = scoreForecasts(outcomes) as unknown as Record<string, unknown>;
       return { lines: [JSON.stringify(result)], result };
+    });
+  });
+
+program
+  .command("evidence")
+  .description(
+    "Convert a dr citations export into per-claim evidence blocks for claim evidence[] fields. " +
+      EXIT_HELP_TEXT,
+  )
+  .argument("[file]", "dr citations JSON (dr citations --json); reads stdin when omitted")
+  .option("--json", "emit the machine-shaped envelope")
+  .action(async (file: string | undefined, options: { json: boolean }) => {
+    await runJsonTier1("evidence", options.json, file, parseCitationsExport, (input) => {
+      const supplied = evidenceFromCitations(input) as unknown as Record<string, unknown>[];
+      const lines = supplied.map((s) => {
+        const record = s as {
+          claimId: string;
+          evidence: { source_or_test: string }[];
+          excluded: { reason: string }[];
+        };
+        return `${record.claimId}: ${record.evidence.length} sources, ${record.excluded.length} excluded`;
+      });
+      return { lines, result: { supplied } };
     });
   });
 
