@@ -40,7 +40,7 @@ import { shortlistDefinition } from "./shortlist";
 import { SKILL_TEXT } from "./skill";
 import { type AggregateMethod, aggregate, type DrCitations, evidenceFromCitations, normalizeClaims, scoreForecasts } from "./tier1";
 
-const VERSION = "0.2.2"; // x-release-please-version
+const VERSION = "0.2.3"; // x-release-please-version
 
 interface ResolvedRun {
   run: string;
